@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/$(whoami)/public_html/
+    - /bin/mkdir -p $DEPLOYPATH/coe
+    - /bin/cp -R coe/index.html $DEPLOYPATH/coe/
