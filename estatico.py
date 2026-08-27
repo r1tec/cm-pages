@@ -54,11 +54,9 @@ def staticize(h, hero=None):
     # 3) remove <noscript> antigos (vamos recolocar o do GTM)
     h = re.sub(r'<noscript>[\s\S]*?</noscript>', '', h, flags=re.I)
 
-    # 4) cabeça: preconnect ao pixel + preload da capa (LCP) + GTM
-    head_inject = (
-        '<link rel="preconnect" href="https://www.googletagmanager.com">\n'
-        '<link rel="preconnect" href="https://connect.facebook.net">\n'
-    )
+    # 4) cabeça: preload da capa (LCP) + GTM
+    #    (sem preconnect ao pixel: ele carrega adiado, então preconnect no início é desperdício)
+    head_inject = ""
     if hero:
         head_inject += (
             f'<link rel="preload" as="image" href="assets/{hero}.webp" fetchpriority="high">\n'
