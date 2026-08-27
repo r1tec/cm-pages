@@ -46,6 +46,31 @@ CHECKOUT_JS = """<script>
 </script>
 """
 
+# Hover nos botões de compra (só CSS, custo zero) + animação de entrada leve.
+# A animação só "esconde" elementos quando o JS confirma (html.js): sem JS, tudo
+# aparece normal. Só transform/opacidade (roda na GPU, não causa pulo de layout).
+INTERACOES_CSS = """<style>
+a[href*="pay.contemmagia.com.br"]{transition:filter .18s ease,transform .18s ease,box-shadow .18s ease}
+a[href*="pay.contemmagia.com.br"]:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+a[href*="pay.contemmagia.com.br"]:active{transform:translateY(0);filter:brightness(.96)}
+html.js [data-anim]{opacity:0;transform:translateY(16px);will-change:opacity,transform}
+html.js [data-anim].in{opacity:1;transform:none;transition:opacity .55s ease,transform .55s ease}
+@media(prefers-reduced-motion:reduce){html.js [data-anim]{opacity:1;transform:none;transition:none}}
+</style>
+"""
+ANIM_JS = """<script>
+document.documentElement.className+=' js';
+document.addEventListener('DOMContentLoaded',function(){
+  var els=document.querySelectorAll('[data-anim]');
+  if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
+  var io=new IntersectionObserver(function(entries){entries.forEach(function(e){
+    if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},
+    {rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e){io.observe(e)});
+});
+</script>
+"""
+
 def staticize(h, hero=None):
     # 0) Acessibilidade:
     #    a) idioma da página (leitores de tela e tradução) — <html lang="pt-BR">
@@ -69,8 +94,14 @@ def staticize(h, hero=None):
         head_inject += (
             f'<link rel="preload" as="image" href="assets/{hero}.webp" fetchpriority="high">\n'
         )
-    head_inject += GTM_HEAD
+    head_inject += INTERACOES_CSS + GTM_HEAD
     h = re.sub(r'</head>', head_inject + '</head>', h, count=1, flags=re.I)
+
+    # 4b) animação de entrada só nos cartões (article) e depoimentos (figure) —
+    #     estão abaixo da primeira tela. NÃO anima <section> (a capa/título ficam
+    #     numa section, e escondê-la atrasaria o FCP/LCP).
+    h = re.sub(r'(<(?:article|figure)\b)(?![^>]*data-anim)',
+               r'\1 data-anim', h, flags=re.I)
 
     # 5) marca a capa como prioridade alta (LCP) e desliga lazy nela
     if hero:
@@ -85,7 +116,7 @@ def staticize(h, hero=None):
 
     # 6) corpo: GTM noscript logo após <body>, e o script do checkout antes de </body>
     h = re.sub(r'(<body[^>]*>)', r'\1\n' + GTM_BODY, h, count=1, flags=re.I)
-    h = re.sub(r'</body>', CHECKOUT_JS + '</body>', h, count=1, flags=re.I)
+    h = re.sub(r'</body>', CHECKOUT_JS + ANIM_JS + '</body>', h, count=1, flags=re.I)
     return h
 
 
