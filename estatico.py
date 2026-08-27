@@ -53,8 +53,8 @@ INTERACOES_CSS = """<style>
 a[href*="pay.contemmagia.com.br"]{transition:filter .18s ease,transform .18s ease,box-shadow .18s ease}
 a[href*="pay.contemmagia.com.br"]:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.28)}
 a[href*="pay.contemmagia.com.br"]:active{transform:translateY(0);filter:brightness(.96)}
-html.js [data-anim]{opacity:0;transform:translateY(30px) scale(.985);will-change:opacity,transform}
-html.js [data-anim].in{opacity:1;transform:none;transition:opacity .6s ease,transform .75s cubic-bezier(.2,.75,.2,1)}
+html.js [data-anim]{opacity:0;transform:translateY(34px) scale(.98);will-change:opacity,transform}
+html.js [data-anim].in{opacity:1;transform:none;transition:opacity 1.05s ease,transform 1.05s cubic-bezier(.2,.75,.2,1)}
 /* Primeira dobra: entra ao carregar SÓ por movimento (opacidade fica 1 -> FCP/LCP intactos) */
 html.js [data-hero]{animation:heroIn .85s cubic-bezier(.2,.75,.2,1) both}
 @keyframes heroIn{from{transform:translateY(34px)}to{transform:none}}
@@ -73,6 +73,24 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 """
+
+def _animar_secoes_de_texto(h):
+    """Marca com data-anim as <section> de texto: pula a primeira (capa/título, que
+    já desliza) e qualquer seção que contenha <article> ou <figure> (esses já animam
+    item a item). Evita bloco-dentro-de-bloco (piscar duplo)."""
+    starts = [m.start() for m in re.finditer(r'<section\b', h, flags=re.I)]
+    marcar = []
+    for i, s in enumerate(starts):
+        e = starts[i + 1] if i + 1 < len(starts) else len(h)
+        trecho = h[s:e]
+        if i == 0:
+            continue  # capa (já tem data-hero)
+        if re.search(r'<(article|figure)\b', trecho, flags=re.I):
+            continue  # já anima por dentro
+        marcar.append(s)
+    for s in reversed(marcar):        # de trás pra frente: não desloca os anteriores
+        h = h[:s + 8] + ' data-anim' + h[s + 8:]   # logo após "<section"
+    return h
 
 def staticize(h, hero=None):
     # 0) Acessibilidade:
@@ -108,6 +126,10 @@ def staticize(h, hero=None):
     # 4c) primeira dobra: marca a primeira <section> (capa/título) p/ deslizar ao
     #     carregar. Só transform (a opacidade fica 1), então FCP/LCP não mudam.
     h = re.sub(r'(<section\b)', r'\1 data-hero', h, count=1, flags=re.I)
+    # 4d) seções de TEXTO (sem cartões/depoimentos dentro) também animam, como um
+    #     bloco (título + texto juntos). Pula a 1ª (capa) e as que já têm article/
+    #     figure — assim nunca anima um bloco dentro de outro.
+    h = _animar_secoes_de_texto(h)
 
     # 5) marca a capa como prioridade alta (LCP) e desliga lazy nela
     if hero:
