@@ -17,6 +17,7 @@ import estatico
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
 WEBP_Q = "80"
+HERO_Q = "70"  # a capa (maior imagem) é o LCP: um pouco mais leve, ainda nítida
 
 def achar_chrome():
     for p in [
@@ -71,6 +72,7 @@ def main():
     externalized = 0
     webp_saved = 0
     total_asset_bytes = 0
+    hero_cand = None  # (caminho_webp, tamanho_raw) da maior imagem = capa (LCP)
 
     for uuid, entry in manifest.items():
         mime = entry.get("mime", "")
@@ -105,12 +107,36 @@ def main():
                     os.remove(tmp)
 
         final_path = os.path.join(assets_dir, f"{uuid}.{final_ext}")
+        # guarda a maior imagem (a capa/LCP) p/ reencodar mais leve depois (do RAW)
+        if final_ext == "webp" and (hero_cand is None or len(raw) > hero_cand[1]):
+            hero_cand = (final_path, len(raw), raw)
         total_asset_bytes += os.path.getsize(final_path)
         # tira o base64 do manifest e marca como externo
         entry.pop("data", None)
         entry.pop("compressed", None)
         entry["ext"] = final_ext
         externalized += 1
+
+    # A capa (maior imagem, o LCP) sai um pouco mais leve em q70 — reencoda do RAW
+    if CWEBP and hero_cand:
+        hero_path, _, hero_raw = hero_cand
+        try:
+            tmp_in = hero_path + ".src"
+            with open(tmp_in, "wb") as f:
+                f.write(hero_raw)
+            tmp_out = hero_path + ".q.tmp"
+            subprocess.run([CWEBP, "-quiet", "-q", HERO_Q, tmp_in, "-o", tmp_out], check=True)
+            if os.path.getsize(tmp_out) < os.path.getsize(hero_path):
+                antes = os.path.getsize(hero_path)
+                os.replace(tmp_out, hero_path)
+                total_asset_bytes += os.path.getsize(hero_path) - antes
+                print(f"  capa (LCP) reencodada q{HERO_Q}: "
+                      f"{antes//1024}KB -> {os.path.getsize(hero_path)//1024}KB")
+            elif os.path.exists(tmp_out):
+                os.remove(tmp_out)
+            os.remove(tmp_in)
+        except Exception as e:
+            print(f"  AVISO: nao reencodei a capa ({e}); mantendo q{WEBP_Q}.", file=sys.stderr)
 
     # Regrava o manifest enxuto
     new_manifest = json.dumps(manifest, separators=(",", ":"))
