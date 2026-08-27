@@ -28,6 +28,56 @@ def achar_chrome():
             return p
     return shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("chrome")
 
+try:
+    from PIL import Image
+except Exception:
+    Image = None
+
+def reduzir_imagens_por_config(src_dir, assets_dir, hero_path):
+    """Reduz imagens específicas ao tamanho que o PageSpeed pede, lendo um arquivo
+    'reduzir.json' na pasta da página:  { "<uuid>": [largura, altura], ... }.
+    A ORIGINAL continua embutida em index.html (fonte) — reverter é só apagar/editar
+    esse json (ou desfazer o commit) e publicar de novo. Sem o arquivo, nada muda."""
+    cfg_path = os.path.join(src_dir, "reduzir.json")
+    if not os.path.isfile(cfg_path):
+        return 0, 0
+    if not Image:
+        print("  AVISO: sem Pillow; nao reduzi imagens (reduzir.json ignorado).", file=sys.stderr)
+        return 0, 0
+    try:
+        alvos = json.load(open(cfg_path, encoding="utf-8"))
+    except Exception as e:
+        print(f"  AVISO: reduzir.json invalido ({e}); ignorado.", file=sys.stderr)
+        return 0, 0
+    reduzidas = economizados = 0
+    for uuid, wh in alvos.items():
+        path = os.path.join(assets_dir, f"{uuid}.webp")
+        if not os.path.isfile(path):
+            print(f"  AVISO: reduzir.json aponta {uuid[:8]} que nao existe.", file=sys.stderr)
+            continue
+        try:
+            lw, lh = int(wh[0]), int(wh[1])
+            im = Image.open(path)
+            nw = im.size[0]
+            if nw <= lw + 1:
+                continue  # ja esta no tamanho ou menor
+            antes = os.path.getsize(path)
+            q = 70 if path == hero_path else 80
+            if im.mode in ("P", "LA"):
+                im = im.convert("RGBA")
+            im.thumbnail((lw, lh), Image.LANCZOS)
+            im.save(path, "WEBP", quality=q, method=6)
+            depois = os.path.getsize(path)
+            reduzidas += 1
+            economizados += max(0, antes - depois)
+            print(f"    imagem {uuid[:8]}: {nw}px -> {im.size[0]}px "
+                  f"({antes//1024}KB -> {depois//1024}KB)")
+        except Exception as e:
+            print(f"  AVISO: nao reduzi {uuid[:8]} ({e}).", file=sys.stderr)
+    if reduzidas:
+        print(f"  {reduzidas} imagens reduzidas ao tamanho de tela (-{economizados//1024}KB)")
+    return reduzidas, economizados
+
 MIME_EXT = {
     "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg",
     "image/jpg": "jpg", "image/gif": "gif", "image/svg+xml": "svg",
@@ -157,15 +207,20 @@ def main():
 
     # Copia outros arquivos da origem (ex: favicon), menos o index
     for name in os.listdir(src_dir):
-        if name in ("index.html",): continue
+        if name in ("index.html", "reduzir.json"): continue  # config local, não publica
         s = os.path.join(src_dir, name)
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
 
+    # Reduz imagens ao tamanho que o PageSpeed pede (se houver reduzir.json na pasta).
+    # A original continua no fonte (coe/index.html) — reverter é só apagar o json.
+    chrome = achar_chrome()
+    hero_path = hero_cand[0] if hero_cand else None
+    reduzir_imagens_por_config(src_dir, assets_dir, hero_path)
+
     # ETAPA-CHAVE: monta a página no Chrome e serve ESTÁTICA (pronta, como WordPress).
     # Sem isso a página só aparece depois de rodar o React (LCP ~10s).
     static_ok = False
-    chrome = achar_chrome()
     if chrome:
         try:
             rendered = subprocess.run(
