@@ -1,8 +1,10 @@
 name: Publicar por FTP
 
+# DESATIVADO de proposito. Este workflow subia o repositorio CRU (index.html de
+# varios MB, sem otimizar e sem limpar o cache do Cloudflare), sobrescrevendo o
+# resultado do ./publicar.sh a cada push na main.
+# O unico caminho de publicacao e  ./publicar.sh  (ver .claude/skills/publicar).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:

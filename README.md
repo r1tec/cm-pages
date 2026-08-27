@@ -1,40 +1,68 @@
-# Contem Magia Pages
+# Contém Magia Pages
 
-**Para publicar, digite no terminal (dentro desta pasta):** `./publicar.sh`
+**Para publicar, dentro desta pasta:** `./publicar.sh` (ou `/publicar` no Claude Code)
 
-Páginas de venda estáticas da Escola Contém Magia. Cada pasta é uma rota.
+Páginas de venda estáticas da Escola Contém Magia. Cada pasta da raiz é uma rota:
 
 ```
-coe/index.html   ->  /coe   Manual de Como Ouvir Suas Entidades
+coe/index.html   ->  https://contemmagia.com.br/coe
 ```
 
-Cada `index.html` é autocontido: HTML, CSS, JS e imagens no mesmo arquivo. Não
-depende de framework, CDN nem build. Basta servir a pasta.
+Cada `index.html` é a exportação do Claude Design: autocontido, sem framework,
+sem CDN, sem build. É normal ele ter vários MB — o `publicar.sh` enxuga na hora
+de subir, sem alterar o arquivo fonte.
+
+## O processo, em quatro etapas
+
+1. **Copy travada** — texto aprovado antes do design começar.
+2. **Design no Claude Design** — layout, cor, imagem, fonte. As três regras de
+   `_padroes/checklist-design.md` valem aqui: contraste 4,5, no máximo 4 pesos
+   de fonte, imagem no dobro do tamanho exibido.
+3. **`./publicar.sh <slug>`** — otimiza, confere e sobe.
+4. **Commit e push** — o GitHub é o espelho, a hospedagem é o resultado.
 
 ## Publicar
 
-**Hospedagem com painel (cPanel, TurboCloud e similares)**
-Envie a pasta `coe` para dentro de `public_html`. A página responde em
-`seudominio.com.br/coe`.
+```
+./publicar.sh          # todas as páginas
+./publicar.sh coe      # só a slug coe
+```
 
-**Netlify, Cloudflare Pages, Vercel**
-Aponte o serviço para a raiz deste repositório. As pastas viram rotas
-automaticamente.
+Antes de enviar, o script mede a página no celular e no desktop e avisa se
+alguma imagem está maior que o necessário ou se algum texto está com contraste
+abaixo de 4,5 — e imprime o `reduzir.json` / a troca de cor prontos. É aviso,
+não erro: a publicação continua. Se um aviso se repete, o lugar de corrigir é o
+Claude Design, não o remendo local.
 
-**Deploy por FTP a cada push**
-Use o workflow em `.github/workflows/deploy-ftp.yml` e cadastre em
-Settings > Secrets and variables > Actions:
+**Este é o único caminho de publicação.** O workflow do GitHub Actions e o
+`.cpanel.yml` foram desativados: subiam o arquivo cru, sem otimizar e sem
+limpar o cache, por cima do resultado do `publicar.sh`.
 
-- `FTP_SERVER` (ex: ftp.seudominio.com.br)
-- `FTP_USERNAME`
-- `FTP_PASSWORD`
-- `FTP_DIR` (ex: /public_html/)
+## Máquina nova / outra pessoa da equipe
 
-## Regras da página COE
+```
+git clone https://github.com/r1tec/cm-pages.git
+cd cm-pages
+cp .env.example .env      # preencher FTP_SENHA e CF_API_TOKEN
+./publicar.sh
+```
 
-- Botão de compra: `https://pay.contemmagia.com.br/c/coe`, texto sempre
-  `QUERO OUVIR MEUS GUIAS`
-- A aula ao vivo nunca é descrita como recorrente. Sempre "a próxima terça"
-- O aviso de que a prática caminha ao lado do acompanhamento médico e
-  psicológico aparece no FAQ e no rodapé, e não sai
-- Nenhum preço antes da dobra da oferta
+O comando `/publicar` vem junto com o clone — mora em `.claude/skills/publicar`.
+Requisitos na máquina: `python3`, `lftp` (instalado automaticamente via
+Homebrew) e Google Chrome (usado para pré-montar a página e para medir peso e
+contraste).
+
+## Estrutura
+
+```
+_padroes/              regras de design compartilhadas por todas as páginas
+.claude/skills/        o comando /publicar, versionado junto com o repo
+<slug>/index.html      a página, exportada do Claude Design
+<slug>/REGRAS.md       regras de conteúdo daquela página
+<slug>/reduzir.json    remendo local: encolher imagens (evite; corrija no Design)
+<slug>/cores.json      remendo local: trocar cores por contraste (idem)
+otimizar.py            peso, WebP, cache
+estatico.py            pré-monta a página sem React
+verificar.py           confere imagem e contraste, só avisa
+publicar.sh            o publicador
+```

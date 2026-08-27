@@ -1,6 +1,7 @@
 ---
+# DESATIVADO de proposito. Este deploy copiava coe/index.html CRU (sem otimizar,
+# sem limpar cache) e so funcionava para a slug coe.
+# O unico caminho de publicacao e  ./publicar.sh  (ver .claude/skills/publicar).
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/$(whoami)/public_html/
-    - /bin/mkdir -p $DEPLOYPATH/coe
-    - /bin/cp -R coe/index.html $DEPLOYPATH/coe/
+    - /bin/echo "Publicacao por cPanel desativada. Use ./publicar.sh"

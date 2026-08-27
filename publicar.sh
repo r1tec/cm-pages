@@ -68,6 +68,10 @@ for slug in "${SITES[@]}"; do
   echo "Otimizando $slug/ ..."
   python3 otimizar.py "$slug" "$build"
 
+  # Confere o que ainda esta fora do padrao (imagem grande demais, contraste baixo).
+  # E so aviso: nao altera nada e nao impede a publicacao.
+  python3 verificar.py "$slug" "$build" || true
+
   destino="${FTP_BASE%/}/$slug/"
   echo "Publicando $slug/ em $FTP_HOST$destino ..."
   lftp -u "$FTP_USUARIO","$FTP_SENHA" "$FTP_HOST" <<FTP
