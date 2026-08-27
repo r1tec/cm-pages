@@ -53,9 +53,12 @@ INTERACOES_CSS = """<style>
 a[href*="pay.contemmagia.com.br"]{transition:filter .18s ease,transform .18s ease,box-shadow .18s ease}
 a[href*="pay.contemmagia.com.br"]:hover{filter:brightness(1.1);transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.28)}
 a[href*="pay.contemmagia.com.br"]:active{transform:translateY(0);filter:brightness(.96)}
-html.js [data-anim]{opacity:0;transform:translateY(16px);will-change:opacity,transform}
-html.js [data-anim].in{opacity:1;transform:none;transition:opacity .55s ease,transform .55s ease}
-@media(prefers-reduced-motion:reduce){html.js [data-anim]{opacity:1;transform:none;transition:none}}
+html.js [data-anim]{opacity:0;transform:translateY(30px) scale(.985);will-change:opacity,transform}
+html.js [data-anim].in{opacity:1;transform:none;transition:opacity .6s ease,transform .75s cubic-bezier(.2,.75,.2,1)}
+/* Primeira dobra: entra ao carregar SÓ por movimento (opacidade fica 1 -> FCP/LCP intactos) */
+html.js [data-hero]{animation:heroIn .85s cubic-bezier(.2,.75,.2,1) both}
+@keyframes heroIn{from{transform:translateY(34px)}to{transform:none}}
+@media(prefers-reduced-motion:reduce){html.js [data-anim],html.js [data-hero]{opacity:1;transform:none;animation:none;transition:none}}
 </style>
 """
 ANIM_JS = """<script>
@@ -102,6 +105,9 @@ def staticize(h, hero=None):
     #     numa section, e escondê-la atrasaria o FCP/LCP).
     h = re.sub(r'(<(?:article|figure)\b)(?![^>]*data-anim)',
                r'\1 data-anim', h, flags=re.I)
+    # 4c) primeira dobra: marca a primeira <section> (capa/título) p/ deslizar ao
+    #     carregar. Só transform (a opacidade fica 1), então FCP/LCP não mudam.
+    h = re.sub(r'(<section\b)', r'\1 data-hero', h, count=1, flags=re.I)
 
     # 5) marca a capa como prioridade alta (LCP) e desliga lazy nela
     if hero:
