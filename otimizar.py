@@ -12,7 +12,10 @@
 # Uso:  python3 otimizar.py <pasta_origem> <pasta_saida>
 #   ex: python3 otimizar.py coe .build/coe
 
-import sys, os, re, json, base64, gzip, shutil
+import sys, os, re, json, base64, gzip, shutil, subprocess
+
+CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
+WEBP_Q = "80"
 
 MIME_EXT = {
     "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg",
@@ -56,6 +59,7 @@ def main():
 
     before = len(html.encode("utf-8"))
     externalized = 0
+    webp_saved = 0
     total_asset_bytes = 0
 
     for uuid, entry in manifest.items():
@@ -66,13 +70,36 @@ def main():
         if entry.get("compressed"):
             raw = gzip.decompress(raw)
         ext = MIME_EXT.get(mime, "bin")
-        with open(os.path.join(assets_dir, f"{uuid}.{ext}"), "wb") as f:
+        orig_path = os.path.join(assets_dir, f"{uuid}.{ext}")
+        with open(orig_path, "wb") as f:
             f.write(raw)
-        total_asset_bytes += len(raw)
+
+        # Imagens: reencoda para WebP quando ficar menor (mantém o visual)
+        final_ext = ext
+        if CWEBP and mime.startswith("image/") and mime != "image/svg+xml":
+            webp_path = os.path.join(assets_dir, f"{uuid}.webp")
+            tmp = webp_path + ".tmp"
+            try:
+                subprocess.run([CWEBP, "-quiet", "-q", WEBP_Q, orig_path, "-o", tmp],
+                               check=True)
+                if os.path.getsize(tmp) < os.path.getsize(orig_path):
+                    if orig_path != webp_path:
+                        os.remove(orig_path)
+                    os.replace(tmp, webp_path)
+                    final_ext = "webp"
+                    webp_saved += 1
+                else:
+                    os.remove(tmp)
+            except Exception:
+                if os.path.exists(tmp):
+                    os.remove(tmp)
+
+        final_path = os.path.join(assets_dir, f"{uuid}.{final_ext}")
+        total_asset_bytes += os.path.getsize(final_path)
         # tira o base64 do manifest e marca como externo
         entry.pop("data", None)
         entry.pop("compressed", None)
-        entry["ext"] = ext
+        entry["ext"] = final_ext
         externalized += 1
 
     # Regrava o manifest enxuto
@@ -98,9 +125,29 @@ def main():
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
 
+    # Validades de cache + compressão (nomes de asset são únicos: cache eterno seguro)
+    htaccess = (
+        "# Compressão\n"
+        "<IfModule mod_deflate.c>\n"
+        "  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml\n"
+        "</IfModule>\n"
+        "# Cache: imagens/fontes têm nome único, podem ficar guardadas por muito tempo\n"
+        "<IfModule mod_headers.c>\n"
+        '  <FilesMatch "\\.(webp|png|jpe?g|gif|avif|woff2?|svg)$">\n'
+        '    Header set Cache-Control "public, max-age=31536000, immutable"\n'
+        "  </FilesMatch>\n"
+        '  <FilesMatch "\\.html$">\n'
+        '    Header set Cache-Control "public, max-age=600"\n'
+        "  </FilesMatch>\n"
+        "</IfModule>\n"
+    )
+    with open(os.path.join(out_dir, ".htaccess"), "w", encoding="utf-8") as f:
+        f.write(htaccess)
+
     after = len(html.encode("utf-8"))
     print(f"  {src_dir}: index {before//1024}KB -> {after//1024}KB | "
-          f"{externalized} arquivos externos ({total_asset_bytes//1024}KB em assets/)")
+          f"{externalized} arquivos externos ({total_asset_bytes//1024}KB em assets/, "
+          f"{webp_saved} convertidos p/ WebP)")
 
 if __name__ == "__main__":
     main()
