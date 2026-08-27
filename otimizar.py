@@ -13,9 +13,19 @@
 #   ex: python3 otimizar.py coe .build/coe
 
 import sys, os, re, json, base64, gzip, shutil, subprocess
+import estatico
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
 WEBP_Q = "80"
+
+def achar_chrome():
+    for p in [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    ]:
+        if os.path.isfile(p):
+            return p
+    return shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("chrome")
 
 MIME_EXT = {
     "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg",
@@ -115,7 +125,8 @@ def main():
         print("AVISO: nao consegui costurar o motor (padrao mudou). Abortando por seguranca.", file=sys.stderr)
         sys.exit(2)
 
-    with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
+    index_path = os.path.join(out_dir, "index.html")
+    with open(index_path, "w", encoding="utf-8") as f:
         f.write(html)
 
     # Copia outros arquivos da origem (ex: favicon), menos o index
@@ -124,6 +135,29 @@ def main():
         s = os.path.join(src_dir, name)
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
+
+    # ETAPA-CHAVE: monta a página no Chrome e serve ESTÁTICA (pronta, como WordPress).
+    # Sem isso a página só aparece depois de rodar o React (LCP ~10s).
+    static_ok = False
+    chrome = achar_chrome()
+    if chrome:
+        try:
+            rendered = subprocess.run(
+                [chrome, "--headless", "--disable-gpu", "--no-sandbox",
+                 "--virtual-time-budget=9000", "--dump-dom",
+                 "file://" + os.path.abspath(index_path)],
+                capture_output=True, text=True, timeout=90).stdout
+            if rendered and "<img" in rendered and "assets/" in rendered:
+                hero = estatico.detect_hero(rendered)
+                static_html = estatico.staticize(rendered, hero)
+                with open(index_path, "w", encoding="utf-8") as f:
+                    f.write(static_html)
+                static_ok = True
+                print(f"  estático gerado (capa p/ LCP: {hero})")
+        except Exception as e:
+            print(f"  AVISO: render estático falhou ({e}); publicando versão em React.", file=sys.stderr)
+    if not static_ok:
+        print("  AVISO: sem Chrome para pré-montar; publicando versão em React (mais lenta).", file=sys.stderr)
 
     # Validades de cache + compressão (nomes de asset são únicos: cache eterno seguro)
     htaccess = (
