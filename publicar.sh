@@ -54,19 +54,26 @@ if [ "${#SITES[@]}" -eq 0 ]; then
   exit 1
 fi
 
-# 4) Envia cada pasta, espelhando (apaga no servidor o que não existe mais aqui)
+# 4) Otimiza (enxuga o peso) e envia cada pasta, espelhando
+#    (apaga no servidor o que não existe mais aqui)
 for slug in "${SITES[@]}"; do
   slug="${slug%/}"
   if [ ! -f "$slug/index.html" ]; then
     echo "Pulando '$slug': não tem index.html." >&2
     continue
   fi
+
+  # Gera a versão leve em .build/<slug>/ (imagens e fontes viram arquivos com cache)
+  build=".build/$slug"
+  echo "Otimizando $slug/ ..."
+  python3 otimizar.py "$slug" "$build"
+
   destino="${FTP_BASE%/}/$slug/"
   echo "Publicando $slug/ em $FTP_HOST$destino ..."
   lftp -u "$FTP_USUARIO","$FTP_SENHA" "$FTP_HOST" <<FTP
 set ftp:ssl-allow true
 set ssl:verify-certificate no
-mirror --reverse --delete --verbose "$slug/" "$destino"
+mirror --reverse --delete --verbose "$build/" "$destino"
 bye
 FTP
   echo "No ar: https://contemmagia.com.br/$slug"
