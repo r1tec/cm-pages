@@ -47,6 +47,14 @@ CHECKOUT_JS = """<script>
 """
 
 def staticize(h, hero=None):
+    # 0) Acessibilidade:
+    #    a) idioma da página (leitores de tela e tradução) — <html lang="pt-BR">
+    if re.search(r'<html\b[^>]*\blang=', h, flags=re.I) is None:
+        h = re.sub(r'<html\b', '<html lang="pt-BR"', h, count=1, flags=re.I)
+    #    b) marca o container principal como "main" (ponto de referência da página)
+    if 'role="main"' not in h:
+        h = re.sub(r'(<div\s+id="dc-root")', r'\1 role="main"', h, count=1, flags=re.I)
+
     # 1) remove TODO <script> (motor de montagem, pixels injetados em runtime, blobs)
     h = re.sub(r'<script[\s\S]*?</script>', '', h, flags=re.I)
     # 2) remove <link> de Google Fonts (as fontes já são locais em assets/)
