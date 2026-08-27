@@ -207,7 +207,7 @@ def main():
 
     # Copia outros arquivos da origem (ex: favicon), menos o index
     for name in os.listdir(src_dir):
-        if name in ("index.html", "reduzir.json"): continue  # config local, não publica
+        if name in ("index.html", "reduzir.json", "cores.json"): continue  # config local, não publica
         s = os.path.join(src_dir, name)
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
@@ -231,6 +231,21 @@ def main():
             if rendered and "<img" in rendered and "assets/" in rendered:
                 hero = estatico.detect_hero(rendered)
                 static_html = estatico.staticize(rendered, hero)
+                # Ajuste de cores p/ contraste (acessibilidade), se houver cores.json.
+                # Reverter = apagar coe/cores.json e republicar.
+                cores_cfg = os.path.join(src_dir, "cores.json")
+                if os.path.isfile(cores_cfg):
+                    try:
+                        trocas = json.load(open(cores_cfg, encoding="utf-8"))
+                        n = 0
+                        for de, para in trocas.items():
+                            c = static_html.count(de)
+                            static_html = static_html.replace(de, para)
+                            n += c
+                        if n:
+                            print(f"  cores ajustadas p/ contraste: {n} trocas")
+                    except Exception as e:
+                        print(f"  AVISO: cores.json invalido ({e}); ignorado.", file=sys.stderr)
                 with open(index_path, "w", encoding="utf-8") as f:
                     f.write(static_html)
                 static_ok = True
