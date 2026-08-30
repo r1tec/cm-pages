@@ -67,6 +67,31 @@ Use o host de checkout **do próprio original** (não force pay.contemmagia):
 tocar no layout (reduzir imagem, contraste, atributos a11y, meta/SEO, adiar/dividir
 script), republique e remeça. Repita até o teto viável.
 
+## Checklist de otimização (já nasça com tudo isto — validado no bce)
+- `<html lang="pt-BR">` (não en-US).
+- `role="main"` no container raiz do conteúdo (ex.: no `<div data-elementor-type="wp-page" ...>`).
+- Emojis: se o original usa `<img class="emoji" ... alt="X">` do CDN s.w.org, troque pelo
+  caractere unicode do próprio alt (tira requisição de terceiro + corrige unsized-images).
+- `<video>`: use `preload="none"` (corta megabytes de metadata; vídeos remotos ficam remotos).
+- Imagem de topo (LCP): `<link rel="preload" as="image" href="assets/<capa>.webp" fetchpriority="high">`
+  no head, e `fetchpriority="high"` sem `loading="lazy"` na tag dela.
+- Toda `<img>` com `width` e `height` explícitos (evita CLS).
+- `.htaccess` com cache: imagens/fontes `immutable 1 ano`, **css/js `max-age=604800`**, html 600s.
+- **Contraste:** o plano permite ajustar contraste reprovado, MAS quando o tom reprovado é a
+  COR DA MARCA (verdes) usada em botão de compra e no mesmo tom sobre fundo claro E escuro,
+  repintar quebra fidelidade — nesse caso MANTENHA a cor do original e anote como trava. Só
+  ajuste contraste quando dá pra escurecer sem virar "outra cor" perceptível.
+- MEÇA em `https://contemmagia.com.br/<slug>/` COM BARRA FINAL (sem barra = 301, -1s de perf).
+- **CUIDADO caminho relativo do CSS:** se `styles.css` fica em `<slug>/assets/`, os `url()`
+  dentro dele resolvem RELATIVO a `assets/`. Então a capa é `url(diario.webp)`, NUNCA
+  `url(assets/diario.webp)` (isso vira `assets/assets/` e quebra o LCP). No `index.html` (que
+  fica em `<slug>/`) o certo é `assets/diario.webp`. Bug real que afundou o LCP do drb (8.5s→2.8s).
+
+## Tetos estruturais conhecidos (iguais nas 5, anote como trava, não pare)
+- **best-practices mobile ~77:** cookies de terceiro do GTM (o pixel exigido). Insuperável mantendo o pixel.
+- **acessibilidade ~94:** contraste dos verdes da marca do próprio original (preservado por fidelidade).
+- **perf mobile ~78-85:** CSS do Elementor (render-blocking, ~200KB) + JS do GTM (exigido). Desktop fica ~99.
+
 ## Regra de ouro
 Fidelidade é lei: mesmo texto, mesmas imagens, mesmos vídeos, mesmo link de compra,
 mesmas cores/fontes/espaçamentos, mesma ordem de seções, os efeitos da própria página.
