@@ -16,8 +16,12 @@ import sys, os, re, json, base64, gzip, shutil, subprocess
 import estatico
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
+DWEBP = shutil.which("dwebp")  # decodifica webp -> png (p/ reencodar do original)
 WEBP_Q = "80"
 HERO_Q = "70"  # a capa (maior imagem) é o LCP: um pouco mais leve, ainda nítida
+RECOMP_Q = "80"        # qualidade-alvo conservadora ao recomprimir assets das páginas WP
+RECOMP_MIN_BYTES = 10 * 1024  # imagem menor que isto já é pequena: nem tenta
+RECOMP_KEEP_RATIO = 0.97      # só troca se ficar <=97% do original (>=3% de ganho real)
 
 def achar_chrome():
     for p in [
@@ -77,6 +81,72 @@ def reduzir_imagens_por_config(src_dir, assets_dir, hero_path):
     if reduzidas:
         print(f"  {reduzidas} imagens reduzidas ao tamanho de tela (-{economizados//1024}KB)")
     return reduzidas, economizados
+
+def recomprimir_assets_webp(src_dir, out_dir):
+    """Páginas WordPress/Elementor trazem as imagens já em .webp, mas muitas foram
+    salvas com qualidade alta demais e o PageSpeed pede 'aumentar o fator de
+    compactação'. Aqui a gente RE-ENCODA cada .webp a uma qualidade conservadora
+    (q80) DIRETO no build — o arquivo-fonte em <slug>/assets/ NÃO é tocado.
+
+    Segurança:
+    - Reencoda SEMPRE a partir do .webp ORIGINAL (o de <slug>/assets/, que nunca
+      muda), nunca de uma saída já recomprimida — assim a perda não acumula entre
+      publicações, por mais vezes que se publique.
+    - Só substitui no build se ficar MENOR de verdade (<=97% do original). Imagem já
+      no ponto (que a q80 até engordaria) é deixada como está.
+    - Pula imagens já pequenas (<10KB): não há ganho que justifique.
+    - Mantém dimensões e conteúdo: sem redimensionar, sem cortar.
+    Devolve (qtd_recomprimidas, bytes_economizados)."""
+    if not (CWEBP and DWEBP):
+        print("  AVISO: sem cwebp/dwebp; imagens copiadas sem recompressao.", file=sys.stderr)
+        return 0, 0
+    src_assets = os.path.join(src_dir, "assets")
+    out_assets = os.path.join(out_dir, "assets")
+    if not os.path.isdir(out_assets):
+        return 0, 0
+    recomp = economizados = 0
+    for root, _dirs, files in os.walk(out_assets):
+        # ignora fontes: só imagem entra
+        if os.path.basename(root) == "fonts" or os.sep + "fonts" in root + os.sep:
+            continue
+        for name in files:
+            if not name.lower().endswith(".webp"):
+                continue
+            dst = os.path.join(root, name)
+            rel = os.path.relpath(dst, out_assets)
+            src = os.path.join(src_assets, rel)  # ORIGINAL intocado (fonte da verdade)
+            if not os.path.isfile(src):
+                continue
+            orig_sz = os.path.getsize(src)
+            if orig_sz < RECOMP_MIN_BYTES:
+                continue
+            png = dst + ".dec.png"
+            tmp = dst + ".re.tmp"
+            try:
+                r = subprocess.run([DWEBP, "-quiet", src, "-o", png],
+                                   capture_output=True)
+                if r.returncode != 0 or not os.path.isfile(png):
+                    continue
+                r = subprocess.run([CWEBP, "-quiet", "-q", RECOMP_Q, "-m", "6",
+                                    png, "-o", tmp], capture_output=True)
+                if r.returncode != 0 or not os.path.isfile(tmp):
+                    continue
+                new_sz = os.path.getsize(tmp)
+                if new_sz <= orig_sz * RECOMP_KEEP_RATIO:
+                    os.replace(tmp, dst)
+                    recomp += 1
+                    economizados += orig_sz - new_sz
+            except Exception as e:
+                print(f"  AVISO: nao recomprimi {name} ({e}).", file=sys.stderr)
+            finally:
+                for lixo in (png, tmp):
+                    if os.path.exists(lixo):
+                        try: os.remove(lixo)
+                        except OSError: pass
+    if recomp:
+        print(f"  {recomp} imagens recomprimidas q{RECOMP_Q} (-{economizados//1024}KB)")
+    return recomp, economizados
+
 
 MIME_EXT = {
     "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg",
@@ -290,6 +360,8 @@ def main():
             (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d)
         with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
             f.write(html_out)
+        # Recomprime as imagens no build (fonte fica intocada). Repetível e seguro.
+        recomprimir_assets_webp(src_dir, out_dir)
         if inlined:
             # o estilo/fontes agora vivem dentro do HTML: apaga os arquivos soltos do
             # build (nao sao mais chamados, e assim nao viram download extra)
