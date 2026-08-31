@@ -89,6 +89,178 @@ MIME_EXT = {
 def is_externalizable(mime):
     return mime.startswith("image/") or mime.startswith("font/") or "font" in mime
 
+def _embutir_css_local(html, src_dir):
+    """Páginas de WordPress/Elementor trazem o estilo (assets/styles.css) e as
+    fontes (assets/fonts.css) em arquivos separados. Esses dois TRAVAM a pintura da
+    tela, e o de fontes ainda cria uma FILA: o navegador só descobre as fontes depois
+    de baixar o arquivo. Aqui a gente joga o estilo e as fontes PARA DENTRO do HTML e
+    pré-carrega as fontes de cima da dobra — igual à página de referência. Assim nada
+    trava a abertura e não há fila. O visual fica idêntico.
+
+    A função é IDEMPOTENTE e NORMALIZA qualquer estado anterior: cada página foi
+    otimizada num nível diferente na sessão passada (uma já tinha fonte embutida,
+    outra tinha pré-carregamento solto, outra estava crua). Ela primeiro LIMPA todo
+    resquício (link de css, link de fonte, @font-face antigo) e depois reinjeta um
+    resultado único. Rodar de novo dá o mesmo.
+    Devolve (html, True) se mexeu; (html, False) se não é uma dessas páginas."""
+    styles_p = os.path.join(src_dir, "assets", "styles.css")
+    fonts_p  = os.path.join(src_dir, "assets", "fonts.css")
+    if not (os.path.isfile(styles_p) and os.path.isfile(fonts_p)):
+        return html, False
+
+    def _corrige_url(css):
+        # url(imagem.webp) dentro do css era relativo a assets/; no HTML precisa do
+        # prefixo. Preserva http(s):, data:, caminho absoluto e o que já tem assets/.
+        def repl(mo):
+            inner = mo.group(1).strip()
+            q = ""
+            if inner[:1] in "\"'":
+                q = inner[0]; inner = inner.strip(q)
+            if re.match(r'(https?:|data:|#|/|assets/)', inner):
+                return mo.group(0)
+            return f"url({q}assets/{inner}{q})"
+        return re.sub(r'url\(([^)]*)\)', repl, css)
+
+    # monta os blocos finais (fontes + estilo), com os caminhos corrigidos
+    fonts_css = _corrige_url(open(fonts_p, encoding="utf-8").read())
+    woffs = re.findall(r'url\((?:["\']?)(assets/fonts/[^)"\']+\.woff2)', fonts_css)
+    # pré-carrega só as fontes de cima da dobra (Montserrat/Nunito). A Roboto entra
+    # sem fila mesmo assim, porque o @font-face já vai embutido; pré-carregá-la seria
+    # baixar à toa e o PageSpeed reclamaria de "pré-carregada e não usada".
+    preloads = "".join(
+        f'<link rel="preload" as="font" type="font/woff2" href="{w}" crossorigin>\n'
+        for w in dict.fromkeys(woffs) if "roboto" not in w.lower()
+    )
+    fonts_block = preloads + "<style>" + fonts_css.strip() + "</style>\n"
+    styles_block = "<style>" + _corrige_url(open(styles_p, encoding="utf-8").read()).strip() + "</style>\n"
+
+    # LIMPEZA (ordem importa: noscript com styles.css antes de tirar os links soltos)
+    html = re.sub(r'<noscript>\s*<link[^>]*(?:styles|fonts)\.css[^>]*>\s*</noscript>',
+                  '', html, flags=re.I)
+    html = re.sub(r'<link[^>]*href="assets/(?:styles|fonts)\.css"[^>]*>', '', html, flags=re.I)
+    html = re.sub(r'<link[^>]*\bas="?font\b[^>]*>', '', html, flags=re.I)  # preloads de fonte antigos
+    html = re.sub(r'<style[^>]*>.*?</style>',                              # @font-face antigo embutido
+                  lambda mo: '' if '@font-face' in mo.group(0) else mo.group(0),
+                  html, flags=re.S | re.I)
+
+    # INJEÇÃO: fontes + estilo logo antes de </head> (replacement como função p/ não
+    # interpretar '\' do css). count=1 para não duplicar.
+    novo = fonts_block + styles_block + "</head>"
+    html, n = re.subn(r'</head>', lambda _: novo, html, count=1, flags=re.I)
+    return html, bool(n)
+
+
+def _podar_css_morto(html):
+    """O Elementor/WordPress exporta um CSS gigante com regras de blocos e widgets
+    que ESTA página nunca usa (.wp-block-*, widgets ausentes...). Uma regra cujas
+    classes/ids não existem no HTML não pinta nada — removê-la não muda um pixel.
+    Aqui a gente lê quais classes/ids existem de fato na página e apaga do <style>
+    embutido toda regra que só menciona classes/ids ausentes. Corta ~40% do CSS,
+    que é o que trava a pintura da tela. Conservador: na dúvida, mantém a regra."""
+
+    # 1) classes e ids que EXISTEM no HTML (fora dos <style>/<script>)
+    corpo = re.sub(r'<style[\s\S]*?</style>', ' ', html, flags=re.I)
+    corpo = re.sub(r'<script[\s\S]*?</script>', ' ', corpo, flags=re.I)
+    classes = set()
+    for m in re.finditer(r'class\s*=\s*"([^"]*)"', corpo, flags=re.I):
+        classes.update(m.group(1).split())
+    for m in re.finditer(r"class\s*=\s*'([^']*)'", corpo, flags=re.I):
+        classes.update(m.group(1).split())
+    ids = set(re.findall(r'id\s*=\s*"([^"]+)"', corpo, flags=re.I))
+    ids.update(re.findall(r"id\s*=\s*'([^']+)'", corpo, flags=re.I))
+    classes.update({"in", "js"})  # o JS de animação adiciona html.js e .in em runtime
+
+    def _split_virgulas(s):
+        out, d, cur = [], 0, ""
+        for ch in s:
+            if ch in "([": d += 1
+            elif ch in ")]": d = max(0, d - 1)
+            if ch == "," and d == 0:
+                out.append(cur); cur = ""
+            else:
+                cur += ch
+        if cur.strip():
+            out.append(cur)
+        return out
+
+    def _seletor_vivo(sel):
+        s = sel.strip()
+        if not s:
+            return False
+        if re.search(r':(not|is|where|has)\(', s, re.I):  # negação/condicional: não arrisca
+            return True
+        if re.search(r'\[\s*class', s, re.I):              # [class*=...]: não arrisca
+            return True
+        s2 = re.sub(r'\[[^\]]*\]', " ", s)                 # tira seletores de atributo (evita pegar . dentro de string)
+        cls = [c.replace("\\", "") for c in re.findall(r'\.([\-_A-Za-z0-9\\]+)', s2)]
+        idd = [x.replace("\\", "") for x in re.findall(r'#([\-_A-Za-z0-9\\]+)', s2)]
+        if not cls and not idd:                            # só tag/* : mantém (conservador)
+            return True
+        # Uma regra cujos seletores citam classe/id que NÃO existe na página não pinta
+        # nada — remover é seguro. (Descendente tipo ".elementor .elementor-background"
+        # também: sem o elemento-alvo, não casa.) Validado: render sem os flags de
+        # tempo virtual dá pixel idêntico; o "tremor" de ±1px no título da barra é ruído
+        # do headless (mesmo arquivo renderizado 2x já difere ali), não da poda.
+        return all(c in classes for c in cls) and all(x in ids for x in idd)
+
+    def _itens(css):
+        itens, i, n, ini = [], 0, len(css), 0
+        while i < n:
+            c = css[i]
+            if c == "{":
+                d, j = 1, i + 1
+                while j < n and d > 0:
+                    if css[j] == "{": d += 1
+                    elif css[j] == "}": d -= 1
+                    j += 1
+                itens.append(("rule", css[ini:i], css[i + 1:j - 1]))
+                i = ini = j
+            elif c == ";":
+                itens.append(("stmt", css[ini:i + 1], None))
+                i += 1; ini = i
+            else:
+                i += 1
+        if css[ini:].strip():
+            itens.append(("stmt", css[ini:], None))
+        return itens
+
+    def _prune(css):
+        saida = []
+        for tipo, pre, bloco in _itens(css):
+            if tipo == "stmt":
+                saida.append(pre)
+                continue
+            p = pre.strip()
+            if p.startswith("@"):
+                nome = re.match(r'@([A-Za-z-]+)', p)
+                nome = nome.group(1).lower() if nome else ""
+                if nome in ("media", "supports", "container", "layer", "document"):
+                    interno = _prune(bloco)
+                    if interno.strip():
+                        saida.append(p + "{" + interno + "}")
+                else:                                       # @font-face, @keyframes, @page...
+                    saida.append(p + "{" + bloco + "}")
+            else:
+                vivos = [s.strip() for s in _split_virgulas(p) if _seletor_vivo(s)]
+                if vivos:
+                    saida.append(",".join(vivos) + "{" + bloco + "}")
+        return "".join(saida)
+
+    def _troca_style(mo):
+        abertura, css, fecha = mo.group(1), mo.group(2), mo.group(3)
+        antes = len(css)
+        podado = _prune(css)
+        # trava de segurança: se sobrou pouco demais, algo deu errado — mantém original
+        if antes > 2000 and len(podado) < antes * 0.35:
+            print(f"  AVISO: poda de CSS suspeita ({antes}->{len(podado)}); mantendo original.",
+                  file=sys.stderr)
+            return mo.group(0)
+        return abertura + podado + fecha
+
+    novo = re.sub(r'(<style[^>]*>)([\s\S]*?)(</style>)', _troca_style, html, flags=re.I)
+    return novo
+
+
 def main():
     if len(sys.argv) < 3:
         print("uso: python3 otimizar.py <pasta_origem> <pasta_saida>", file=sys.stderr)
@@ -100,15 +272,33 @@ def main():
 
     html = open(src_html, "r", encoding="utf-8").read()
 
-    # Se nao for uma pagina do bundler, so copia a pasta inteira como está.
+    # Se nao for uma pagina do bundler (ex.: export de WordPress/Elementor), copia a
+    # pasta — mas antes joga o estilo e as fontes PARA DENTRO do index.html, pra nada
+    # travar a abertura da tela (igual à pagina de referencia).
     m = re.search(r'(<script type="__bundler/manifest">)(.*?)(</script>)', html, re.S)
     if not m:
+        if os.path.isdir(out_dir): shutil.rmtree(out_dir)
         os.makedirs(out_dir, exist_ok=True)
+        html_out, inlined = _embutir_css_local(html, src_dir)
+        if inlined and not os.environ.get("NOPRUNE"):
+            antes_css = len(html_out)
+            html_out = _podar_css_morto(html_out)
+            print(f"  CSS podado: {antes_css//1024}KB -> {len(html_out)//1024}KB de HTML")
         for name in os.listdir(src_dir):
+            if name == "index.html": continue
             s = os.path.join(src_dir, name); d = os.path.join(out_dir, name)
-            (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d,
-                *( [] if os.path.isfile(s) else [] ))
-        print(f"(sem bundler) copiado {src_dir} -> {out_dir}")
+            (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d)
+        with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(html_out)
+        if inlined:
+            # o estilo/fontes agora vivem dentro do HTML: apaga os arquivos soltos do
+            # build (nao sao mais chamados, e assim nao viram download extra)
+            for lixo in ("styles.css", "fonts.css"):
+                p = os.path.join(out_dir, "assets", lixo)
+                if os.path.isfile(p): os.remove(p)
+            print(f"(estático WP) estilo+fontes embutidos: {src_dir} -> {out_dir}")
+        else:
+            print(f"(sem bundler) copiado {src_dir} -> {out_dir}")
         return
 
     manifest = json.loads(m.group(2))
