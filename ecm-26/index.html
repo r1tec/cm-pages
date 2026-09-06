@@ -575,7 +575,9 @@
      ------------------------------------------------------------
      LOTE_VIRADO: deixe false até 30/09. No dia 1º de outubro,
        troque para true (um caractere): o preço do Semente vira
-       R$ 597 e o contador some sozinho.
+       R$ 597. O contador NÃO some — sozinho ele vira contagem
+       até o evento ("últimas semanas" até 08/10, "última semana"
+       depois disso).
      RAIZ_VAGAS: quantas vagas do Raiz ainda restam (de 30).
        Atualize à mão a cada disparo.
      ============================================================ */
@@ -590,7 +592,12 @@
     var elAviso  = document.getElementById('semente-aviso');
     var elTarja  = document.getElementById('semente-tarja');
     var elVagas  = document.getElementById('raiz-vagas');
-    var PRAZO    = new Date('2026-09-30T23:59:00-03:00').getTime();
+    var labelEl  = contador ? contador.querySelector('.cd-label') : null;
+
+    // Marcos do contador (horário de Brasília)
+    var FIM_LOTE    = new Date('2026-09-30T23:59:00-03:00').getTime(); // fim do valor atual
+    var FIM_SEMANAS = new Date('2026-10-08T23:59:00-03:00').getTime(); // vira "última semana"
+    var EVENTO      = new Date('2026-10-10T08:00:00-03:00').getTime(); // início do evento
 
     if (elVagas) elVagas.textContent = 'Restam ' + RAIZ_VAGAS + ' das 30 vagas.';
 
@@ -600,10 +607,9 @@
       if (elDe)     elDe.style.display = 'none';
       if (elAviso)  elAviso.style.display = 'none';
       if (elTarja)  elTarja.textContent = 'Lote atual';
-      if (contador) contador.style.display = 'none';
     }
 
-    if (LOTE_VIRADO) { virar(); return; }
+    if (LOTE_VIRADO) virar();
 
     var dEl = document.getElementById('cd-d'),
         hEl = document.getElementById('cd-h'),
@@ -612,13 +618,18 @@
         timer;
     function pad(n){ return (n < 10 ? '0' : '') + n; }
     function tick() {
-      var diff = PRAZO - Date.now();
-      if (diff <= 0) {
+      var now = Date.now();
+      var alvo, rotulo;
+      if (now < FIM_LOTE)         { alvo = FIM_LOTE; rotulo = 'o valor atual acaba em'; }
+      else if (now < FIM_SEMANAS) { alvo = EVENTO;   rotulo = 'últimas semanas'; }
+      else if (now < EVENTO)      { alvo = EVENTO;   rotulo = 'última semana'; }
+      else {
         if (contador) contador.style.display = 'none';
         clearInterval(timer);
         return;
       }
-      var s = Math.floor(diff / 1000);
+      if (labelEl) labelEl.textContent = rotulo;
+      var s = Math.floor((alvo - now) / 1000);
       if (dEl) dEl.textContent = pad(Math.floor(s / 86400));
       if (hEl) hEl.textContent = pad(Math.floor((s % 86400) / 3600));
       if (mEl) mEl.textContent = pad(Math.floor((s % 3600) / 60));
