@@ -12,7 +12,7 @@
 # Uso:  python3 otimizar.py <pasta_origem> <pasta_saida>
 #   ex: python3 otimizar.py coe .build/coe
 
-import sys, os, re, json, base64, gzip, shutil, subprocess
+import sys, os, re, json, base64, gzip, shutil, subprocess, hashlib
 import estatico
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
@@ -158,6 +158,81 @@ MIME_EXT = {
 
 def is_externalizable(mime):
     return mime.startswith("image/") or mime.startswith("font/") or "font" in mime
+
+
+HTACCESS = (
+    "# Compressão\n"
+    "<IfModule mod_deflate.c>\n"
+    "  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml\n"
+    "</IfModule>\n"
+    "# Cache: imagens/fontes têm nome único, podem ficar guardadas por muito tempo\n"
+    "<IfModule mod_headers.c>\n"
+    '  <FilesMatch "\\.(webp|png|jpe?g|gif|avif|woff2?|svg)$">\n'
+    '    Header set Cache-Control "public, max-age=31536000, immutable"\n'
+    "  </FilesMatch>\n"
+    '  <FilesMatch "\\.html$">\n'
+    '    Header set Cache-Control "public, max-age=600"\n'
+    "  </FilesMatch>\n"
+    "</IfModule>\n"
+)
+
+def _escrever_htaccess(out_dir):
+    with open(os.path.join(out_dir, ".htaccess"), "w", encoding="utf-8") as f:
+        f.write(HTACCESS)
+
+
+def _externalizar_data_uris(html, out_dir, subdir="inline-assets"):
+    """Páginas escritas à mão (fora do bundler) trazem as fotos coladas no HTML como
+    data:image;base64 — tanto em <img src> quanto em background:url() do <style>.
+    Isso incha o HTML e tira as fotos do cache do navegador. Aqui a gente grava cada
+    foto como arquivo próprio (WebP quando ficar menor) e troca o data: pelo caminho
+    do arquivo. Visual idêntico; o HTML emagrece e as fotos passam a ser cacheadas e
+    baixadas em paralelo. Só toca imagem raster embutida — SVG, ícone e fonte ficam."""
+    dest = os.path.join(out_dir, subdir)
+    cache = {}                      # base64 -> "subdir/arquivo"
+    stats = {"n": 0, "kb": 0}
+
+    def repl(mo):
+        pre, q, sub, b64 = mo.group("pre"), mo.group("q"), mo.group("sub"), mo.group("b64")
+        if b64 not in cache:
+            try:
+                raw = base64.b64decode(b64)
+            except Exception:
+                return mo.group(0)
+            os.makedirs(dest, exist_ok=True)
+            mime = "image/" + ("jpeg" if sub == "jpg" else sub)
+            h = hashlib.sha1(raw).hexdigest()[:16]
+            ext = MIME_EXT.get(mime, "bin")
+            path = os.path.join(dest, f"i-{h}.{ext}")
+            with open(path, "wb") as f:
+                f.write(raw)
+            if CWEBP:
+                webp = os.path.join(dest, f"i-{h}.webp")
+                tmp = webp + ".tmp"
+                try:
+                    subprocess.run([CWEBP, "-quiet", "-q", WEBP_Q, path, "-o", tmp],
+                                   check=True)
+                    if os.path.getsize(tmp) < os.path.getsize(path):
+                        if path != webp:
+                            os.remove(path)
+                        os.replace(tmp, webp)
+                        path = webp
+                    else:
+                        os.remove(tmp)
+                except Exception:
+                    if os.path.exists(tmp):
+                        os.remove(tmp)
+            cache[b64] = subdir + "/" + os.path.basename(path)
+            stats["n"] += 1
+            stats["kb"] += os.path.getsize(path) // 1024
+        return f"{pre}{q}{cache[b64]}{q}"
+
+    # casa tanto  src="data:..."  quanto  url('data:...') / url(data:...)  no <style>
+    pat = re.compile(
+        r"""(?P<pre>(?:src=|url\(\s*))(?P<q>['"]?)"""
+        r"""data:image/(?P<sub>webp|png|jpe?g|gif|avif);base64,"""
+        r"""(?P<b64>[A-Za-z0-9+/=]+)(?P=q)""")
+    return pat.sub(repl, html), stats
 
 def _embutir_css_local(html, src_dir):
     """Páginas de WordPress/Elementor trazem o estilo (assets/styles.css) e as
@@ -358,8 +433,15 @@ def main():
             if name == "index.html": continue
             s = os.path.join(src_dir, name); d = os.path.join(out_dir, name)
             (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d)
+        # Tira as fotos coladas no HTML (data:base64) para arquivos próprios: some
+        # peso do HTML, entram no cache e baixam em paralelo. Visual idêntico.
+        html_out, inl = _externalizar_data_uris(html_out, out_dir)
+        if inl["n"]:
+            print(f"  fotos embutidas externalizadas: {inl['n']} imagens "
+                  f"({inl['kb']}KB p/ inline-assets/)")
         with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
             f.write(html_out)
+        _escrever_htaccess(out_dir)
         # Recomprime as imagens no build (fonte fica intocada). Repetível e seguro.
         recomprimir_assets_webp(src_dir, out_dir)
         if inlined:
