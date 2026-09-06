@@ -340,6 +340,12 @@
   .pcard:nth-child(2){background-image:url('ecm-26-assets/alexandre-cumino.webp');background-position:center 12%}
   .pcard:nth-child(3){background-image:url('ecm-26-assets/ayeza-umpierre.webp');background-position:center 16%}
   .pcard:nth-child(4){background-image:url('ecm-26-assets/raphael-martins.webp');background-position:center 14%}
+  .pcard:nth-child(5){background-image:url('ecm-26-assets/indra-haretrava.webp');background-position:center 12%}
+  /* 5 palestrantes: cabem todos centralizados no desktop, sem cortar */
+  @media (min-width:1200px){
+    .pal-grid{gap:24px;justify-content:center;overflow:visible}
+    .pcard{width:min(212px,calc((100vw - 280px)/5))}
+  }
   .pcard .pn .hand{font-size:11px;letter-spacing:1px;color:#c9cfd9;margin-top:6px}
   .pcard .pn .tema{font-size:11px;letter-spacing:.4px;color:var(--laranja);font-weight:600;line-height:1.3;margin-top:6px;padding:0 10px}
   .palestrantes .pal-nota{max-width:560px;margin:30px auto 0;text-align:center;color:#c9cfd9;font-size:15px;line-height:1.5}
@@ -423,8 +429,10 @@
       <!-- BIO Ayeza — TRAVADA, NÃO PUBLICAR até o Edu confirmar: Treinadora sistêmica e médium. -->
       <div class="pcard"><div class="pn"><div class="n1">Raphael</div><div class="n2">Martins</div><div class="hand">@oraphael.martins</div><div class="tema">Domingo · protagonismo e metas</div></div></div>
       <!-- BIO Raphael — TRAVADA, NÃO PUBLICAR até o Edu confirmar: Parceiro do Edu em formações e encontros da escola. -->
+      <div class="pcard"><div class="pn"><div class="n1">Indra</div><div class="n2">Haretrava</div><div class="hand">@indraharetrava</div><div class="tema">Cerimônias e palco · nos dois dias</div></div></div>
+      <!-- Indra Haretrava: produtora geral, performances e mestre de cerimônias; nos dois dias. -->
     </div>
-    <p class="pal-nota">Quatro pessoas no palco, nos dois dias, com você do começo ao fim.</p>
+    <p class="pal-nota">Cinco pessoas no palco, nos dois dias, com você do começo ao fim.</p>
     <a class="btn" href="#ingressos">Garantir meu lugar <span class="arw">&rarr;</span></a>
   </section>
 
