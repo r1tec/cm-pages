@@ -19,12 +19,15 @@ proposito — eles subiam o arquivo cru, sem otimizar e sem limpar o cache).
    - uma pagina: `./publicar.sh <slug>`
    - todas: `./publicar.sh`
 3. **Leia a saida da conferencia.** Antes de enviar, o script mede a pagina no
-   celular e no desktop e pode avisar duas coisas:
+   celular e no desktop e pode barrar por tres coisas graves:
    - *imagem maior que o necessario* — ele imprime o `reduzir.json` pronto
    - *contraste abaixo de 4,5* — ele mostra a cor e o fundo que reprovaram
-   Isso e aviso, nao erro: a publicacao continua. Trate como sinal de que a
-   proxima exportacao do Claude Design deve nascer certa
-   (ver `_padroes/checklist-design.md`), nao como tarefa de conserto recorrente.
+   - *script proprio que vai sumir no ar* (o "CONGELADA" — ver secao de pagina VIVA)
+   Achando qualquer uma, a publicacao **para e pede confirmacao**: so sobe se
+   digitar `sim`. Trate como sinal de que a proxima exportacao do Claude Design
+   deve nascer certa (ver `_padroes/checklist-design.md`), nao como conserto
+   recorrente. Para seguir sem a pergunta (loop/automatico): `PUBLICAR_SIM=1
+   ./publicar.sh <slug>` — o `afinar.sh` ja faz isso sozinho.
 4. Se houve mudanca no git: `git add -A`, commit e `git push`.
 5. Reporte em linguagem simples: quais paginas foram ao ar e os links
    `https://contemmagia.com.br/<slug>`.
@@ -83,9 +86,9 @@ ao ar e estatico — leve e rapido, mas PARADO. Contador nao anda, barra nao atu
 nada reage no navegador do visitante; so muda quando a pagina e republicada.
 
 Por isso, script proprio colado no HTML-fonte NAO funciona no ar (o estatizador
-remove todo `<script>`). O publicar AVISA quando isso acontece ("AVISO: N script(s)
-proprio(s) ... serao REMOVIDOS"). Se aparecer esse aviso e a pagina precisa mesmo
-ser dinamica, o caminho e:
+remove todo `<script>`). O publicar BARRA e pede confirmacao quando isso acontece
+("AVISO: N script(s) proprio(s) ... serao REMOVIDOS"). Se aparecer e a pagina
+precisa mesmo ser dinamica, NAO digite `sim` ainda — resolva primeiro assim:
 
 1. No template-fonte, por "alcas" `data-*` nos elementos que mudam (ex.: `data-cd`,
    `data-fill`) — atributo sobrevive a foto; script nao.

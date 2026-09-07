@@ -205,8 +205,10 @@ def main():
               f"(ver _padroes/checklist-design.md).")
         print("")
 
-    print("  ----- (isto e um aviso, a publicacao continua) -----")
+    print("  ----- a publicacao para aqui e pede confirmacao -----")
     print("")
+    # Sinaliza problema grave para o publicar.sh barrar e pedir "sim".
+    sys.exit(2)
 
 if __name__ == "__main__":
     main()

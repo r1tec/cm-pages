@@ -66,11 +66,35 @@ for slug in "${SITES[@]}"; do
   # Gera a versão leve em .build/<slug>/ (imagens e fontes viram arquivos com cache)
   build=".build/$slug"
   echo "Otimizando $slug/ ..."
-  python3 otimizar.py "$slug" "$build"
+  # Guarda o que o otimizar avisa (ex.: script proprio que vai CONGELADO no ar),
+  # mostrando na tela ao mesmo tempo.
+  otim_log="$(mktemp)"
+  python3 otimizar.py "$slug" "$build" 2> >(tee "$otim_log" >&2)
+  grave=0
+  grep -q "CONGELADA" "$otim_log" && grave=1
+  rm -f "$otim_log"
 
-  # Confere o que ainda esta fora do padrao (imagem grande demais, contraste baixo).
-  # E so aviso: nao altera nada e nao impede a publicacao.
-  python3 verificar.py "$slug" "$build" || true
+  # Confere imagem grande demais e contraste baixo. Sai com codigo 2 se achar
+  # algo grave — ai a publicacao para e pede confirmacao.
+  set +e
+  python3 verificar.py "$slug" "$build"
+  [ "$?" -eq 2 ] && grave=1
+  set -e
+
+  # Trava: achou coisa grave -> barra e pede "sim". No loop automatico (afinar.sh)
+  # ou com PUBLICAR_SIM=1, segue sozinho pra nao travar.
+  if [ "$grave" -eq 1 ]; then
+    if [ "${PUBLICAR_SIM:-0}" = "1" ] || [ ! -t 0 ]; then
+      echo "  (seguindo mesmo com o aviso acima — modo automatico/forcado)"
+    else
+      printf "  Publicar '%s' mesmo assim? digite 'sim' para seguir: " "$slug"
+      read -r resp
+      if [ "$resp" != "sim" ]; then
+        echo "  Pulei '$slug' — nada foi publicado."
+        continue
+      fi
+    fi
+  fi
 
   destino="${FTP_BASE%/}/$slug/"
   echo "Publicando $slug/ em $FTP_HOST$destino ..."

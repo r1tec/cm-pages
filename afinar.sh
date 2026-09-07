@@ -38,7 +38,7 @@ for RODADA in $(seq 1 "$MAX"); do
   echo ""
   echo "======== AFINAR $SLUG · rodada $RODADA/$MAX (alvo: $ALVO) ========"
 
-  ./publicar.sh "$SLUG"
+  PUBLICAR_SIM=1 ./publicar.sh "$SLUG"
 
   echo "Esperando o cache limpar antes de medir..."
   sleep 8
