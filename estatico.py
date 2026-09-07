@@ -137,6 +137,35 @@ LIVE_JS = """<script>
 </script>
 """
 
+def avisar_scripts_proprios(rendered_html):
+    """Avisa (stderr) se a página RENDERIZADA (a que vira foto estática) tem script
+    feito à mão — código que a etapa de estatizar vai remover e que, por isso, NÃO
+    vai funcionar no ar (o publicar tira o React). Se precisa de algo vivo (contador,
+    dado ao vivo), o caminho é injetar no padrão LIVE_JS aqui no estatico.py.
+
+    Checa o RENDERIZADO (não o HTML-fonte, que é um pacote com <script> soltos dentro
+    de textos e daria falso alarme). No renderizado, o que é do próprio bundler tem
+    assinatura conhecida e é ignorado: motor DCLogic (`type="text/x-dc"`), scripts com
+    `src` e sem corpo (bundler/blob), e o mapa de recursos (`window.__resources`)."""
+    proprios = 0
+    for m in re.finditer(r'<script\b([^>]*)>([\s\S]*?)</script>', rendered_html, flags=re.I):
+        attrs, corpo = m.group(1).lower(), m.group(2).strip()
+        if 'text/x-dc' in attrs:
+            continue  # motor DCLogic (esperado)
+        if re.search(r'\bsrc\s*=', attrs) and not corpo:
+            continue  # bundler externo/blob com src e sem corpo (esperado)
+        if corpo.startswith('window.__resources') or corpo.startswith('window.__bundler'):
+            continue  # runtime do bundler (esperado)
+        proprios += 1
+    if proprios:
+        print(f"  AVISO: {proprios} script(s) proprio(s) desta pagina serao REMOVIDOS pela versao "
+              f"estatica (o publicar tira o React). Se precisa funcionar no ar (contador, dado ao "
+              f"vivo, algo que muda sozinho), injete no padrao LIVE_JS dentro do estatico.py -- ver "
+              f"a skill publicar. Do jeito atual essa parte vai CONGELADA pro visitante.",
+              file=sys.stderr)
+    return proprios
+
+
 def _animar_secoes_de_texto(h):
     """Marca com data-anim o CONTEÚDO das <section> de texto — não a própria section.
     Anima o primeiro <div> interno (título + texto juntos), deixando a section e o
@@ -192,6 +221,9 @@ def staticize(h, hero=None):
             + f'" crossorigin href="{u}">\n' for u in woffs)
         h = re.sub(r'(<link rel="icon"[^>]*>\n)', r'\1' + font_preload, h, count=1, flags=re.I)
 
+    # 0) antes de remover os scripts, avisa se algum é código próprio (feito à mão)
+    #    que a foto estática vai jogar fora sem funcionar no ar.
+    avisar_scripts_proprios(h)
     # 1) remove TODO <script> (motor de montagem, pixels injetados em runtime, blobs)
     h = re.sub(r'<script[\s\S]*?</script>', '', h, flags=re.I)
     # 2) remove <link> de Google Fonts (as fontes já são locais em assets/)

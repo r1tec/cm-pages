@@ -76,6 +76,27 @@ Para sozinho quando a nota bate, quando nao ha mais imagem p/ encolher (o resto 
 peso de terceiro, fora do codigo), ou no limite de rodadas. Nunca mexe em
 cor/contraste sozinho (isso e design, nasce certo no Claude Design).
 
+## Pagina que precisa de algo VIVO (contador, dado ao vivo, algo que muda sozinho)
+
+Cuidado: o publicar tira UMA FOTO da pagina e joga fora o motor (React). O que vai
+ao ar e estatico — leve e rapido, mas PARADO. Contador nao anda, barra nao atualiza,
+nada reage no navegador do visitante; so muda quando a pagina e republicada.
+
+Por isso, script proprio colado no HTML-fonte NAO funciona no ar (o estatizador
+remove todo `<script>`). O publicar AVISA quando isso acontece ("AVISO: N script(s)
+proprio(s) ... serao REMOVIDOS"). Se aparecer esse aviso e a pagina precisa mesmo
+ser dinamica, o caminho e:
+
+1. No template-fonte, por "alcas" `data-*` nos elementos que mudam (ex.: `data-cd`,
+   `data-fill`) — atributo sobrevive a foto; script nao.
+2. Injetar um `<script>` vanilla leve no `estatico.py` (padrao `LIVE_JS`, junto de
+   `CHECKOUT_JS`/`ANIM_JS`), que le as alcas e atualiza no navegador.
+3. Guardar o script por um seletor exclusivo da pagina (ex.: `LIVE_JS` so age se
+   existir `[data-cd]`) — assim nao afeta as outras paginas.
+
+Exemplo real: a pagina `ecm-26-v2` (contador semanal + barras que puxam vendas do
+Supabase ao vivo) usa exatamente esse padrao.
+
 ## Maquina nova / outra pessoa da equipe
 
 ```
