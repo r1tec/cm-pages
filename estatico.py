@@ -29,6 +29,14 @@ GTM_BODY = (
     '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' + GTM_ID + '"'
     ' height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>\n'
 )
+# Favicon embutido (quadradinho na cor da marca). Sem arquivo externo: evita o
+# 404 de /favicon.ico que o navegador pede sozinho e que derruba a nota de
+# "Boas práticas" (erro no console).
+FAVICON_LINK = (
+    '<link rel="icon" href="data:image/svg+xml,'
+    "%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E"
+    "%3Crect%20width='32'%20height='32'%20rx='6'%20fill='%23C25A1C'/%3E%3C/svg%3E\">\n"
+)
 CHECKOUT_JS = """<script>
 (function(){
   var H='pay.contemmagia.com.br';
@@ -100,6 +108,27 @@ def staticize(h, hero=None):
     #    b) marca o container principal como "main" (ponto de referência da página)
     if 'role="main"' not in h:
         h = re.sub(r'(<div\s+id="dc-root")', r'\1 role="main"', h, count=1, flags=re.I)
+    #    c) charset como PRIMEIRO item do <head> + favicon embutido.
+    #       O runtime do Claude Design injeta um <style> no topo do <head> e empurra
+    #       o <meta charset> pra depois dos 1024 primeiros bytes — o Lighthouse
+    #       reprova ("charset tarde demais"). Tiramos o charset de onde estiver e
+    #       recolocamos colado no <head>, com o favicon logo em seguida.
+    h = re.sub(r'<meta[^>]*charset=[^>]*>', '', h, flags=re.I)
+    h = re.sub(r'(<head\b[^>]*>)', r'\1<meta charset="utf-8">\n' + FAVICON_LINK,
+               h, count=1, flags=re.I)
+    #    d) preload das fontes locais (Cera Pro etc.) no topo do <head>. Sem isso, a
+    #       primeira pintura (FCP) espera a fonte chegar pra trocar; com o preload, a
+    #       fonte entra na primeira rajada de download e o texto aparece bem antes.
+    woffs = []
+    for m in re.finditer(r'url\(["\']?(assets/[^"\')]+\.woff2?)["\']?\)', h, flags=re.I):
+        if m.group(1) not in woffs:
+            woffs.append(m.group(1))
+    if woffs:
+        font_preload = "".join(
+            '<link rel="preload" as="font" type="font/'
+            + ("woff2" if u.lower().endswith("woff2") else "woff")
+            + f'" crossorigin href="{u}">\n' for u in woffs)
+        h = re.sub(r'(<link rel="icon"[^>]*>\n)', r'\1' + font_preload, h, count=1, flags=re.I)
 
     # 1) remove TODO <script> (motor de montagem, pixels injetados em runtime, blobs)
     h = re.sub(r'<script[\s\S]*?</script>', '', h, flags=re.I)
