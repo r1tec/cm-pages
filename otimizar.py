@@ -70,10 +70,22 @@ def reduzir_imagens_por_config(src_dir, assets_dir, hero_path):
             if im.mode in ("P", "LA"):
                 im = im.convert("RGBA")
             im.thumbnail((lw, lh), Image.LANCZOS)
-            im.save(path, "WEBP", quality=q, method=6)
-            depois = os.path.getsize(path)
+            # Grava num temporário e só troca se REALMENTE ficou menor. Imagem de
+            # traço (logo, wordmark) às vezes engorda ao reencodar em q80 mesmo
+            # menor em pixels — nesse caso a original fica, e o reduzir.json daquela
+            # imagem é inócuo (não estraga nem incha). Trava aprendida na prática.
+            tmp = path + ".red.tmp"
+            im.save(tmp, "WEBP", quality=q, method=6)
+            depois = os.path.getsize(tmp)
+            if depois >= antes:
+                os.remove(tmp)
+                print(f"  AVISO: {uuid[:8]} encolheu em pixels mas engordou em bytes "
+                      f"({antes//1024}KB -> {depois//1024}KB); mantida a original.",
+                      file=sys.stderr)
+                continue
+            os.replace(tmp, path)
             reduzidas += 1
-            economizados += max(0, antes - depois)
+            economizados += antes - depois
             print(f"    imagem {uuid[:8]}: {nw}px -> {im.size[0]}px "
                   f"({antes//1024}KB -> {depois//1024}KB)")
         except Exception as e:
