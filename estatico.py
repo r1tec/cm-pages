@@ -83,11 +83,14 @@ document.addEventListener('DOMContentLoaded',function(){
 """
 
 def _animar_secoes_de_texto(h):
-    """Marca com data-anim as <section> de texto: pula a primeira (capa/título, que
-    já desliza) e qualquer seção que contenha <article> ou <figure> (esses já animam
-    item a item). Evita bloco-dentro-de-bloco (piscar duplo)."""
+    """Marca com data-anim o CONTEÚDO das <section> de texto — não a própria section.
+    Anima o primeiro <div> interno (título + texto juntos), deixando a section e o
+    FUNDO dela parados. Assim a entrada desliza/aparece só o conteúdo, sem revelar
+    a cor do bloco de trás nem uma faixa nas bordas (o scale encolhia a section).
+    Pula a primeira (capa, já tem data-hero) e as que já têm <article>/<figure>
+    dentro (esses animam item a item). Evita bloco-dentro-de-bloco (piscar duplo)."""
     starts = [m.start() for m in re.finditer(r'<section\b', h, flags=re.I)]
-    marcar = []
+    marcar = []  # posições onde inserir data-anim (no 1º <div> de cada section)
     for i, s in enumerate(starts):
         e = starts[i + 1] if i + 1 < len(starts) else len(h)
         trecho = h[s:e]
@@ -95,9 +98,13 @@ def _animar_secoes_de_texto(h):
             continue  # capa (já tem data-hero)
         if re.search(r'<(article|figure)\b', trecho, flags=re.I):
             continue  # já anima por dentro
-        marcar.append(s)
+        # acha o primeiro <div dentro desta section (o container do conteúdo)
+        m = re.search(r'<div\b', trecho, flags=re.I)
+        if not m:
+            continue  # sem container interno: não anima (não escondemos a section)
+        marcar.append(s + m.start())
     for s in reversed(marcar):        # de trás pra frente: não desloca os anteriores
-        h = h[:s + 8] + ' data-anim' + h[s + 8:]   # logo após "<section"
+        h = h[:s + 4] + ' data-anim' + h[s + 4:]   # logo após "<div"
     return h
 
 def staticize(h, hero=None):
