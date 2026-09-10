@@ -56,6 +56,7 @@ css = """<style>
 [data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{top:0;bottom:auto!important;width:55%!important;height:100%!important}
 [data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child>div{height:100%}
 [data-screen-label="01 Topo"] img{height:100%!important;object-fit:cover;object-position:center 70%}
+@media(min-width:900px){[data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{mask-image:linear-gradient(to right,transparent,#000 45%);-webkit-mask-image:linear-gradient(to right,transparent,#000 45%)}}
 @media(max-width:899px){
 [data-screen-label="01 Topo"]{min-height:0!important}
 [data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{width:100%!important;height:100%!important}
