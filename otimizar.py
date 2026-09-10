@@ -14,6 +14,7 @@
 
 import sys, os, re, json, base64, gzip, shutil, subprocess, hashlib
 import estatico
+from rastreamento import normalizar_gtm
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
 DWEBP = shutil.which("dwebp")  # decodifica webp -> png (p/ reencodar do original)
@@ -452,7 +453,7 @@ def main():
             print(f"  fotos embutidas externalizadas: {inl['n']} imagens "
                   f"({inl['kb']}KB p/ inline-assets/)")
         with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
-            f.write(html_out)
+            f.write(normalizar_gtm(html_out))
         _escrever_htaccess(out_dir)
         # Recomprime as imagens no build (fonte fica intocada). Repetível e seguro.
         recomprimir_assets_webp(src_dir, out_dir)

@@ -1,0 +1,35 @@
+# BEGIN CM migration eduparmeggiani.com
+# Insert before the existing WordPress block in public_html/.htaccess.
+# The same published static files serve both domains; no duplicate page uploads.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Keep certificate validation reachable when the domain moves to this server.
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^\.well-known/(?:acme-challenge|pki-validation)/ - [L]
+
+# Old pages confirmed in the WordPress sitemap. Query strings are retained.
+# Never change POST requests into GET redirects.
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^(iat|mpp|t3x|wmpp-obrigado|bpa|bco|6-edb|6-edb-obrigado|drb-vsl)/?$ https://crhishmxlb.wpdns.site/$1/ [R=302,L]
+
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^$ https://crhishmxlb.wpdns.site/ [R=302,L]
+
+# Missing assets must return 404, not the unrelated WordPress in this root.
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1)(?:/|$) - [R=404,L]
+
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1)(?:/|$) - [L]
+
+# Any route outside the explicit migration map stays a real 404.
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteRule ^ - [R=404,L]
+</IfModule>
+# END CM migration eduparmeggiani.com

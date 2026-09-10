@@ -27,6 +27,14 @@ set -a; . ./.env; set +a
 # Pasta raiz no servidor (default se o .env não definir)
 : "${FTP_BASE:=/public_html/}"
 
+# Ajuste pontual sobre o HTML publicado: preserva conteúdo local em edição e assets.
+# Prévia: ./publicar.sh --gtm-original bce coe
+# Aplicar: ./publicar.sh --gtm-original --aplicar bce coe
+if [ "${1:-}" = "--gtm-original" ]; then
+  shift
+  exec python3 alinhar_gtm.py "$@"
+fi
+
 # 2) Garante que o lftp está instalado (instala sozinho via Homebrew se faltar)
 if ! command -v lftp >/dev/null 2>&1; then
   echo "Instalando o lftp (só na primeira vez)..."
