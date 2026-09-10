@@ -169,9 +169,11 @@ def _animar_secoes_de_texto(h):
         if re.search(r'<(article|figure)\b', trecho, flags=re.I):
             continue  # já anima por dentro
         # acha o primeiro <div dentro desta section (o container do conteúdo)
-        m = re.search(r'<div\b', trecho, flags=re.I)
+        m = re.search(r'<div\b[^>]*>', trecho, flags=re.I)
         if not m:
             continue  # sem container interno: não anima (não escondemos a section)
+        if re.search(r'\baria-hidden\s*=\s*[\"\']true[\"\']', m.group(), flags=re.I):
+            continue  # camada decorativa: preservar fundo/contraste e seus descendentes
         marcar.append(s + m.start())
     for s in reversed(marcar):        # de trás pra frente: não desloca os anteriores
         h = h[:s + 4] + ' data-anim' + h[s + 4:]   # logo após "<div"
