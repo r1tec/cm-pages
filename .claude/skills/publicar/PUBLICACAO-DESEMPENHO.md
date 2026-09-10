@@ -76,6 +76,38 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
   não bloqueiam em modo não interativo. Corrigir defeitos introduzidos; documentar
   limites preexistentes sem reescrever conteúdo ou redesenhar silenciosamente.
 
+### Revisão visual que acompanha a otimização
+
+- Desempenho e fidelidade são aceites separados: nota acima de 90 não aprova o
+  design. Comparar exportação e build na mesma largura, altura, zoom e DPR, com
+  fontes carregadas. Medir fonte efetiva, tamanho, peso, entrelinha e container
+  antes de atribuir diferença a tipografia ou aplicar escala global de 110%.
+- Percorrer todas as seções em celular; conferir também 320, 360, 390 e 430px e
+  os dois lados dos breakpoints. A primeira tela deve apresentar título, apoio
+  e ação nas dimensões usuais, sem spacer de fotografia que os empurre para baixo.
+  Preservar copy e legibilidade; telas baixas e texto ampliado devem poder rolar.
+- Ao mudar largura ou recorte de uma foto, conferir a transição com o fundo em
+  várias janelas. Gradiente parcialmente transparente na borda de um container
+  recortado cria faixa. Usar mistura contínua/máscara e validar visualmente.
+- Camadas decorativas de contraste (`aria-hidden`) permanecem fixas durante
+  animações. Não marcar automaticamente o primeiro `div` como conteúdo sem
+  verificar se ele é o fundo; conferir a entrada da seção, não só o estado final.
+- Fontes também precisam de teste com rede/CPU lentas. No FSA, trazer o texto
+  para a primeira tela expôs CLS de aproximadamente 0,16 por troca de fonte.
+  Subconjuntos das fontes originais incorporados ao HTML e preload das três
+  famílias críticas eliminaram a troca; apenas incorporar sem antecipar a
+  decodificação ainda deslocava conteúdo no Lighthouse. Conferir gzip real:
+  dados repetidos maiores que a janela de compressão aumentam muito o HTML.
+  Preservar métricas, eixos, composição padrão, acentos e Latin-ext; comparar
+  texto e caixas antes/depois. O gerador reproduzível é preparar-fontes-fsa.py.
+- Ao trocar cálculos do editor por CSS, reproduzir medidas reais: `3fr 2fr`
+  desconta o gap antes da proporção e pode diferir de uma coluna de `60%`.
+- Menu que passa a duas linhas exige rever o espaço dos destinos das âncoras.
+  Clicar nos quatro atalhos e abrir todas as respostas do FAQ no build final.
+- Com correção e publicação autorizadas, concluir ajuste, validação, publicação
+  e teste público sem nova autorização entre etapas. Registrar aprendizados e
+  entregar o preview atualizado junto dos resultados de desempenho.
+
 ## 4. Publicar e conferir a versão entregue
 
 - Única entrada: `./publicar.sh <slug>`. Não usar FTP paralelo, workflow GitHub ou
