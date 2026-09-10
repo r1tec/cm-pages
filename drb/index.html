@@ -1,4 +1,27 @@
 <!DOCTYPE html><html lang="pt-BR"><head>
+<script id="cm-background-loader">
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  var selector = '.elementor-element-fe3d4fb,.elementor-element-15906e1,.elementor-element-af3f00b,.elementor-element-526c0c1,.elementor-element-0aeb10f';
+  var style = document.createElement('style');
+  style.textContent = selector.split(',').map(function (s) {
+    return s + ':not(.cm-background-ready)';
+  }).join(',') + '{background-image:none!important}';
+  document.head.appendChild(style);
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('cm-background-ready');
+          observer.unobserve(entry.target);
+        });
+      }, {rootMargin: '800px 0px'});
+      document.querySelectorAll(selector).forEach(function (element) { observer.observe(element); });
+    } catch (error) { style.remove(); }
+  }, {once: true});
+})();
+</script>
 <!-- Google Tag Manager (deferred) -->
 <script>(function(){var l=false;function go(){if(l)return;l=true;(function(w,d,s,li,i){w[li]=w[li]||[];w[li].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=li!='dataLayer'?'&l='+li:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-P629X98');}
 ['scroll','mousemove','touchstart','click','keydown'].forEach(function(e){addEventListener(e,go,{once:true,passive:true})});setTimeout(go,3000);})();</script>
@@ -149,6 +172,19 @@ e transformando vidas:</h2></div><div class="elementor-element elementor-element
  items.forEach(function(d){d.addEventListener('toggle',function(){
    if(d.open){items.forEach(function(o){if(o!==d)o.open=false;});}});});});}
  if(document.readyState!='loading')init();else addEventListener('DOMContentLoaded',init);})();</script>
-<!-- Chat do WordPress: mantém o atendimento e a configuração da Contém Magia. -->
-<script src="https://widgets.leadconnectorhq.com/loader.js" data-resources-url="https://beta.leadconnectorhq.com/chat-widget/loader.js" data-widget-id="6a0dae4cfc28868f0a82f97d" defer></script>
+<!-- Chat: carrega após 12s para não disputar a abertura da página. Ver docs/CHAT-PAGINAS.md. -->
+<script id="cm-chat-loader">
+(function () {
+  var widgetId = '6a0dae4cfc28868f0a82f97d';
+  window.setTimeout(function () {
+    if (document.querySelector('chat-widget, script[data-widget-id="' + widgetId + '"]')) return;
+    var script = document.createElement('script');
+    script.src = 'https://widgets.leadconnectorhq.com/loader.js';
+    script.async = true;
+    script.setAttribute('data-resources-url', 'https://beta.leadconnectorhq.com/chat-widget/loader.js');
+    script.setAttribute('data-widget-id', widgetId);
+    document.body.appendChild(script);
+  }, Math.max(0, 12000 - performance.now()));
+})();
+</script>
 </body></html>

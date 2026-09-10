@@ -100,6 +100,17 @@ precisa mesmo ser dinamica, NAO digite `sim` ainda — resolva primeiro assim:
 Exemplo real: a pagina `ecm-26-v2` (contador semanal + barras que puxam vendas do
 Supabase ao vivo) usa exatamente esse padrao.
 
+## Chat e widgets de terceiros
+
+Ao importar ou ajustar chat, leia [docs/CHAT-PAGINAS.md](../../../docs/CHAT-PAGINAS.md).
+O DRB tem carregamento após 12 segundos autorizado pelo dono; use esse caso como
+referência, respeitando o prazo e o atendimento de cada página. `defer` sozinho
+não evita perda de desempenho. Compare PageSpeed antes/depois, teste o chat no
+HTML otimizado e na URL publicada e preserve compras, UTM e rastreamento.
+Não classifique todo JS de terceiros como problema exclusivo do GTM: o embed do
+chat é controlado no código local. Separe a nota Lighthouse do histórico de Core
+Web Vitals de 28 dias, que pode ser da origem inteira.
+
 ## Maquina nova / outra pessoa da equipe
 
 ```
