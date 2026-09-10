@@ -102,6 +102,23 @@ Supabase ao vivo) usa exatamente esse padrao.
 
 ## Chat e widgets de terceiros
 
+Para regressão de nota após migração de domínio, consulte primeiro
+[docs/PERFORMANCE-MIGRACAO.md](../../../docs/PERFORMANCE-MIGRACAO.md): compare o
+GTM do HTML publicado com os backups antes de atribuir a causa a DNS/Cloudflare.
+O dono autorizou GTM na primeira interação ou em até 5 segundos para priorizar
+desempenho. `rastreamento.py` é a fonte única; não restaurar o GTM imediato por
+comparação automática com WordPress. `./publicar.sh --gtm-performance --aplicar
+<slugs>` troca somente o carregador publicado, com backup e comparação; mantém
+conteúdo local alheio fora da publicação. `--gtm-original` é reversão explícita
+para o imediato. Conferir pixels/eventos após tempo e interação e medir cada
+página no PageSpeed móvel/desktop; nota variável não admite garantia absoluta.
+O publisher limpa cache por prefixo da página (`limpar_cache.py`), incluindo
+assets e URLs com UTM/fbclid. Não voltar à limpeza só da URL exata: ela deixou
+campanhas servindo o GTM antigo. Conferir também uma URL de campanha já visitada.
+Para gargalos específicos, `desempenho.json` permite fontes WOFF2 críticas,
+preload da imagem principal e fundos fora da tela carregados por proximidade.
+Preservar proporções das imagens e conferir o visual com e sem JavaScript.
+
 Ao importar ou ajustar chat, leia [docs/CHAT-PAGINAS.md](../../../docs/CHAT-PAGINAS.md).
 O DRB tem carregamento após 12 segundos autorizado pelo dono; use esse caso como
 referência, respeitando o prazo e o atendimento de cada página. `defer` sozinho

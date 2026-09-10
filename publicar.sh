@@ -27,10 +27,19 @@ set -a; . ./.env; set +a
 # Pasta raiz no servidor (default se o .env não definir)
 : "${FTP_BASE:=/public_html/}"
 
+if [ "${1:-}" = "--limpar-cache" ]; then
+  shift
+  exec python3 limpar_cache.py "$@"
+fi
+
 # Ajuste pontual sobre o HTML publicado: preserva conteúdo local em edição e assets.
 # Prévia: ./publicar.sh --gtm-original bce coe
 # Aplicar: ./publicar.sh --gtm-original --aplicar bce coe
 if [ "${1:-}" = "--gtm-original" ]; then
+  shift
+  exec python3 alinhar_gtm.py --imediato "$@"
+fi
+if [ "${1:-}" = "--gtm-performance" ]; then
   shift
   exec python3 alinhar_gtm.py "$@"
 fi
@@ -116,42 +125,7 @@ FTP
   # (sem isso, a versão antiga fica guardada por até 10 min)
   if [ -n "${CF_API_TOKEN:-}" ] && [ -n "${CF_ZONE_ID:-}" ]; then
     echo "Limpando cache do Cloudflare para /$slug ..."
-    python3 - "$slug" "$build" <<'PY'
-import os, sys, json, urllib.request, urllib.error
-slug, build = sys.argv[1], sys.argv[2]
-token, zone = os.environ["CF_API_TOKEN"], os.environ["CF_ZONE_ID"]
-base = "https://contemmagia.com.br/" + slug
-
-# Limpa a página E todos os arquivos publicados (imagens/fontes têm nome fixo,
-# então mudança no conteúdo só aparece se o arquivo for limpo do cache).
-urls = [base, base + "/", base + "/index.html"]
-for root, _, names in os.walk(build):
-    rel = os.path.relpath(root, build)
-    prefix = base + ("" if rel == "." else "/" + rel.replace(os.sep, "/"))
-    for n in names:
-        urls.append(prefix + "/" + n)
-
-def purge(chunk):
-    req = urllib.request.Request(
-        f"https://api.cloudflare.com/client/v4/zones/{zone}/purge_cache",
-        headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
-        method="POST", data=json.dumps({"files": chunk}).encode())
-    return json.load(urllib.request.urlopen(req, timeout=25))
-
-try:
-    ok = True
-    for i in range(0, len(urls), 30):          # a API aceita 30 URLs por chamada
-        r = purge(urls[i:i+30])
-        ok = ok and r.get("success")
-        if not r.get("success"):
-            print("   AVISO: parte do cache nao limpou:", r.get("errors"))
-    if ok:
-        print(f"   cache limpo: {len(urls)} arquivos (mudança já no ar)")
-except urllib.error.HTTPError as e:
-    print("   AVISO: nao limpou o cache (HTTP", e.code, ")")
-except Exception as e:
-    print("   AVISO: nao limpou o cache:", e)
-PY
+    python3 limpar_cache.py "$slug"
   fi
 
   echo "No ar: https://contemmagia.com.br/$slug"

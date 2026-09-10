@@ -194,6 +194,64 @@ def _escrever_htaccess(out_dir):
         f.write(HTACCESS)
 
 
+def _aplicar_desempenho_config(html, src_dir, out_dir):
+    """Ajustes explícitos de fontes críticas e preloads, sem alterar o desenho."""
+    config_path = os.path.join(src_dir, "desempenho.json")
+    if not os.path.isfile(config_path):
+        return html
+    with open(config_path, encoding="utf-8") as f:
+        config = json.load(f)
+    for item in config.get("fontes", []):
+        path = os.path.realpath(os.path.join(src_dir, item["arquivo"]))
+        if os.path.commonpath([path, os.path.realpath(src_dir)]) != os.path.realpath(src_dir):
+            raise ValueError("Fonte fora da pasta da página")
+        with open(path, "rb") as f:
+            raw = f.read()
+        if raw[:4] != b"wOF2":
+            raise ValueError("A fonte otimizada precisa ser WOFF2")
+        url = "data:font/woff2;base64," + base64.b64encode(raw).decode() if item.get("inline") else item["arquivo"]
+        old_urls = []
+        def trocar(match):
+            rule = match.group()
+            family = re.search(r"font-family\s*:\s*['\"]?([^;'\"}]+)", rule)
+            weight = re.search(r"font-weight\s*:\s*([^;}]+)", rule)
+            if not family or not weight or family[1].strip() != item["familia"] or weight[1].strip() != str(item["peso"]):
+                return rule
+            old = re.search(r"src\s*:\s*url\(['\"]?([^)'\"]+)", rule)
+            if not old:
+                raise ValueError("Fonte sem src reconhecível")
+            old_urls.append(old[1])
+            return re.sub(r"src\s*:\s*url\([^)]*\)(?:\s*format\([^)]*\))?",
+                          lambda _: f"src:url('{url}') format('woff2')", rule, count=1)
+        html = re.sub(r"@font-face\s*\{[^}]*\}", trocar, html)
+        if len(old_urls) != 1:
+            raise ValueError(f"Esperada uma declaração de fonte: {item['familia']} {item['peso']}")
+        if item.get("inline"):
+            def remover_preload(match):
+                tag = match.group()
+                href = re.search(r"href=['\"]([^'\"]+)", tag)
+                return "" if href and href[1] in old_urls else tag
+            html = re.sub(r"<link\b[^>]*rel=['\"]preload['\"][^>]*>", remover_preload, html)
+    links = []
+    for path in config.get("preload_imagens", []):
+        if path.startswith("/") or not re.fullmatch(r"[a-zA-Z0-9_./-]+", path) or ".." in path.split("/") or not os.path.isfile(os.path.join(out_dir, path)):
+            raise ValueError("Imagem de preload inválida ou ausente")
+        links.append(f'<link rel="preload" as="image" href="{path}" fetchpriority="high">')
+    if links:
+        html = re.sub(r"<head\b[^>]*>", lambda m: m.group() + "\n" + "\n".join(links), html, count=1)
+    selectors = config.get("fundos_adiados", [])
+    if selectors:
+        if any(not re.fullmatch(r"[.a-zA-Z0-9_ >:-]+(?:\([0-9]+\))?", s) for s in selectors):
+            raise ValueError("Seletor de fundo inválido")
+        rules = ",".join("html.cm-fundos-adiados " + s + ":not(.cm-fundo-pronto)" for s in selectors)
+        head = '<script>if("IntersectionObserver" in window)document.documentElement.classList.add("cm-fundos-adiados");</script>'
+        head += '<style>' + rules + '{background-image:none!important}</style>'
+        html = html.replace('</head>', head + '</head>', 1)
+        script = '<script>(function(){if(!("IntersectionObserver" in window))return;try{var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("cm-fundo-pronto");observer.unobserve(entry.target)}})},{rootMargin:"600px"});document.querySelectorAll(' + json.dumps(",".join(selectors)) + ').forEach(function(el){observer.observe(el)})}catch(e){document.documentElement.classList.remove("cm-fundos-adiados")}})();</script>'
+        html = html.replace('</body>', script + '</body>', 1)
+    return html
+
+
 def _externalizar_data_uris(html, out_dir, subdir="inline-assets"):
     """Páginas escritas à mão (fora do bundler) trazem as fotos coladas no HTML como
     data:image;base64 — tanto em <img src> quanto em background:url() do <style>.
@@ -443,12 +501,13 @@ def main():
             html_out = _podar_css_morto(html_out)
             print(f"  CSS podado: {antes_css//1024}KB -> {len(html_out)//1024}KB de HTML")
         for name in os.listdir(src_dir):
-            if name == "index.html": continue
+            if name in ("index.html", "desempenho.json"): continue
             s = os.path.join(src_dir, name); d = os.path.join(out_dir, name)
             (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d)
         # Tira as fotos coladas no HTML (data:base64) para arquivos próprios: some
         # peso do HTML, entram no cache e baixam em paralelo. Visual idêntico.
         html_out, inl = _externalizar_data_uris(html_out, out_dir)
+        html_out = _aplicar_desempenho_config(html_out, src_dir, out_dir)
         if inl["n"]:
             print(f"  fotos embutidas externalizadas: {inl['n']} imagens "
                   f"({inl['kb']}KB p/ inline-assets/)")

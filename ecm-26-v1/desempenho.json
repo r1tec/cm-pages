@@ -1,0 +1,10 @@
+{
+  "fontes": [
+    {"familia": "Cera Pro", "peso": 400, "arquivo": "assets/fonts/cera-400-latin.woff2", "inline": true},
+    {"familia": "Cera Pro", "peso": 500, "arquivo": "assets/fonts/cera-500-latin.woff2", "inline": true},
+    {"familia": "Cera Pro", "peso": 700, "arquivo": "assets/fonts/cera-700-latin.woff2", "inline": true},
+    {"familia": "Cera Pro", "peso": 800, "arquivo": "assets/fonts/cera-800-latin.woff2", "inline": true}
+  ],
+  "preload_imagens": ["inline-assets/i-a65ecacd567e8b4d.webp"],
+  "fundos_adiados": [".cards-grid .mcard", ".palestrantes", ".pcard", ".decisao .foto", ".imagine .foto", ".honra .imgs .grupo", ".bio .foto", ".paraquem", ".paraquem .foto"]
+}

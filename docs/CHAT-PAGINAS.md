@@ -1,5 +1,10 @@
 # Chat nas páginas estáticas
 
+**Atualização posterior:** a regressão geral foi relacionada à troca do GTM
+durante a migração. O dono autorizou carregá-lo na primeira interação ou em até
+5 segundos. Essa decisão substitui a preservação do GTM imediato mencionada
+no diagnóstico inicial abaixo. Ver [PERFORMANCE-MIGRACAO.md](PERFORMANCE-MIGRACAO.md).
+
 ## DRB — 10/09/2026
 
 Pedido: corrigir a perda de desempenho após importar o chat, testar e publicar.

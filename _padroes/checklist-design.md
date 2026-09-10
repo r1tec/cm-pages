@@ -37,5 +37,6 @@ imagem, o tamanho certo.
 ## Fora do checklist (é automático, não se preocupe)
 
 O `publicar.sh` já resolve sozinho, toda vez: WebP, cache, pré-montagem
-estática sem React, GTM assíncrono sem atraso artificial, `lang=pt-BR`, `role=main`, hover dos botões,
+estática sem React, GTM na primeira interação ou em até 5 segundos (autorização em
+`docs/PERFORMANCE-MIGRACAO.md`), `lang=pt-BR`, `role=main`, hover dos botões,
 animações de entrada e limpeza do cache do Cloudflare.

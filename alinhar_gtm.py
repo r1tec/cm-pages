@@ -9,13 +9,12 @@ import datetime
 import ftplib
 import hashlib
 import io
-import json
 import os
 from pathlib import Path
 import re
-import urllib.request
 
 from rastreamento import GTM_ID, normalizar_gtm
+from limpar_cache import limpar_paginas
 
 SLUGS = {"bce", "coe", "drb", "mce", "mpg", "gdp", "ecm-26", "ecm-26-v1"}
 
@@ -23,6 +22,7 @@ SLUGS = {"bce", "coe", "drb", "mce", "mpg", "gdp", "ecm-26", "ecm-26-v1"}
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--aplicar", action="store_true")
+    parser.add_argument("--imediato", action="store_true")
     parser.add_argument("slugs", nargs="+", choices=sorted(SLUGS))
     args = parser.parse_args()
     ftp = ftplib.FTP_TLS(os.environ["FTP_HOST"], timeout=30)
@@ -30,7 +30,8 @@ def main():
     ftp.prot_p()
     root = os.environ.get("FTP_BASE", "/public_html/").rstrip("/")
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    backup = Path(".build/gtm-original-backup") / stamp
+    modo = "original" if args.imediato else "performance"
+    backup = Path(f".build/gtm-{modo}-backup") / stamp
     backup.mkdir(parents=True, mode=0o700)
 
     def read(path):
@@ -50,7 +51,7 @@ def main():
                      and "gtm.start" in m.group()]
             if len(found) != 1:
                 raise ValueError(f"{slug}: esperado exatamente um carregador GTM")
-            after = normalizar_gtm(html).encode("utf-8")
+            after = normalizar_gtm(html, imediato=args.imediato).encode("utf-8")
             # O prefixo/sufixo são preservados pelo normalizador, sem reserializar HTML.
             old = backup / f"{slug}.before.html"
             new = backup / f"{slug}.after.html"
@@ -69,7 +70,7 @@ def main():
         published = []
         for slug, remote, before, after in plans:
             if before == after:
-                print(f"{slug}: já usa o GTM original")
+                print(f"{slug}: já usa o GTM no modo {modo}")
                 continue
             if read(remote) != before:
                 raise RuntimeError(f"{slug}: HTML mudou durante a preparação; não sobrescrever")
@@ -87,16 +88,7 @@ def main():
 
         token, zone = os.environ.get("CF_API_TOKEN"), os.environ.get("CF_ZONE_ID")
         if published and token and zone:
-            urls = [f"https://contemmagia.com.br/{s}{suffix}"
-                    for s in published for suffix in ("", "/", "/index.html")]
-            req = urllib.request.Request(
-                f"https://api.cloudflare.com/client/v4/zones/{zone}/purge_cache",
-                headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
-                data=json.dumps({"files": urls}).encode(), method="POST")
-            response = json.load(urllib.request.urlopen(req, timeout=25))
-            if not response.get("success"):
-                raise RuntimeError("HTML publicado; limpeza do cache pendente")
-            print(f"Cache limpo: {len(urls)} URLs de HTML; assets não alterados")
+            limpar_paginas(published)
     finally:
         ftp.close()
 
