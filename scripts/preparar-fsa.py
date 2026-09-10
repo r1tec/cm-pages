@@ -4,6 +4,7 @@ Uso: python3 scripts/preparar-fsa.py /caminho/exportacao.html
 Saída: fsa/index.html. A origem não é alterada. Não publica.
 """
 import ast
+import base64
 import html as escaping
 import json
 from pathlib import Path
@@ -45,6 +46,23 @@ for old, new in {
 # As quatro fontes latinas já fazem parte da exportação: nada é substituído.
 template = re.sub(r'/\* ([a-z-]+) \*/\s*(@font-face\s*\{[^}]*\})',
                   lambda m: m[2] if m[1] in ('latin', 'latin-ext') else '', template)
+# Fontes latinas críticas chegam no HTML: evita troca de métricas na primeira dobra.
+# Os subconjuntos vêm da exportação original via preparar-fontes-fsa.py.
+font_preloads = {}
+def fonte_critica(match):
+    rule = match.group()
+    if not re.search(r'unicode-range:\s*U\+0000-00FF', rule):
+        return rule
+    resource = re.search(r'url\([\"\']?([^\"\')]+)', rule)[1]
+    path = Path(__file__).resolve().parents[1] / 'fsa/assets/fonts' / (resource + '.woff2')
+    raw = path.read_bytes()
+    assert raw[:4] == b'wOF2', 'Executar preparar-fontes-fsa.py com a exportação original'
+    url = 'data:font/woff2;base64,' + base64.b64encode(raw).decode()
+    if not ('Roboto Condensed' in rule and 'font-style: italic' in rule):
+        font_preloads[resource] = '<link rel="preload" as="font" type="font/woff2" crossorigin href="' + url + '">'
+    return re.sub(r'url\([^)]*\)', lambda _: 'url(' + url + ')', rule)
+template = re.sub(r'@font-face\s*\{[^}]*\}', fonte_critica, template)
+template = template.replace('<helmet>', '<helmet>' + ''.join(font_preloads.values()), 1)
 template, count = re.subn(r'(<span\b[^>]*)(>Recomendado</span>)',
                         lambda m: re.sub(r'color:[^;"\']+', 'color:#87376A', m[1]) + m[2], template)
 assert count == 1
