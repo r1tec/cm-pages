@@ -37,6 +37,8 @@ for old, new in {
     'ref="{{ b4GridRef }}"': 'ref="{{ b4GridRef }}" data-fsa-grid=""',
     'ref="{{ b4ImgRef }}"': 'ref="{{ b4ImgRef }}" data-fsa-photo=""',
     'ref="{{ heroRef }}"': 'ref="{{ heroRef }}" width="1289" height="1600"',
+    '<div style="flex:1 1 460px;': '<div data-fsa-hero-content="" style="flex:1 1 460px;',
+    '<div aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">': '<div data-fsa-hero-spacer="" aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">',
 }.items():
     assert old in template
     template = template.replace(old, new)
@@ -54,7 +56,17 @@ css = """<style>
 [data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{top:0;bottom:auto!important;width:55%!important;height:100%!important}
 [data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child>div{height:100%}
 [data-screen-label="01 Topo"] img{height:100%!important;object-fit:cover;object-position:center 70%}
-@media(max-width:899px){[data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{width:100%!important;height:52vh!important}nav[aria-label="Atalhos"]{height:auto!important;flex-wrap:wrap;gap:6px!important}nav[aria-label="Atalhos"]>div{width:100%;justify-content:space-between;gap:8px!important}}
+@media(max-width:899px){
+[data-screen-label="01 Topo"]{min-height:0!important}
+[data-screen-label="01 Topo"]>div[aria-hidden="true"]:first-child{width:100%!important;height:100%!important}
+[data-screen-label="01 Topo"]>div[aria-hidden="true"]:nth-child(2){background:linear-gradient(180deg,rgba(34,20,57,.88),rgba(34,20,57,.82) 60%,#221439)!important}
+[data-fsa-hero-spacer]{display:none!important}
+[data-fsa-hero-content]{max-width:100%!important;padding:32px 0 40px!important}
+[data-fsa-hero-content]>p{margin-bottom:16px!important}
+[data-fsa-hero-content]>h1{margin-bottom:20px!important}
+nav[aria-label="Atalhos"]{height:auto!important;flex-wrap:wrap;gap:6px!important}
+nav[aria-label="Atalhos"]>div{width:100%;justify-content:space-between;gap:8px!important}
+}
 .fsa-faq{border-bottom:1px solid rgba(237,231,221,.22)}
 .fsa-faq summary{width:100%;min-height:60px;padding:20px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:clamp(17px,4.2vw,19px);line-height:1.3;color:#EDE7DD;list-style:none}
 .fsa-faq summary::-webkit-details-marker{display:none}
