@@ -68,10 +68,12 @@ ESTRUTURA
 
 1. Salve a exportação como `<slug>/index.html`.
 2. Escreva as regras de conteúdo da página em `<slug>/REGRAS.md`.
-3. Rode `./publicar.sh <slug>` e **leia a conferência**.
-4. Se ela reclamar de imagem ou contraste, volte ao Claude Design com o aviso
-   colado e reexporte. Só use `reduzir.json` / `cores.json` quando reexportar
-   não for viável.
+3. Siga `.claude/skills/publicar/PUBLICACAO-DESEMPENHO.md`: construir, conferir
+   imagens/fontes/FAQ/checkout e ajustar o arquivo local antes de publicar.
+4. Com publicação autorizada, rode `./publicar.sh <slug>` e meça a URL pública
+   no PageSpeed em celular e desktop. Corrigir até atingir 90 nos dois, com
+   funcionalidades preservadas. Não exigir outra exportação para ajustes técnicos.
+5. GTM na primeira interação ou após 5s; chat somente se solicitado pelo dono.
 
 Um aviso que se repete em páginas diferentes não é problema da página: é sinal
 de que falta uma linha neste prompt. Acrescente aqui.

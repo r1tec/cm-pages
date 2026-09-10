@@ -1,9 +1,20 @@
 ---
 name: publicar
-description: Publica paginas do repositorio cm-pages na hospedagem da Contem Magia e espelha no GitHub. Use SEMPRE que o usuario pedir para publicar, subir, colocar no ar, atualizar ou republicar uma pagina, disser "publica o coe", "sobe essa pagina", "poe no ar", "atualiza a pagina X", ou quando uma pagina nova exportada do Claude Design entrar no repositorio e precisar ir para a hospedagem. Cobre tambem a conferencia de peso e contraste antes de subir e a nova pagina a partir de uma exportacao do Claude Design. Cobre ainda MEDIR a pagina no PageSpeed sozinho (medir.py — puxa os insights do Google, sem o dono copiar e colar) e AFINAR ate a nota de performance em loop (afinar.sh — publica, mede, encolhe imagem, repete). Use quando o dono pedir para "otimizar", "melhorar a nota", "testar no pagespeed", "chegar em X de performance", "ver os insights", ou variacoes.
+description: Publica e otimiza páginas do projeto cm-pages, incluindo exportações únicas do Claude Design. Use para publicar, subir, instalar, atualizar ou republicar sites, consultar PageSpeed, melhorar desempenho ou atingir uma nota. Cobre conversão para HTML leve, imagens, fontes, pixels, checkout, cache, validação após publicação e GitHub. Publicar exige autorização aplicável; chat somente por pedido explícito.
 ---
 
 # Publicar paginas — cm-pages
+
+Leia `CLAUDE.md`. Execute apenas o fluxo solicitado. Medir usa `medir.py`;
+editar ou medir nao autoriza publicar. `afinar.sh` altera o site no ar e exige
+pedido de publicacao aplicavel a tarefa, inclusive suas rodadas.
+
+Antes de preparar qualquer publicação, leia
+[PUBLICACAO-DESEMPENHO.md](PUBLICACAO-DESEMPENHO.md). Esse procedimento consolida
+o aceite do dono: desempenho mínimo 90 em celular e desktop, conteúdo e compras
+preservados, GTM por interação ou até 5s, verificação pública após publicar.
+**Chat/widget de atendimento somente quando o dono pedir explicitamente.**
+Não copiar o widget do DRB para novas páginas por padrão.
 
 Cada pasta na raiz do repositorio e uma slug no ar:
 `coe/` → `https://contemmagia.com.br/coe`
@@ -23,12 +34,15 @@ proposito — eles subiam o arquivo cru, sem otimizar e sem limpar o cache).
    - *imagem maior que o necessario* — ele imprime o `reduzir.json` pronto
    - *contraste abaixo de 4,5* — ele mostra a cor e o fundo que reprovaram
    - *script proprio que vai sumir no ar* (o "CONGELADA" — ver secao de pagina VIVA)
-   Achando qualquer uma, a publicacao **para e pede confirmacao**: so sobe se
-   digitar `sim`. Trate como sinal de que a proxima exportacao do Claude Design
+   Em terminal interativo, esses avisos pedem `sim`. Sem terminal interativo
+   ou com `PUBLICAR_SIM=1`, o script segue automaticamente: nao conte com esse
+   prompt como trava em ferramentas de agente. Confira os avisos antes do envio.
+   Trate como sinal de que a proxima exportacao do Claude Design
    deve nascer certa (ver `_padroes/checklist-design.md`), nao como conserto
    recorrente. Para seguir sem a pergunta (loop/automatico): `PUBLICAR_SIM=1
    ./publicar.sh <slug>` — o `afinar.sh` ja faz isso sozinho.
-4. Se houve mudanca no git: `git add -A`, commit e `git push`.
+4. Se houve mudanca no git: confira o diff, adicione somente os arquivos da
+   tarefa, faça commit e `git push`. Preserve alteracoes locais alheias.
 5. Reporte em linguagem simples: quais paginas foram ao ar e os links
    `https://contemmagia.com.br/<slug>`.
 
@@ -39,11 +53,12 @@ Nunca peca a senha do FTP — ela esta no `.env`, que nao vai para o Git.
 1. Crie a pasta com o nome da slug e salve a exportacao como `<slug>/index.html`.
    O arquivo e autocontido (HTML, CSS, JS e imagens juntos) — e normal ele ter
    varios MB; o `publicar.sh` enxuga na hora de subir.
-2. Rode `./publicar.sh <slug>`.
-3. Se a conferencia reclamar, corrija de preferencia **no Claude Design** e
-   reexporte. So use `<slug>/reduzir.json` / `<slug>/cores.json` quando
-   reexportar nao for viavel — sao remendos locais, e a saida do `verificar.py`
-   ja entrega o conteudo pronto para colar.
+2. Identifique o formato, construa em pasta temporária com `otimizar.py` e teste
+   o resultado seguindo PUBLICACAO-DESEMPENHO.md antes de enviar. Preserve a
+   exportação original; ajuste fonte/configuração local de forma reproduzível.
+3. Faça os ajustes técnicos necessários no projeto, sem exigir nova exportação
+   do dono. Com publicação autorizada, use `./publicar.sh <slug>`, meça a URL
+   pública nos dois dispositivos e corrija os gargalos até cumprir o aceite.
 4. Regras de conteudo especificas da pagina moram em `<slug>/REGRAS.md`.
 
 ## Medir a pagina no PageSpeed (sem copiar e colar)
@@ -55,10 +70,10 @@ python3 medir.py <slug>          # celular (o que mais reprova)
 python3 medir.py <slug> --both   # celular + desktop
 ```
 
-O `medir.py` chama a API oficial do Google (mesma engine do site pra pagina JA
-NO AR) e ja separa o que da pra consertar AQUI (imagem grande, coisa que trava a
-abertura) do que NAO e do codigo (tags do Google Tag Manager / Facebook,
-Cloudflare, dominio de terceiro estranho — isso se resolve no painel do Google).
+O `medir.py` chama a API oficial do Google para a página já no ar. Seus rótulos
+de terceiros são apenas heurísticas: confira URLs e audits antes de atribuir a
+causa ao GTM ou ao Cloudflare. Agendamento, duplicação de tags, embeds e limpeza
+de cache podem ser corrigidos no projeto; não encerrar a investigação pelo rótulo.
 Para cada imagem grande, ele imprime a linha pronta do `reduzir.json`.
 
 Precisa de uma chave gratis no `.env` (`PSI_API_KEY`) — sem ela o Google recusa
@@ -75,18 +90,19 @@ Quando o dono quiser "chegar na nota X" sem ficar no vai-e-vem manual:
 
 O ciclo: publica -> mede no PageSpeed -> se a nota bateu, para; se falta E ha
 imagem grande, encolhe (mexe SO no `reduzir.json`, que e reversivel) e repete.
-Para sozinho quando a nota bate, quando nao ha mais imagem p/ encolher (o resto e
-peso de terceiro, fora do codigo), ou no limite de rodadas. Nunca mexe em
-cor/contraste sozinho (isso e design, nasce certo no Claude Design).
+O script para quando a nota bate, não há mais imagens elegíveis ou chega ao
+limite. Isso não encerra a tarefa se o aceite não foi cumprido: investigar fontes,
+CLS, imagem LCP, scripts, cache e interações conforme o procedimento. Não alterar
+copy, oferta ou identidade visual para obter nota.
 
 ## Pagina que precisa de algo VIVO (contador, dado ao vivo, algo que muda sozinho)
 
-Cuidado: o publicar tira UMA FOTO da pagina e joga fora o motor (React). O que vai
-ao ar e estatico — leve e rapido, mas PARADO. Contador nao anda, barra nao atualiza,
-nada reage no navegador do visitante; so muda quando a pagina e republicada.
+Cuidado: na exportação com bundler/React, o pipeline pré-renderiza e remove o
+motor. Interações React precisam ser preservadas em JavaScript leve. Páginas
+HTML diretas seguem outro ramo e mantêm seus scripts; inspecione o build real.
 
 Por isso, script proprio colado no HTML-fonte NAO funciona no ar (o estatizador
-remove todo `<script>`). O publicar BARRA e pede confirmacao quando isso acontece
+remove todo `<script>`). O publicar avisa e pede confirmacao em terminal interativo
 ("AVISO: N script(s) proprio(s) ... serao REMOVIDOS"). Se aparecer e a pagina
 precisa mesmo ser dinamica, NAO digite `sim` ainda — resolva primeiro assim:
 
@@ -142,9 +158,10 @@ Precisa de `python3`, `lftp` (o script instala via Homebrew se faltar) e do
 Google Chrome instalado (usado para pre-montar a pagina estatica e para medir
 peso e contraste).
 
-## O que e automatico (nao precisa conferir a cada pagina)
+## O que o pipeline oferece (conferir o resultado em cada página)
 
 Imagens e fontes viram arquivos externos e WebP; a capa sai mais leve para o
 LCP; a pagina e pre-montada estatica sem React; o pixel e adiado; entram
 `lang=pt-BR` e `role=main`; hover dos botoes e animacoes de entrada; cache
-longo com `.htaccess`; e o cache do Cloudflare e limpo inteiro ao publicar.
+longo com `.htaccess`; e o cache do Cloudflare das URLs da pagina e seus arquivos
+e limpo ao publicar (quando as credenciais do Cloudflare estao configuradas).

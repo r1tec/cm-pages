@@ -197,8 +197,15 @@ def staticize(h, hero=None):
     #       primeira pintura (FCP) espera a fonte chegar pra trocar; com o preload, a
     #       fonte entra na primeira rajada de download e o texto aparece bem antes.
     woffs = []
-    for m in re.finditer(r'url\(["\']?(assets/[^"\')]+\.woff2?)["\']?\)', h, flags=re.I):
-        if m.group(1) not in woffs:
+    for face in re.finditer(r'@font-face\s*\{[^}]*\}', h, flags=re.I):
+        rule = face.group()
+        # Extensões permanecem disponíveis para acentos especiais, mas não devem
+        # competir com a capa no preload. O browser usa unicode-range sob demanda.
+        ranges = re.search(r'unicode-range\s*:\s*([^;}]+)', rule, re.I)
+        if ranges and not re.search(r'U\+0{1,4}-', ranges[1], re.I):
+            continue
+        m = re.search(r'url\(["\']?(assets/[^"\')]+\.woff2?)["\']?\)', rule, re.I)
+        if m and m.group(1) not in woffs:
             woffs.append(m.group(1))
     if woffs:
         font_preload = "".join(

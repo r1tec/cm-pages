@@ -644,7 +644,9 @@ def main():
                  "--virtual-time-budget=9000", "--dump-dom",
                  "file://" + os.path.abspath(index_path)],
                 capture_output=True, text=True, timeout=90).stdout
-            if rendered and "<img" in rendered and "assets/" in rendered:
+            if (rendered and "<img" in rendered and "assets/" in rendered
+                    and 'id="__bundler_loading"' not in rendered
+                    and 'id="__bundler_thumbnail"' not in rendered):
                 hero = estatico.detect_hero(rendered)
                 static_html = estatico.staticize(rendered, hero)
                 # Ajuste de cores p/ contraste (acessibilidade), se houver cores.json.
@@ -669,7 +671,7 @@ def main():
         except Exception as e:
             print(f"  AVISO: render estático falhou ({e}); publicando versão em React.", file=sys.stderr)
     if not static_ok:
-        print("  AVISO: sem Chrome para pré-montar; publicando versão em React (mais lenta).", file=sys.stderr)
+        raise RuntimeError("Pré-renderização não concluída. Corrigir acesso ao Chrome/render antes de publicar; não enviar React como fallback silencioso.")
 
     # Validades de cache + compressão (nomes de asset são únicos: cache eterno seguro)
     htaccess = (
