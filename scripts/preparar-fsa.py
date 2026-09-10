@@ -75,7 +75,7 @@ nav[aria-label="Atalhos"]>div{width:100%;justify-content:space-between;gap:8px!i
 .fsa-faq-icon{font-weight:300;font-size:28px;line-height:1;flex:none}
 .fsa-faq-icon:before{content:'+'}.fsa-faq[open] .fsa-faq-icon:before{content:'−'}
 .fsa-faq p{margin:0;padding:0 0 24px;font-size:clamp(15px,3.9vw,16px);line-height:1.65;font-weight:300;max-width:36rem}
-@media(min-width:900px){body{--fsa-b4-cols:minmax(0,3fr) minmax(0,2fr);--fsa-virada-pad:0;--fsa-virada-position:center 25%}[data-fsa-grid]{align-items:stretch!important}[data-fsa-photo]{aspect-ratio:auto!important;height:100%!important;min-height:400px}}
+@media(min-width:900px){body{--fsa-b4-cols:minmax(0,60%) minmax(0,1fr);--fsa-virada-pad:0;--fsa-virada-position:center 25%}[data-fsa-grid]{align-items:stretch!important}[data-fsa-photo]{aspect-ratio:auto!important;height:100%!important;min-height:400px}}
 </style>"""
 template = template.replace('</helmet>', css + '</helmet>', 1)
 metadata = '<title>Formação Saberes Ancestrais | Escola Contém Magia</title><meta name="description" content="Formação Saberes Ancestrais: conhecimento, práticas e encontros ao vivo para desenvolver sua espiritualidade com autonomia na Escola Contém Magia."><link rel="canonical" href="https://contemmagia.com.br/fsa/">'
