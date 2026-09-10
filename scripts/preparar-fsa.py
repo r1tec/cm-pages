@@ -67,6 +67,7 @@ css = """<style>
 [data-fsa-hero-content]>h1{margin-bottom:20px!important}
 nav[aria-label="Atalhos"]{height:auto!important;flex-wrap:wrap;gap:6px!important}
 nav[aria-label="Atalhos"]>div{width:100%;justify-content:space-between;gap:8px!important}
+#formato,#preco,#garantia,#religiao{scroll-margin-top:6rem!important}
 }
 .fsa-faq{border-bottom:1px solid rgba(237,231,221,.22)}
 .fsa-faq summary{width:100%;min-height:60px;padding:20px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;font-family:'Roboto Condensed',sans-serif;font-weight:700;font-size:clamp(17px,4.2vw,19px);line-height:1.3;color:#EDE7DD;list-style:none}
