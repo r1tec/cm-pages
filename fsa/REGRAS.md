@@ -29,6 +29,9 @@
   dimensões reservadas e recorte por CSS; conferir telas com DPR 1 e 3.
 - A montagem de sonho/intuição também usa variantes (640, 960 e 1195px), mantendo
   carregamento lazy. Não reduzir todas as telas a uma única resolução pequena.
+- O fundo do bloco de virada também usa variantes 640/960/1195px geradas da
+  exportação original. Preservar `sizes` e resolução suficiente para o recorte
+  vertical por object-fit; não usar somente a largura visível para dimensionar.
 - O arquivo exportado referencia em JS versões `img/fsa-*.jpg`/`img/bg.jpg` que
   não foram incluídas: manter os recursos UUID realmente fornecidos. Não criar
   URLs fictícias nem deixar o script substituir as imagens válidas.

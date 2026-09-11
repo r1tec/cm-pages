@@ -38,6 +38,27 @@ class ResponsiveImagesTests(unittest.TestCase):
     def test_no_configuration_changes_nothing(self):
         self.assertEqual(_imagens_responsivas('<img src="x.webp">', [], "/tmp", "/tmp"), '<img src="x.webp">')
 
+    def test_existing_preload_selects_same_responsive_candidate(self):
+        import re
+        with tempfile.TemporaryDirectory() as tmp:
+            Image.new("RGB", (400, 400), "red").save(pathlib.Path(tmp) / "image.webp", "WEBP")
+            html = '<head><link rel="preload" as="image" href="image.webp"></head><img src="image.webp">'
+            result = _imagens_responsivas(html, [{"arquivo": "image.webp", "larguras": [200, 400], "sizes": "200px"}], tmp, tmp + "/out")
+            self.assertNotIn('href="image.webp"', result)
+            self.assertEqual(re.search(r'imagesrcset="([^"]+)"', result)[1], re.search(r'(?<!image)srcset="([^"]+)"', result)[1])
+            self.assertIn('imagesizes="200px"', result)
+            self.assertEqual(result.count('as="image"'), 1)
+
+    def test_larger_cheaper_original_beats_resized_transparency(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Image.new('RGBA', (522, 200), (0, 0, 0, 0))
+            for x in range(0, 522, 4):
+                for y in range(200): image.putpixel((x, y), (255, 255, 255, 255))
+            image.save(pathlib.Path(tmp) / 'image.webp', 'WEBP', lossless=True)
+            result = _imagens_responsivas('<img src="image.webp">', [{"arquivo": "image.webp", "larguras": [295, 522], "sizes": "295px"}], tmp, tmp + '/out')
+            self.assertNotIn('srcset=', result)
+            self.assertIn('image-522-', result)
+
     def test_preload_replaced_without_duplicate_download(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = pathlib.Path(tmp)

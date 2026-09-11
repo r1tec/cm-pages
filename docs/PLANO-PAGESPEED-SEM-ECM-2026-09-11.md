@@ -26,11 +26,11 @@ atribuir toda diferença à Cloudflare sem prova; afirmar velocidade constante.
 | --- | --- |
 | BCE | Concluída, publicada, 95/99, FCP 1,9s/0,5s; GitHub 6dd1481 |
 | COE | Revisada, 99/100, FCP 1,7s/0,3s; sem melhoria adicional indicada, nenhuma nova publicação necessária |
-| DRB | Publicada e funcional; desktop 99/FCP 0,4s; mobile PSI pendente (500) |
-| GDP | Em diagnóstico |
-| MCE | Pendente |
-| MPG | Pendente |
-| FSA | Pendente; respeitar REGRAS.md e otimização de fontes já existente |
+| DRB | Publicada e validada, 94/99, FCP 1,9s/0,4s; retomada resolveu PSI |
+| GDP | Versão definitiva publicada; última coleta 98/83, TBT desktop 380ms em rastreamento; rechecagem pendente |
+| MCE | Versão de imagens 96/99; correção adicional de contraste do FAQ em publicação |
+| MPG | Versão de imagens mobile 99; desktop pendente 500; contraste FAQ validado, publicação a seguir |
+| FSA | Publicada e funcional, mobile 97; desktop pendente 500 após primeira retomada |
 
 Hashes iniciais das exclusões (SHA-256 de caminhos e bytes em ordem):
 - ecm-26, 6 arquivos: `53fe8bfe96a2c5b0421db5436232369c55f9ce9318ec3669d20f23f2e299f6da`
@@ -73,3 +73,85 @@ Desktop final 99, FCP 0,4s, LCP 0,5s, TBT/CLS zero (14:57:55 UTC).
 Mobile retornou 500 às 14:57:50 UTC: pendente, primeira retomada a partir de
 **15:02:50 UTC**, sem bloquear GDP. Evidências `/tmp/psi-lote/drb-depois.json`,
 `/tmp/drb-lote-post-validacao.json` e screenshots `/tmp/drb-lote-post-*.png`.
+
+Primeiro retorno mobile expirou às 15:06:49 UTC; segundo retorno elegível
+às 15:21:49 UTC, iniciado durante a conclusão de MCE/FSA.
+
+## GDP
+
+Inicial: mobile timeout 15:00:46 UTC; desktop 98, FCP 0,5s/LCP 0,6s.
+Diagnósticos completos em `/tmp/psi-lote/gdp-antes.json`: Roboto integral e
+image-delivery com 19KiB em logo/mockup. Fonte 43.136 → 23.112 bytes;
+imagens responsivas 295/522 e 460/632, mantendo originais para telas densas.
+Publicada e cache de assets/campanhas limpo. 221 nós, sete CTAs/UTM, quatro
+FAQs e geometria preservados em oito larguras. Evidências em
+`/tmp/gdp-lote-post-validacao.json` e `/tmp/gdp-lote-post-*.png`.
+Final desktop 99, FCP/LCP 0,5s; mobile inicialmente 500, retomada após cinco
+minutos aprovada: 95, FCP 1,8s/LCP 2,6s, TBT/CLS zero.
+Restantes: mockup em tela densa mantém maior variante para nitidez; logo aponta
+4,5KB de compressão, mas experimentos q80/70/60/50 deram 10.154/10.154/10.150/
+10.156 bytes: sem ganho relevante sem degradar transparência. Beacon preservado.
+Árvore sem candidato extra de preconnect, demais audits aprovados/não aplicáveis.
+
+## MCE
+
+Inicial mobile timeout; desktop 96, FCP 0,7s/LCP 0,8s. 47 audits recebidos:
+Roboto integral; imagem completo e tridente com 35KiB estimados. Fonte reduzida
+43.136 → 23.628 bytes e completo com variantes 275/550/860 e preload alinhado.
+Tentativa tridente responsivo mudou largura 198 → 130,7px por dimensionamento
+intrínseco percentual: revertida, preservando desenho. 218 nós, seis CTAs/UTM,
+quatro FAQs e imagens iguais em 390/1440; seis larguras adicionais sem overflow.
+Publisher avisou contraste em FAQ com fundo branco; mesmas cores/textos/caixas
+da versão anterior, sem alteração de contraste nesta tarefa. Conferir contexto
+real do fundo antes de redesenhar. Publicação e purge concluídos.
+
+## MPG
+
+Inicial mobile 98, FCP/LCP 2,0s, TBT/CLS zero; desktop 500. Roboto integral,
+imagens rosa/livro/logo com 166KiB estimados. Fonte 43.136 → 23.588 bytes;
+variantes da rosa 265/400/598, livro 400/486, logo 400/700/923. Compressão q75
+nas fotos; maior resolução preservada. Preload passa a escolher a mesma variante.
+219 nós, seis CTAs/UTM, quatro FAQs e dimensões preservados em oito larguras;
+conferência pública aprovada. Publisher trouxe aviso de contraste preexistente
+em FAQ, sem mudança de cor/desenho nesta entrega. Publicada com purge.
+PSI final retornou 500 nos dois dispositivos; retomar após cinco minutos,
+mantendo pendência explícita em `/tmp/psi-lote/mpg-depois.json`.
+
+## FSA
+
+Inicial 97/99, FCP 1,8s/0,3s e LCP 2,0s/0,4s, TBT/CLS zero. 47 audits por
+dispositivo. unused-javascript é GTM, preservado; unused-css identifica bloco
+de fontes críticas realmente usadas, mantido para evitar CLS e troca de fonte.
+Image-delivery cita capa já responsiva e fundo de virada. Capa preservada para
+recorte/DPR. Fundo agora gerado da exportação original em 640/960/1195, com
+12.854/23.110/33.900 bytes (anterior maior 45.572), lazy e sizes considerando
+altura do recorte. 370 nós, sete CTAs incluindo offer=alt, nove FAQs e caixas
+preservados em oito larguras. Publicação em andamento.
+
+## Conferência final e rodadas adicionais
+
+- Retomada DRB mobile aprovada: 94, FCP 1,9s/LCP 2,8s, TBT/CLS zero.
+- Descoberto aumento de bytes em variantes transparentes: GDP logo295 tinha
+  10.154B contra original522 8.322B; MCE completo550 45.572B contra860 31.196B;
+  MPG logo700 42.254B contra923 24.002B. Gerador agora descarta candidatos
+  menores e mais pesados. Configurações mantêm larguras para avaliação, mas o
+  srcset só recebe candidatos vantajosos. Teste automatizado cobre essa regressão.
+  As três páginas foram novamente validadas e publicadas com purge.
+- GDP final 98/83, FCP 1,2s/0,6s e LCP 1,9s/0,6s. Desktop TBT380ms com
+  Analytics/Ads/Meta; não atribuir a imagens nem apagar nota menor. Rodada
+  anterior 95/99 fica como histórico, não como resultado da versão atual.
+- MPG rodada intermediária 96/81, desktop TBT420ms: tarefas maiores atribuídas
+  a gtag Analytics178ms, Ads152ms, fbevents148ms, configuração Meta108ms.
+  Nova versão de imagens mobile99, FCP1,3s/LCP1,6s e TBT/CLSzero; desktop500.
+- MCE versão de imagens96/99, FCP1,5s/0,7s, LCP2,3s/0,7s, TBT/CLSzero.
+- FSA publicada97mobile, FCP1,8s/LCP2,0s/TBT0/CLS0; desktop500 às15:25:43UTC.
+  Primeira retomada também500; segundo retorno só após15min, sem bloquear lote.
+- GTM confirmado uma vez por tempo e interação em GDP/MCE/MPG/FSA:
+  5.197/5.040/5.072/5.077ms por tempo e 80/77/76/108ms após interação.
+  Sem envio de conversões ou mensagens. Rastreamento preservado.
+- Avisos de contraste MCE/MPG investigados em vez de descartados: screenshot
+  comprovou FAQ com fundo branco e texto quase invisível. Correção opt-in
+  `fundo_acordeao: #1a1919` reproduz fundo da página sem mudar textos/geometria.
+  Comparações completas passaram; verificar.py aprovou contraste MCE >=4,5.
+  MPG em conferência, ambas serão publicadas e verificadas novamente.
+- Hashes ECM conferidos novamente e idênticos aos iniciais.

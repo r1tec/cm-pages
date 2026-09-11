@@ -240,6 +240,16 @@ def _imagens_responsivas(html, config, src_dir, out_dir):
                 os.makedirs(os.path.dirname(dest), exist_ok=True)
                 with open(dest, "wb") as f: f.write(data)
                 variants.append((width, url))
+        # Redimensionar transparência pode gerar mais bytes que a imagem maior.
+        # Nunca oferecer uma variante menor e mais pesada ao navegador.
+        retained = [variants[-1]]
+        smallest_bytes = os.path.getsize(os.path.join(out_dir, variants[-1][1]))
+        for variant in reversed(variants[:-1]):
+            variant_bytes = os.path.getsize(os.path.join(out_dir, variant[1]))
+            if variant_bytes < smallest_bytes:
+                retained.append(variant)
+                smallest_bytes = variant_bytes
+        variants = list(reversed(retained))
         count = 0
         def replace(match):
             nonlocal count
@@ -263,17 +273,27 @@ def _imagens_responsivas(html, config, src_dir, out_dir):
             return tag
         html = re.sub(r'<img\b[^>]*>', replace, html)
         if not count: raise ValueError(f"Imagem não encontrada no HTML: {path}")
+        def update_preload(match):
+            tag = match if isinstance(match, str) else match.group()
+            href = re.search(r'\bhref=(["\'])(.*?)\1', tag)
+            if not href or href[2] != path:
+                return tag
+            tag = tag[:href.start(2)] + variants[-1][1] + tag[href.end(2):]
+            if len(variants) > 1:
+                srcset = ", ".join(f"{url} {w}w" for w, url in variants)
+                tag = tag.replace('<link', f'<link imagesrcset="{srcset}" imagesizes="{sizes}"', 1)
+            return tag
         if item.get("preload"):
-            if len(variants) != 1:
-                raise ValueError("Preload explícito suporta apenas imagem sem variantes")
             def remove_old_preload(match):
                 tag = match.group()
                 href = re.search(r'\bhref=(["\'])(.*?)\1', tag)
                 return "" if href and href[2] == path else tag
             html = re.sub(r'<link\b(?=[^>]*\brel=["\']preload["\'])(?=[^>]*\bas=["\']image["\'])[^>]*>', remove_old_preload, html, flags=re.I)
-            link = f'<link rel="preload" as="image" href="{variants[0][1]}" fetchpriority="high">'
+            link = update_preload(f'<link rel="preload" as="image" href="{path}" fetchpriority="high">')
             html = re.sub(r'<head\b[^>]*>', lambda m: m.group() + link, html, count=1)
-        print(f"  imagem responsiva: {path}, larguras {widths}")
+        else:
+            html = re.sub(r'<link\b(?=[^>]*\brel=["\']preload["\'])(?=[^>]*\bas=["\']image["\'])[^>]*>', update_preload, html, flags=re.I)
+        print(f"  imagem responsiva: {path}, larguras {[w for w, _ in variants]}")
     return html
 
 
@@ -370,6 +390,11 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         html = html.replace('</head>', head + '</head>', 1)
         script = '<script>(function(){if(!("IntersectionObserver" in window))return;try{var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("cm-fundo-pronto");observer.unobserve(entry.target)}})},{rootMargin:"600px"});document.querySelectorAll(' + json.dumps(",".join(selectors)) + ').forEach(function(el){observer.observe(el)})}catch(e){document.documentElement.classList.remove("cm-fundos-adiados")}})();</script>'
         html = html.replace('</body>', script + '</body>', 1)
+    if config.get("fundo_acordeao"):
+        color = config["fundo_acordeao"]
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
+            raise ValueError("Cor de fundo do acordeão inválida")
+        html = html.replace('</head>', '<style>.e-n-accordion .e-n-accordion-item{background-color:' + color + '!important}</style></head>', 1)
     if config.get("imagens_responsivas"):
         html = _imagens_responsivas(html, config["imagens_responsivas"], src_dir, out_dir)
     return html

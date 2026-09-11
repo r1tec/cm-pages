@@ -73,9 +73,16 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
 - Para WebP do HTML direto, `imagens_responsivas` em `desempenho.json` aceita
   `arquivo`, `qualidade`, `larguras` e `sizes` medido. Preserva o maior tamanho
   original para telas densas, a proporção no layout e os arquivos-fonte; gera
-  variantes no build com nome por conteúdo. `preload: true` atende a imagem LCP
-  sem variantes e antecipa sua descoberta no início do HTML. Usar somente após
+  variantes no build com nome por conteúdo. Preloads existentes acompanham
+  `imagesrcset`/`imagesizes`, evitando baixar a imagem original além da variante.
+  `preload: true` antecipa a descoberta no início do HTML. Usar somente após
   medir o uso real e comparar visual/CLS. Não comprimir indiscriminadamente.
+  Conferir também dimensões das imagens: `width` percentual em container com
+  tamanho intrínseco pode mudar ao aplicar srcset (caso tridente MCE). Reverter
+  a variante que alterar o desenho, mesmo se a economia estimada for positiva.
+  Conferir bytes por variante: transparência redimensionada pode pesar mais.
+  O gerador descarta candidatos menores quando existe uma versão maior com
+  menos bytes; dimensões menores sozinhas não comprovam economia.
 - Remover apenas recursos comprovadamente órfãos, como script do editor que
   retorna 404. Não tratar scripts de compra/rastreamento como lixo pelo tamanho.
 - Executar `verificar.py` e conferir visual em celular/desktop. Avisos do publisher

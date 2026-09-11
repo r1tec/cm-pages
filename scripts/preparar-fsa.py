@@ -22,6 +22,7 @@ manifest_match = re.search(r'(<script type="__bundler/manifest">)(.*?)(</script>
 manifest = json.loads(manifest_match[2])
 hero_id = '39d65e66-e766-43f0-ac91-90cb549b1191'
 montage_id = 'e22ba276-582b-4aab-bd0c-ba69f4028942'
+virada_id = '2c4e3a88-c032-4bea-afdd-b070fc8cd3cc'
 def imagem_responsiva(image_id, original_size):
     entry = manifest[image_id]
     raw = base64.b64decode(entry['data'])
@@ -43,6 +44,7 @@ def imagem_responsiva(image_id, original_size):
     return ', '.join(srcset)
 hero_srcset = imagem_responsiva(hero_id, (1289, 1600))
 montage_srcset = imagem_responsiva(montage_id, (1195, 1600))
+virada_srcset = imagem_responsiva(virada_id, (1195, 1600))
 fonts_dir = Path(__file__).resolve().parents[1] / 'fsa/assets/fonts'
 for resource, entry in manifest.items():
     path = fonts_dir / (resource + '.woff2')
@@ -77,6 +79,7 @@ for old, new in {
     'ref="{{ b4ImgRef }}"': 'ref="{{ b4ImgRef }}" data-fsa-photo=""',
     'ref="{{ heroRef }}"': 'ref="{{ heroRef }}" width="1289" height="1600" srcset="' + hero_srcset + '" sizes="(max-width: 899px) max(100vw, 520px), max(55vw, 76vh)"',
     f'<img src="{montage_id}"': f'<img src="{montage_id}" srcset="{montage_srcset}" sizes="(max-width: 899px) max(calc(100vw - 48px), 540px), 45vw"',
+    'ref="{{ viradaRef }}"': f'ref="{{ viradaRef }}" srcset="{virada_srcset}" sizes="(max-width: 899px) max(100vw, 600px), 100vw"',
     '<div style="flex:1 1 460px;': '<div data-fsa-hero-content="" style="flex:1 1 460px;',
     '<div aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">': '<div data-fsa-hero-spacer="" aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">',
 }.items():
