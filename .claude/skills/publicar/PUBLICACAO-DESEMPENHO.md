@@ -76,6 +76,34 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
   não bloqueiam em modo não interativo. Corrigir defeitos introduzidos; documentar
   limites preexistentes sem reescrever conteúdo ou redesenhar silenciosamente.
 
+### Primeira pintura e fontes
+
+- Separar a espera pelo servidor, o download do HTML/CSS e a decodificação das
+  fontes. Medir bytes transferidos com a compressão real (Brotli/gzip), além do
+  tamanho bruto. Um HTML com fontes em base64 pode ser o maior recurso crítico.
+- Identificar por família/estilo/peso as fontes efetivamente usadas na primeira
+  tela e no restante da página. Embutir apenas subconjuntos críticos quando isso
+  demonstrar ganho e estabilidade; fontes só de depoimentos ou outras seções
+  permanecem externas. Preload indiscriminado concorre com o conteúdo inicial.
+- Gerar subconjuntos das fontes originais a partir do texto usado por cada
+  família, incluindo FAQ, acentos, transformações para maiúsculas, pontuação e
+  caracteres de conteúdo dinâmico. Manter fonte original e geração reproduzível;
+  não editar uma fonte já reduzida como se fosse o original. Preservar métricas,
+  eixos e recursos de composição. Copy nova exige regenerar e validar cobertura.
+- Unificar declarações repetidas de pesos somente quando apontarem para a mesma
+  fonte variável e a seleção de pesos continuar equivalente. Não transformar
+  fontes estáticas diferentes em um intervalo fictício.
+- Comparar texto/medidas com fontes carregadas, celular e desktop, e testar
+  rede/fontes lentas para não trocar FCP menor por CLS. Imagem principal e
+  conteúdo da primeira tela continuam visíveis, sem tratamento especial de bots.
+- Exemplo comprovado: FSA em 11/09/2026, HTML Brotli de 101.506 para 65.899 bytes,
+  FCP público móvel de 2,0s para 1,1s e CLS 0. Só retirar uma fonte abaixo da dobra
+  não melhorou o FCP local; reduzir também os caracteres da fonte de destaque
+  trouxe ganho. Usar o diagnóstico, não impor os mesmos arquivos/preloads a todas.
+- Registrar FCP, LCP, TBT, CLS, notas e versão após publicar. Uma coleta não
+  garante resultado constante. Cache limpo não atualiza um relatório PageSpeed
+  já aberto: conferir a versão pública e executar nova análise.
+
 ### Revisão visual que acompanha a otimização
 
 - Desempenho e fidelidade são aceites separados: nota acima de 90 não aprova o

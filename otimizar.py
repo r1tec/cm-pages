@@ -201,6 +201,10 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         return html
     with open(config_path, encoding="utf-8") as f:
         config = json.load(f)
+    # Opt-in por página: só as fontes comprovadas na abertura recebem preload.
+    # Configurações existentes (incluindo ECM v1) mantêm o comportamento anterior.
+    managed_font_urls = set()
+    font_links = {}
     for item in config.get("fontes", []):
         path = os.path.realpath(os.path.join(src_dir, item["arquivo"]))
         if os.path.commonpath([path, os.path.realpath(src_dir)]) != os.path.realpath(src_dir):
@@ -226,13 +230,22 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         html = re.sub(r"@font-face\s*\{[^}]*\}", trocar, html)
         if len(old_urls) != 1:
             raise ValueError(f"Esperada uma declaração de fonte: {item['familia']} {item['peso']}")
+        managed_font_urls.update(old_urls)
+        if item.get("preload"):
+            font_links[url] = f'<link rel="preload" as="font" type="font/woff2" crossorigin href="{url}">'
         if item.get("inline"):
             def remover_preload(match):
                 tag = match.group()
                 href = re.search(r"href=['\"]([^'\"]+)", tag)
                 return "" if href and href[1] in old_urls else tag
             html = re.sub(r"<link\b[^>]*rel=['\"]preload['\"][^>]*>", remover_preload, html)
+    if config.get("preload_fontes_seletivo"):
+        def remover_preload_gerenciado(match):
+            href = re.search(r'href=["\']([^"\']+)', match.group(), re.I)
+            return '' if href and href[1] in managed_font_urls else match.group()
+        html = re.sub(r'<link\b(?=[^>]*\brel=["\']preload["\'])(?=[^>]*\bas=["\']font["\'])[^>]*>', remover_preload_gerenciado, html, flags=re.I)
     links = []
+    links.extend(font_links.values())
     for path in config.get("preload_imagens", []):
         if path.startswith("/") or not re.fullmatch(r"[a-zA-Z0-9_./-]+", path) or ".." in path.split("/") or not os.path.isfile(os.path.join(out_dir, path)):
             raise ValueError("Imagem de preload inválida ou ausente")

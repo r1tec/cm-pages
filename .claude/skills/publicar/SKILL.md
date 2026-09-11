@@ -16,6 +16,13 @@ preservados, GTM por interação ou até 5s, verificação pública após public
 **Chat/widget de atendimento somente quando o dono pedir explicitamente.**
 Não copiar o widget do DRB para novas páginas por padrão.
 
+Para melhorar a primeira pintura, seguir a seção **Primeira pintura e fontes**
+do procedimento: medir HTML comprimido, identificar as fontes da primeira tela,
+reduzir por uso real e validar CLS/visual. Não copiar a configuração da FSA
+indiscriminadamente. Em lotes sequenciais solicitados pelo dono, concluir e
+informar publicação, FCP e notas de cada página antes de começar a próxima;
+respeitar as exclusões explícitas, sem usar `./publicar.sh` sem slugs.
+
 Cada pasta na raiz do repositorio e uma slug no ar:
 `coe/` → `https://contemmagia.com.br/coe`
 
