@@ -23,7 +23,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | --- | --- | --- |
 | BCE | Publicada e validada | Mobile 97 / desktop 99; FCP 1,4s / 0,5s; CLS 0 |
 | COE | Publicada e validada | 100 mobile/desktop; FCP 0,9s/0,5s; CLS 0 |
-| DRB | Pendente | — |
+| DRB | Publicada e validada | Mobile 96 / desktop 99; FCP 1,8s/0,5s; CLS 0 |
 | ECM atual (`ecm-26`) | Pendente | — |
 | GDP | Pendente | — |
 | MCE | Pendente | — |
@@ -86,6 +86,25 @@ SHA-256 de cada arquivo, guarda backup e restaura em falha de troca. Teste de
 upload e rollback passou; COE espelhada com 48 arquivos conferidos. Ajuste local
 em `espelhar_edu.py` (arquivo preexistente da migração) preserva o fluxo e troca
 somente o transporte de publicação. Não incluir a migração alheia no commit.
+
+## DRB
+
+Montserrat 37.956 → 22.352 bytes, Nunito 31.076 → 9.320 bytes. A primeira
+embutida e antecipada; a segunda externa sem preload. Mesmos 160 blocos em
+390/1440, cinco FAQs, sete links de compra com UTM e GTM único. Chat existente
+com atraso de 12 segundos preservado. Lighthouse local 96, FCP 1,35s, CLS 0.
+Referência pública: mobile 98, FCP/LCP 1,8s, TBT 0, CLS 0,017.
+Resultado público: mobile 96, FCP 1,8s, LCP 2,6s; desktop 99, FCP 0,5s,
+LCP 0,6s; TBT/CLS 0 nos dois. Coleta logo após purge teve FCP 2,0s e maior
+latência do servidor; repetição 1,8s. Sem afirmar ganho de FCP nesta página:
+o ganho comprovado foi redução das fontes e eliminação de CLS. Alternativa
+externa antecipada melhorou FCP local em 0,15s, mas trouxe CLS 0,0179 com
+fontes lentas; descartada, configuração final permanece a publicada embutida.
+Chat público carregou uma única vez em 12.014ms. Espelho e cache concluídos.
+
+GitHub: commit BCE enviado; envio do commit COE foi bloqueado pela revisão
+automática, mesmo após verificar o remoto canônico `r1tec/cm-pages`. Pergunta
+de autorização explícita respondida pelo dono: envio dos commits autorizado.
 
 ECM v1, hash agregado inicial de caminhos e conteúdo (para conferir exclusão):
 `3ed2bb78f30fb3dfe44ec410097c8e378b9393a6636efa1565141ed422b99cfb`.
