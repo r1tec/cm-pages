@@ -1,7 +1,7 @@
 """Gera subconjuntos WOFF2 das fontes originais, sem alterar métricas ou eixos.
 
 Uso: PYTHONPATH=/caminho/fonttools python3 scripts/preparar-fontes-fsa.py exportacao.html
-Requer fonttools e brotli. Mantém Latin-ext original para caracteres adicionais.
+Requer fonttools e brotli. Inclui Latin-ext para os caracteres usados na página.
 """
 import base64
 import ast
@@ -25,7 +25,7 @@ visible += ''.join(question + answer for question, answer in faqs)
 target = Path(__file__).resolve().parents[1] / 'fsa/assets/fonts'
 target.mkdir(parents=True, exist_ok=True)
 seen = set()
-for face in re.findall(r'/\* latin \*/\s*(@font-face\s*\{[^}]*\})', template):
+for face in re.findall(r'/\* latin(?:-ext)? \*/\s*(@font-face\s*\{[^}]*\})', template):
     resource = re.search(r'url\([\"\']?([^\"\')]+)', face)[1]
     if resource in seen:
         continue

@@ -5,13 +5,51 @@ Saída: fsa/index.html. A origem não é alterada. Não publica.
 """
 import ast
 import base64
+import gzip
 import html as escaping
+import io
 import json
 from pathlib import Path
 import re
 import sys
+import uuid
+from PIL import Image
 
 source = Path(sys.argv[1]).read_text()
+# Recursos derivados sempre nascem da exportação original, nunca de um WebP
+# já recomprimido. O manifest mantém o build autocontido e reproduzível.
+manifest_match = re.search(r'(<script type="__bundler/manifest">)(.*?)(</script>)', source, re.S)
+manifest = json.loads(manifest_match[2])
+hero_id = '39d65e66-e766-43f0-ac91-90cb549b1191'
+montage_id = 'e22ba276-582b-4aab-bd0c-ba69f4028942'
+def imagem_responsiva(image_id, original_size):
+    entry = manifest[image_id]
+    raw = base64.b64decode(entry['data'])
+    if entry.get('compressed'):
+        raw = gzip.decompress(raw)
+    original = Image.open(io.BytesIO(raw))
+    assert original.size == original_size
+    srcset = []
+    for width in (640, 960, original.width):
+        picture = original.copy()
+        picture.thumbnail((width, original.height), Image.Resampling.LANCZOS)
+        output = io.BytesIO()
+        picture.save(output, 'WEBP', quality=75, method=6)
+        resource = image_id if width == original.width else str(uuid.uuid5(uuid.UUID(image_id), str(width)))
+        manifest[resource] = {'mime': 'image/webp', 'data': base64.b64encode(output.getvalue()).decode()}
+        # O bundler resolve UUIDs também dentro do srcset.
+        srcset.append(f'{resource} {width}w')
+        print(f'Imagem {image_id[:8]} {width}px: {len(output.getvalue())} bytes')
+    return ', '.join(srcset)
+hero_srcset = imagem_responsiva(hero_id, (1289, 1600))
+montage_srcset = imagem_responsiva(montage_id, (1195, 1600))
+fonts_dir = Path(__file__).resolve().parents[1] / 'fsa/assets/fonts'
+for resource, entry in manifest.items():
+    path = fonts_dir / (resource + '.woff2')
+    if path.exists():
+        entry['data'] = base64.b64encode(path.read_bytes()).decode()
+        entry.pop('compressed', None)
+source = source[:manifest_match.start(2)] + json.dumps(manifest, separators=(',', ':')).replace('</', '<\\/') + source[manifest_match.end(2):]
 match = re.search(r'(<script type="__bundler/template">)(.*?)(</script>)', source, re.S)
 if not match:
     raise ValueError('Exportação FSA com template não encontrada')
@@ -37,7 +75,8 @@ for old, new in {
     '{{ viradaImgPos }}': 'var(--fsa-virada-position,center 0%)',
     'ref="{{ b4GridRef }}"': 'ref="{{ b4GridRef }}" data-fsa-grid=""',
     'ref="{{ b4ImgRef }}"': 'ref="{{ b4ImgRef }}" data-fsa-photo=""',
-    'ref="{{ heroRef }}"': 'ref="{{ heroRef }}" width="1289" height="1600"',
+    'ref="{{ heroRef }}"': 'ref="{{ heroRef }}" width="1289" height="1600" srcset="' + hero_srcset + '" sizes="(max-width: 899px) max(100vw, 520px), max(55vw, 76vh)"',
+    f'<img src="{montage_id}"': f'<img src="{montage_id}" srcset="{montage_srcset}" sizes="(max-width: 899px) max(calc(100vw - 48px), 540px), 45vw"',
     '<div style="flex:1 1 460px;': '<div data-fsa-hero-content="" style="flex:1 1 460px;',
     '<div aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">': '<div data-fsa-hero-spacer="" aria-hidden="true" style="flex:1 1 320px;min-height:52vh;">',
 }.items():

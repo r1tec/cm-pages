@@ -11,10 +11,17 @@
   primeira interação ou cinco segundos; não duplicar pixels diretos.
 - FAQ nativo, imagem principal com proporção reservada e enquadramento por CSS,
   demais imagens lazy. Fontes são as fornecidas no arquivo: subconjuntos Latin
-  incorporados e preload das três famílias críticas; Latin-ext continua externo
-  para Ọmọlúàbí e Àṣẹ. `scripts/preparar-fontes-fsa.py` regenera os subconjuntos
+  incorporados e preload das três famílias críticas; Latin-ext continua externo,
+  também reduzido ao texto da página, para Ọmọlúàbí e Àṣẹ.
+  `scripts/preparar-fontes-fsa.py` regenera todos os subconjuntos
   da exportação original (fonttools + brotli), antes de `preparar-fsa.py` quando
   mudar a copy. Preservar métricas, eixos e composição tipográfica padrão.
+- Capa responsiva em 640, 960 e 1289px, gerada da imagem original pelo importador,
+  sem recomprimir uma derivada. Manter `srcset`/`sizes` e o preload correspondente
+  (`imagesrcset`/`imagesizes`), para baixar somente a variante escolhida. Preservar
+  dimensões reservadas e recorte por CSS; conferir telas com DPR 1 e 3.
+- A montagem de sonho/intuição também usa variantes (640, 960 e 1195px), mantendo
+  carregamento lazy. Não reduzir todas as telas a uma única resolução pequena.
 - O arquivo exportado referencia em JS versões `img/fsa-*.jpg`/`img/bg.jpg` que
   não foram incluídas: manter os recursos UUID realmente fornecidos. Não criar
   URLs fictícias nem deixar o script substituir as imagens válidas.

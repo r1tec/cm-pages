@@ -230,8 +230,17 @@ def staticize(h, hero=None):
     #    (sem preconnect ao pixel: ele carrega adiado, então preconnect no início é desperdício)
     head_inject = ""
     if hero:
+        # O preload precisa selecionar a mesma variante do <img>; carregar o
+        # src fixo desperdiçaria o original além da imagem responsiva escolhida.
+        responsive = ""
+        hero_tag = next((m.group() for m in re.finditer(r'<img\b[^>]*>', h, re.I)
+                         if re.search(r'\bsrc="assets/' + re.escape(hero) + r'\.webp"', m.group())), '')
+        for attr in ('srcset', 'sizes'):
+            value = re.search(r'\b' + attr + r'="([^"]*)"', hero_tag)
+            if value:
+                responsive += f' image{attr}="{value[1]}"'
         head_inject += (
-            f'<link rel="preload" as="image" href="assets/{hero}.webp" fetchpriority="high">\n'
+            f'<link rel="preload" as="image" href="assets/{hero}.webp"{responsive} fetchpriority="high">\n'
         )
     head_inject += INTERACOES_CSS + GTM_HEAD
     h = re.sub(r'</head>', head_inject + '</head>', h, count=1, flags=re.I)
