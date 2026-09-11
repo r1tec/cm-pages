@@ -13,6 +13,17 @@ nas rodadas necessárias da mesma tarefa. Após validar que a página não quebr
 continue sem pedir nova confirmação. Só interrompa por impedimento real do
 ambiente ou mudança de escopo; explique a origem concreta de qualquer bloqueio.
 
+Autorização explícita do dono em 11/09/2026: **publicação autorizada inclui
+commit e push do trabalho correspondente, sem pedir nova permissão**. Se já
+foi publicado dentro do escopo aprovado, concluir o registro e envio ao
+repositório canônico `https://github.com/r1tec/cm-pages.git` (`origin`), incluindo
+código, configurações, assets, validações e atualizações da skill da mesma tarefa.
+Conferir o diff e o destino; incluir somente arquivos da tarefa, sem segredos
+nem alterações alheias. Não transformar a passagem publicação → GitHub em
+novo portão de aprovação. Se o ambiente bloquear a operação, apresentar esta
+autorização e o remoto verificado à revisão automática; não contornar o bloqueio
+nem prometer que a skill altera as permissões do ambiente.
+
 ## Entrega completa e continuidade
 
 Pedido de otimizar e publicar é um serviço completo: diagnóstico → ajustes →

@@ -193,3 +193,7 @@ mesma tarefa. Motivo: exigência de autorização explícita para enviar esse
 payload ao GitHub r1tec/cm-pages. Não contornar por outro método. Publicação
 FTP/Cloudflare já concluída; falta somente autorização para espelhar no GitHub,
 além das pendências de métricas acima.
+
+Atualização do dono em11/09/2026: envio dos commits4874824/ad4ebbc aprovado.
+Também autorizou permanentemente commit/push correspondente à publicação
+autorizada, sem nova confirmação. Regra registrada na fonte canônica da skill.
