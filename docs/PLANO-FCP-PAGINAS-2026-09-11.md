@@ -27,7 +27,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | ECM atual (`ecm-26`) | Publicada e validada | Mobile 96 / desktop 98; FCP 1,9s/0,3s; CLS 0 |
 | GDP | Publicada e validada | 98 mobile/desktop; FCP 1,9s/0,5s; CLS 0 |
 | MCE | Publicada e validada | Mobile 96 / desktop Lighthouse público 100; FCP 2,0s/0,5s; CLS 0 |
-| MPG | Pendente | — |
+| MPG | Publicada e validada | Mobile 97 / desktop 99; FCP 2,0s/0,7s; CLS 0 |
 
 Skill canônica atualizada em `.claude/skills/publicar/`, na fonte original.
 Aprendizado: medir HTML comprimido e fontes por uso, reduzir caracteres mantendo
@@ -155,9 +155,41 @@ TBT/CLS 0. Não é uma nota retornada pelo serviço PageSpeed. Resultado e orige
 informados ao dono antes de iniciar MPG. Evidência:
 `/tmp/fcp-mce-public-lighthouse-desktop.json`.
 
+## MPG
+
+Montserrat 37.956 → 22.260 bytes; Nunito 31.076 → 9.564 bytes. Mesmos 130
+blocos em 390/1440, três imagens, quatro FAQs, seis compras com UTM e GTM único.
+Lighthouse local 100, FCP 1,06s, LCP 1,73s, TBT/CLS 0. Referência pública mobile
+93, FCP 1,7s, LCP 2,0s, TBT 0, CLS 0,141. Publicando após validação visual.
+Resultado público: mobile 97, FCP/LCP 2,0s, TBT/CLS 0; desktop 99,
+FCP/LCP 0,7s, TBT/CLS 0. Desktop exigiu repetição após erro 500 do Google.
+FCP não caiu nesta coleta; CLS caiu de 0,141 para zero. Compras, FAQs,
+imagens e GTM validados em produção. Cache limpo. Resultado informado ao dono.
+
 GitHub: commit BCE enviado; envio do commit COE foi bloqueado pela revisão
 automática, mesmo após verificar o remoto canônico `r1tec/cm-pages`. Pergunta
 de autorização explícita respondida pelo dono: envio dos commits autorizado.
 
 ECM v1, hash agregado inicial de caminhos e conteúdo (para conferir exclusão):
 `3ed2bb78f30fb3dfe44ec410097c8e378b9393a6636efa1565141ed422b99cfb`.
+Conferência final: hash idêntico nos 18 arquivos. Algoritmo: SHA-256 da
+concatenação ordenada de caminho relativo ao projeto e bytes de cada arquivo,
+sem separadores. Nenhuma edição, reconstrução ou publicação da ECM v1.
+
+## Limites da validação
+
+O lote preserva conteúdo e identidade existentes. O verificador ainda aponta
+combinações de contraste preexistentes na ECM atual, MCE e MPG; não houve troca
+de cores nesta otimização. Comparações de texto, fontes e geometria atestam
+preservação, sem declarar que esses avisos de acessibilidade foram corrigidos.
+
+## Fechamento
+
+Sete páginas publicadas individualmente e validadas, com resultado comunicado
+antes da próxima. Todas com CLS 0 e desempenho acima de 90 nos dois formatos;
+MCE desktop medido por Lighthouse direto na URL pública após falhas da API.
+O ganho de FCP não foi universal: COE melhorou de 1,7s para 0,9s; nas outras,
+registrar as medições sem prometer melhora onde houve empate ou aumento.
+Fontes menores e estabilidade foram ganhos recorrentes. Skill atualizada com
+essa distinção, scripts reproduzíveis, reserva de imagens e autorização
+persistente nas rodadas. ECM v1 conferida por hash e preservada.
