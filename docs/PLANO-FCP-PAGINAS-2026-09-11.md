@@ -25,7 +25,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | COE | Publicada e validada | 100 mobile/desktop; FCP 0,9s/0,5s; CLS 0 |
 | DRB | Publicada e validada | Mobile 96 / desktop 99; FCP 1,8s/0,5s; CLS 0 |
 | ECM atual (`ecm-26`) | Publicada e validada | Mobile 96 / desktop 98; FCP 1,9s/0,3s; CLS 0 |
-| GDP | Pendente | — |
+| GDP | Publicada e validada | 98 mobile/desktop; FCP 1,9s/0,5s; CLS 0 |
 | MCE | Pendente | — |
 | MPG | Pendente | — |
 
@@ -127,6 +127,17 @@ Resultado estável público: mobile 96, FCP 1,9s, LCP 2,1s, TBT/CLS 0;
 desktop 98, FCP 0,3s, LCP 0,5s, TBT/CLS 0. Resultado comunicado antes da GDP.
 Regeneração de fontes preserva outras opções do desempenho.json, comprovado
 com a reserva do logotipo. Nenhuma duplicação de arquivos ao regenerar.
+
+## GDP
+
+Montserrat 37.956 → 21.356 bytes; Nunito 31.076 → 10.244 bytes. Mesmos 99
+blocos em 390/1440, sete imagens, quatro FAQs, sete checkouts com UTM e GTM
+único. Lighthouse local 97, FCP 1,35s, LCP 2,63s, TBT/CLS 0. Referência pública
+mobile 99, FCP/LCP 1,7s, TBT 0, CLS 0,015. Publicando após validação visual.
+Resultado público 98 mobile/desktop; mobile FCP/LCP 1,9s, TBT 0, CLS 0;
+desktop FCP 0,5s, LCP 0,6s, TBT 80ms, CLS 0. Sem afirmar ganho público de
+FCP: referência 1,7s. Fontes menores e CLS eliminado. Verificação pública com
+campanha passou; cache limpo. Resultado informado antes de passar à MCE.
 
 GitHub: commit BCE enviado; envio do commit COE foi bloqueado pela revisão
 automática, mesmo após verificar o remoto canônico `r1tec/cm-pages`. Pergunta
