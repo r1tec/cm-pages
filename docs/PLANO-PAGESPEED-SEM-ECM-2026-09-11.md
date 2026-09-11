@@ -27,9 +27,9 @@ atribuir toda diferença à Cloudflare sem prova; afirmar velocidade constante.
 | BCE | Concluída, publicada, 95/99, FCP 1,9s/0,5s; GitHub 6dd1481 |
 | COE | Revisada, 99/100, FCP 1,7s/0,3s; sem melhoria adicional indicada, nenhuma nova publicação necessária |
 | DRB | Publicada e validada, 94/99, FCP 1,9s/0,4s; retomada resolveu PSI |
-| GDP | Versão definitiva publicada; última coleta 98/83, TBT desktop 380ms em rastreamento; rechecagem pendente |
-| MCE | Versão de imagens 96/99; correção adicional de contraste do FAQ em publicação |
-| MPG | Versão de imagens mobile 99; desktop pendente 500; contraste FAQ validado, publicação a seguir |
+| GDP | Versão definitiva publicada e conferida; 98/99 na última medição, oscilação anterior desktop83 registrada |
+| MCE | Publicada com FAQ legível; última coleta85/100, mobile TBT420ms em tags; meta mobile pendente |
+| MPG | Publicada com FAQ legível; última coleta97/69, desktop TBT1150ms em tags; meta desktop pendente |
 | FSA | Publicada e funcional, mobile 97; desktop pendente 500 após primeira retomada |
 
 Hashes iniciais das exclusões (SHA-256 de caminhos e bytes em ordem):
@@ -155,3 +155,41 @@ preservados em oito larguras. Publicação em andamento.
   Comparações completas passaram; verificar.py aprovou contraste MCE >=4,5.
   MPG em conferência, ambas serão publicadas e verificadas novamente.
 - Hashes ECM conferidos novamente e idênticos aos iniciais.
+
+## Fechamento técnico
+
+Todas as mudanças de página foram publicadas pelo pipeline, com limpeza de cache
+de assets/campanhas e comparação pública posterior. COE não precisou de nova
+publicação. FAQs MCE/MPG corrigidos e contraste >=4,5 aprovado em ambas; textos,
+compras e dimensões preservados. Quatro atalhos FSA testados em390/1440, com
+destinos visíveis abaixo do menu (96/60px). Treze testes automatizados passaram,
+skill validada e diff da tarefa sem erros de whitespace.
+
+GDP rechecagem desktop99/FCP0,4s/LCP0,5s/TBT0/CLS0 às15:35:53UTC confirma
+variação em relação ao83 anterior, sem mudança de código entre as duas.
+MCE após correção do FAQ:85/100; mobile FCP2,1s/LCP2,5s/TBT420ms/CLS0,
+desktop FCP/LCP0,5s/TBT0/CLS0. As maiores tarefas mobile são Analytics197ms,
+Meta180ms, Ads160ms e configuração Meta139ms. Não atribuir a cor do FAQ.
+MPG após correção do FAQ:97/69; mobile FCP/LCP2,0s/TBT0/CLS0, desktop
+FCP/LCP0,7s/TBT1150ms/CLS0. Tarefas desktop: Analytics325ms, Ads321ms,
+Meta263ms, configuração Meta240ms e GTM142ms. Sem cortar rastreamento para nota.
+**Meta90 não está validada nessas duas coletas; não declarar lote100% aprovado.**
+
+FSA desktop permanece pendente:500 às15:25:43 e15:31:01UTC; próxima janela
+operacional de retorno a partir de15:46:01UTC. Não há tarefa em background
+agendada após o encerramento; pendência fica registrada para retomada.
+
+Inventário persistente de todas as coletas, notas e47audits por dispositivo:
+`docs/PAGESPEED-AUDITS-SEM-ECM-2026-09-11.json`. Respostas brutas continuam em
+`/tmp/psi-lote/`. Achados remanescentes: fontes necessárias da FSA, tamanho
+para DPR/recorte, transparência sem economia real ao reduzir, reflow sem causa
+própria segura e scripts úteis de medição/anúncios. Recursos de GTM/Ads/Meta
+mantidos conforme instrução explícita do dono; ajustes dentro do container
+dependem de acesso/configuração não disponíveis neste trabalho.
+
+Commit local da implementação:4874824. Push bloqueado duas vezes pela revisão
+automática, inclusive após comprovar origin canônico e pushes anteriores da
+mesma tarefa. Motivo: exigência de autorização explícita para enviar esse
+payload ao GitHub r1tec/cm-pages. Não contornar por outro método. Publicação
+FTP/Cloudflare já concluída; falta somente autorização para espelhar no GitHub,
+além das pendências de métricas acima.
