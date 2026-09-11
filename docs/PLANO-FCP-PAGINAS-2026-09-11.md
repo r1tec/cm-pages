@@ -26,7 +26,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | DRB | Publicada e validada | Mobile 96 / desktop 99; FCP 1,8s/0,5s; CLS 0 |
 | ECM atual (`ecm-26`) | Publicada e validada | Mobile 96 / desktop 98; FCP 1,9s/0,3s; CLS 0 |
 | GDP | Publicada e validada | 98 mobile/desktop; FCP 1,9s/0,5s; CLS 0 |
-| MCE | Pendente | — |
+| MCE | Publicada e validada | Mobile 96 / desktop Lighthouse público 100; FCP 2,0s/0,5s; CLS 0 |
 | MPG | Pendente | — |
 
 Skill canônica atualizada em `.claude/skills/publicar/`, na fonte original.
@@ -138,6 +138,22 @@ Resultado público 98 mobile/desktop; mobile FCP/LCP 1,9s, TBT 0, CLS 0;
 desktop FCP 0,5s, LCP 0,6s, TBT 80ms, CLS 0. Sem afirmar ganho público de
 FCP: referência 1,7s. Fontes menores e CLS eliminado. Verificação pública com
 campanha passou; cache limpo. Resultado informado antes de passar à MCE.
+
+## MCE
+
+Montserrat 37.956 → 22.096 bytes; Nunito 31.076 → 10.100 bytes. Mesmos 126
+blocos em 390/1440, três imagens, quatro FAQs, seis compras com UTM e GTM único.
+Lighthouse local 95, FCP 1,05s, LCP 2,93s, TBT/CLS 0. Referência pública mobile
+94, FCP 1,8s, LCP 2,8s, TBT 0, CLS 0,018. Publicando após validação visual.
+Publicada e cache purgado. Mobile público 96, FCP 2,0s, LCP 2,4s, TBT/CLS 0.
+FCP acima da referência; LCP e estabilidade melhoraram. Compras, FAQs, imagens
+e GTM passaram em produção. Desktop: Google retornou erro 500 duas vezes;
+terceira consulta em andamento. Skill reforça autorização persistente da tarefa.
+Terceira consulta desktop também falhou. Fallback explícito: Lighthouse com
+preset desktop diretamente na URL pública, nota 100, FCP 0,5s, LCP 0,8s,
+TBT/CLS 0. Não é uma nota retornada pelo serviço PageSpeed. Resultado e origem
+informados ao dono antes de iniciar MPG. Evidência:
+`/tmp/fcp-mce-public-lighthouse-desktop.json`.
 
 GitHub: commit BCE enviado; envio do commit COE foi bloqueado pela revisão
 automática, mesmo após verificar o remoto canônico `r1tec/cm-pages`. Pergunta

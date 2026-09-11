@@ -8,6 +8,10 @@ description: Publica e otimiza páginas do projeto cm-pages, incluindo exportaç
 Leia `CLAUDE.md`. Execute apenas o fluxo solicitado. Medir usa `medir.py`;
 editar ou medir nao autoriza publicar. `afinar.sh` altera o site no ar e exige
 pedido de publicacao aplicavel a tarefa, inclusive suas rodadas.
+Autorização já dada para otimizar, publicar e enviar commits permanece válida
+nas rodadas necessárias da mesma tarefa. Após validar que a página não quebrou,
+continue sem pedir nova confirmação. Só interrompa por impedimento real do
+ambiente ou mudança de escopo; explique a origem concreta de qualquer bloqueio.
 
 Antes de preparar qualquer publicação, leia
 [PUBLICACAO-DESEMPENHO.md](PUBLICACAO-DESEMPENHO.md). Esse procedimento consolida
