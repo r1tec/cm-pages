@@ -22,7 +22,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | Página | Estado | Resultado |
 | --- | --- | --- |
 | BCE | Publicada e validada | Mobile 97 / desktop 99; FCP 1,4s / 0,5s; CLS 0 |
-| COE | Pendente | — |
+| COE | Publicada e validada | 100 mobile/desktop; FCP 0,9s/0,5s; CLS 0 |
 | DRB | Pendente | — |
 | ECM atual (`ecm-26`) | Pendente | — |
 | GDP | Pendente | — |
@@ -67,6 +67,25 @@ Revisão independente do helper apontou preservação de preloads não gerenciad
 e documentação das dependências; ambos corrigidos e conferidos.
 Coletor reutilizável: `scripts/inspecionar-fontes.cjs`, validado no build BCE.
 Resultados comunicados ao dono antes da COE.
+
+## COE
+
+Produção inicial: mobile 89, FCP 1,7s, LCP 3,7s, CLS 0,001.
+Subconjuntos por declaração original (incluindo estilo, peso e faixa Unicode),
+Poppins normal crítica embutida com preload; Poppins itálica e IBM Plex Mono
+externas. Nenhuma mudança no export. Mesmos 180 blocos em 390/1440, 16 imagens,
+cinco FAQs, três checkouts com UTM, GTM único; teste local 100 e CLS 0.
+HTML Brotli cresceu 18.138 → 34.861 bytes ao absorver fontes críticas; caminho
+crítico e resultado público melhoraram. Não confundir HTML maior com página pior.
+Publicada com cache limpo. Mobile público 100, FCP 0,9s, LCP 1,5s, TBT/CLS 0.
+Desktop público 100, FCP/LCP 0,5s, TBT/CLS 0. Resultado comunicado antes da DRB.
+
+O espelho preexistente falhou porque a conta passou a negar shell remoto apesar
+de SFTP funcionar. Novo `espelho_sftp.py` envia para pasta temporária, confere
+SHA-256 de cada arquivo, guarda backup e restaura em falha de troca. Teste de
+upload e rollback passou; COE espelhada com 48 arquivos conferidos. Ajuste local
+em `espelhar_edu.py` (arquivo preexistente da migração) preserva o fluxo e troca
+somente o transporte de publicação. Não incluir a migração alheia no commit.
 
 ECM v1, hash agregado inicial de caminhos e conteúdo (para conferir exclusão):
 `3ed2bb78f30fb3dfe44ec410097c8e378b9393a6636efa1565141ed422b99cfb`.

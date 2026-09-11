@@ -1,0 +1,69 @@
+{
+  "preload_fontes_seletivo": true,
+  "fontes": [
+    {
+      "familia": "IBM Plex Mono",
+      "peso": "400",
+      "origem": "assets/b801de13-4359-4fb1-b85f-d580e9070fa4.woff2",
+      "arquivo": "assets/fonts/fcp-b801de13-4359-4fb1-b85f-d580e9070fa4-40c916b7a7.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "IBM Plex Mono",
+      "peso": "500",
+      "origem": "assets/ccc383f9-6b8c-42be-aae4-2b3b877d4a08.woff2",
+      "arquivo": "assets/fonts/fcp-ccc383f9-6b8c-42be-aae4-2b3b877d4a08-bb4d37a93d.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Poppins",
+      "peso": "300",
+      "origem": "assets/88889c52-f60a-415e-be74-1793321a3d86.woff2",
+      "arquivo": "assets/fonts/fcp-88889c52-f60a-415e-be74-1793321a3d86-5c8b7c24fc.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Poppins",
+      "peso": "400",
+      "origem": "assets/248f6167-115a-46d9-ab00-ed249328a93d.woff2",
+      "arquivo": "assets/fonts/fcp-248f6167-115a-46d9-ab00-ed249328a93d-00fbd2fff8.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Poppins",
+      "peso": "300",
+      "origem": "assets/9058ce25-a160-43f4-9d82-6fca3a8dbd0e.woff2",
+      "arquivo": "assets/fonts/fcp-9058ce25-a160-43f4-9d82-6fca3a8dbd0e-cf1ddb452a.woff2",
+      "inline": true,
+      "preload": true
+    },
+    {
+      "familia": "Poppins",
+      "peso": "400",
+      "origem": "assets/d31555a6-566e-4f09-8b90-60f84b0457ca.woff2",
+      "arquivo": "assets/fonts/fcp-d31555a6-566e-4f09-8b90-60f84b0457ca-3a18594448.woff2",
+      "inline": true,
+      "preload": true
+    },
+    {
+      "familia": "Poppins",
+      "peso": "500",
+      "origem": "assets/106d72e4-8482-4f24-8982-d8ac298c386b.woff2",
+      "arquivo": "assets/fonts/fcp-106d72e4-8482-4f24-8982-d8ac298c386b-7125a7882e.woff2",
+      "inline": true,
+      "preload": true
+    },
+    {
+      "familia": "Poppins",
+      "peso": "600",
+      "origem": "assets/ebd3ecfb-5e86-45ad-a9b6-71b168c6b316.woff2",
+      "arquivo": "assets/fonts/fcp-ebd3ecfb-5e86-45ad-a9b6-71b168c6b316-ded0e42041.woff2",
+      "inline": true,
+      "preload": true
+    }
+  ]
+}

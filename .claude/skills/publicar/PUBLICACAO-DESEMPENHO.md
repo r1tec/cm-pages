@@ -104,6 +104,17 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
   garante resultado constante. Cache limpo não atualiza um relatório PageSpeed
   já aberto: conferir a versão pública e executar nova análise.
 
+Ferramentas locais: `scripts/inspecionar-fontes.cjs` coleta uso em 390/1440px
+(requer Puppeteer Core; `PUPPETEER_MODULE` e `CHROME_PATH` permitem indicar as
+instalações disponíveis). `scripts/preparar-fontes-pagina.py` atende HTML com
+`assets/fonts.css`; `scripts/preparar-fontes-bundler.py` usa um build original
+de exportação. Ambos requerem `fonttools` e `brotli`, verificam cobertura e
+métricas e mantêm fontes originais. O segundo grava `desempenho.json`; o primeiro
+imprime a configuração para revisão. Não gerar a partir de build já reduzido.
+O preload seletivo só substitui URLs gerenciadas, preservando fontes alheias.
+Em BCE, retirar preload da fonte embutida introduziu CLS; antecipá-la novamente
+resolveu. Portanto, base64 no CSS sozinho não comprova estabilidade da abertura.
+
 ### Revisão visual que acompanha a otimização
 
 - Desempenho e fidelidade são aceites separados: nota acima de 90 não aprova o

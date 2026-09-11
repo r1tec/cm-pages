@@ -214,6 +214,10 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         if raw[:4] != b"wOF2":
             raise ValueError("A fonte otimizada precisa ser WOFF2")
         url = "data:font/woff2;base64," + base64.b64encode(raw).decode() if item.get("inline") else item["arquivo"]
+        if not item.get("inline"):
+            destination = os.path.join(out_dir, item["arquivo"])
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            shutil.copy2(path, destination)
         old_urls = []
         def trocar(match):
             rule = match.group()
@@ -224,6 +228,8 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
             old = re.search(r"src\s*:\s*url\(['\"]?([^)'\"]+)", rule)
             if not old:
                 raise ValueError("Fonte sem src reconhecível")
+            if item.get("origem") and old[1] != item["origem"]:
+                return rule
             old_urls.append(old[1])
             return re.sub(r"src\s*:\s*url\([^)]*\)(?:\s*format\([^)]*\))?",
                           lambda _: f"src:url('{url}') format('woff2')", rule, count=1)
@@ -636,7 +642,7 @@ def main():
 
     # Copia outros arquivos da origem (ex: favicon), menos o index
     for name in os.listdir(src_dir):
-        if name in ("index.html", "reduzir.json", "cores.json"): continue  # config local, não publica
+        if name in ("index.html", "reduzir.json", "cores.json", "desempenho.json"): continue  # config local, não publica
         s = os.path.join(src_dir, name)
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
@@ -677,6 +683,7 @@ def main():
                             print(f"  cores ajustadas p/ contraste: {n} trocas")
                     except Exception as e:
                         print(f"  AVISO: cores.json invalido ({e}); ignorado.", file=sys.stderr)
+                static_html = _aplicar_desempenho_config(static_html, src_dir, out_dir)
                 with open(index_path, "w", encoding="utf-8") as f:
                     f.write(static_html)
                 static_ok = True
