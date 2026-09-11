@@ -1,10 +1,11 @@
-"""Subconjunto conservador de Roboto: todo o texto BCE, incluindo FAQ e fallback.
+"""Subconjunto conservador de Roboto: todo o texto, incluindo FAQ e fallback.
 
-PYTHONPATH=/tmp/cm-font-tools python3 scripts/preparar-roboto-bce.py
+PYTHONPATH=/tmp/cm-font-tools python3 scripts/preparar-roboto-pagina.py slug
 Usa original intocada; preserva métricas, eixos e recursos OpenType.
 """
 from html.parser import HTMLParser
 from pathlib import Path
+import sys
 from fontTools import subset
 from fontTools.ttLib import TTFont
 
@@ -25,7 +26,7 @@ class Text(HTMLParser):
         if not self.hidden: self.parts.append(data)
 
 
-root = Path(__file__).resolve().parents[1] / "bce"
+root = Path(__file__).resolve().parents[1] / sys.argv[1]
 parser = Text()
 parser.feed((root / "index.html").read_text())
 text = " ".join(parser.parts)

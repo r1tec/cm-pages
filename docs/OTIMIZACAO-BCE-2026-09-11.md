@@ -20,7 +20,8 @@ de PageSpeed sem registrar pendência; alterar páginas fora do lote autorizado.
 
 ## Estado
 
-Segunda rodada publicada e validada; medição pública final em andamento.
+Concluída: segunda rodada publicada e validada; medição pública final obtida após
+retomada com intervalo, alterações entregues ao GitHub no commit `6dd1481`.
 Diagnóstico integral inicial: `/tmp/pagespeed-bce-nova-skill.json`.
 Edições locais preexistentes em bce/index.html e depoimentos preservadas: conteúdo
 do build comparado com produção em 390/1440px (textos, sete compras/UTM, quatro
@@ -31,7 +32,7 @@ Consumo de tokens por tarefa: indisponível no ambiente.
 
 - Roboto: 43.136 → 23.488 bytes, todos os caracteres do texto incluindo FAQ,
   maiúsculas/minúsculas, preços e fallback. Métricas e cobertura verificadas;
-  original preservada, gerador `scripts/preparar-roboto-bce.py`.
+  original preservada, gerador `scripts/preparar-roboto-pagina.py bce`.
 - Quatro imagens de ervas com variantes 250/400px e logo 430/739px. `sizes`
   corresponde ao layout, arquivo maior preservado para telas densas. Nomes
   por hash evitam reuso de versão antiga. Proporção original explícita evita
@@ -97,3 +98,17 @@ Build enviado idêntico ao validado (SHA-256 do HTML):
 Verificação pública final passou em 390/1440: sete CTAs com UTM, 13 FAQs
 funcionais, quatro vídeos preservados, imagens carregadas, zero erro JS/overflow
 e preload único da nova foto. Originais das imagens não foram alterados.
+
+## Fechamento
+
+Retomada 14:50:35/14:50:51 UTC: mobile **95**, FCP **1,9s**, LCP **2,8s**,
+TBT/CLS zero; desktop **99**, FCP **0,5s**, LCP **0,6s**, TBT/CLS zero.
+Ambas as consultas concluídas sem erro. Coletas anteriores (97/100 na rodada1)
+mantidas acima; não selecionar só a maior nota. O ganho de bytes é comprovado,
+mas a oscilação de rede não permite prometer redução fixa no tempo de carregamento.
+Arquivo completo: `/tmp/psi-lote/bce-final-retomada1.json`.
+
+Na coleta final, nenhuma compressão extra de imagens foi sugerida: restou apenas
+a indicação móvel de 400px exibidos a 250px (15KiB). `srcset` oferece 250/400px,
+e o navegador escolhe 400px para preservar densidade da tela. Manter nitidez.
+Cache/JS legado do beacon preservados; reflow sem atribuição registrado.

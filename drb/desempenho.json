@@ -2,6 +2,7 @@
   "preload_fontes_seletivo": true,
   "fontes": [
     {"familia": "Montserrat", "peso": "100 900", "arquivo": "assets/fonts/fcp-montserrat.woff2", "inline": true, "preload": true},
-    {"familia": "Nunito Sans", "peso": "100 900", "arquivo": "assets/fonts/fcp-nunitosans.woff2", "inline": false, "preload": false}
+    {"familia": "Nunito Sans", "peso": "100 900", "arquivo": "assets/fonts/fcp-nunitosans.woff2", "inline": false, "preload": false},
+    {"familia": "Roboto", "peso": "100 900", "arquivo": "assets/fonts/fcp-roboto.woff2", "inline": false, "preload": false}
   ]
 }
