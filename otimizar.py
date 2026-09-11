@@ -194,6 +194,89 @@ def _escrever_htaccess(out_dir):
         f.write(HTACCESS)
 
 
+def _imagens_responsivas(html, config, src_dir, out_dir):
+    """Variantes opt-in, sempre geradas da fonte; nome por conteúdo evita cache antigo."""
+    from io import BytesIO
+    from PIL import Image
+    for item in config:
+        path = item["arquivo"]
+        source = os.path.realpath(os.path.join(src_dir, path))
+        if os.path.commonpath([source, os.path.realpath(src_dir)]) != os.path.realpath(src_dir):
+            raise ValueError("Imagem fora da pasta da página")
+        quality = item.get("qualidade", 80)
+        if not isinstance(quality, int) or not 1 <= quality <= 100:
+            raise ValueError("Qualidade inválida")
+        sizes = item.get("sizes")
+        if sizes and not re.fullmatch(r"[a-zA-Z0-9 ():,%.\-]+", sizes):
+            raise ValueError("sizes inválido")
+        with Image.open(source) as original:
+            original_size = original.size
+            if original.format != "WEBP":
+                raise ValueError("Configuração de variantes exige fonte WebP")
+            if getattr(original, "is_animated", False):
+                raise ValueError("Não converter imagem animada")
+            widths = sorted(set(item.get("larguras", [original.width])))
+            if not widths or any(not isinstance(w, int) or w <= 0 or w > original.width for w in widths):
+                raise ValueError("Larguras inválidas ou ampliam a imagem")
+            if widths[-1] != original.width:
+                raise ValueError("Preservar a largura original para telas de maior densidade")
+            variants = []
+            for width in widths:
+                img = original.resize((width, round(original.height * width / original.width)), Image.Resampling.LANCZOS) if width != original.width else original
+                buf = BytesIO()
+                img.save(buf, "WEBP", quality=quality, method=6)
+                data = buf.getvalue()
+                if width == original.width:
+                    # Aproveita a melhor versão já produzida pelo pipeline anterior.
+                    with open(source, "rb") as f:
+                        candidates = [f.read()]
+                    existing = os.path.join(out_dir, path)
+                    if os.path.isfile(existing):
+                        with open(existing, "rb") as f: candidates.append(f.read())
+                    data = min([data] + candidates, key=len)
+                digest = hashlib.sha256(data).hexdigest()[:12]
+                url = f"assets/responsivas/{os.path.splitext(os.path.basename(path))[0]}-{width}-{digest}.webp"
+                dest = os.path.join(out_dir, url)
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                with open(dest, "wb") as f: f.write(data)
+                variants.append((width, url))
+        count = 0
+        def replace(match):
+            nonlocal count
+            tag = match.group()
+            src = re.search(r'\bsrc=(["\'])(.*?)\1', tag)
+            if not src or src[2] != path: return tag
+            if re.search(r'\b(?:srcset|sizes)=', tag):
+                raise ValueError("Imagem já responsiva; revisar configuração existente")
+            count += 1
+            tag = tag[:src.start(2)] + variants[-1][1] + tag[src.end(2):]
+            if len(variants) > 1:
+                if not sizes: raise ValueError("Variantes exigem sizes medido no layout")
+                srcset = ", ".join(f"{url} {w}w" for w, url in variants)
+                tag = tag.replace("<img", f'<img srcset="{srcset}" sizes="{sizes}"', 1)
+                # Arredondar a altura do bitmap não deve deslocar o layout.
+                ratio = f"aspect-ratio:{original_size[0]}/{original_size[1]};"
+                if re.search(r'\bstyle=["\']', tag):
+                    tag = re.sub(r'\bstyle=(["\'])', lambda m: 'style=' + m[1] + ratio, tag, count=1)
+                else:
+                    tag = tag.replace('<img', f'<img style="{ratio}"', 1)
+            return tag
+        html = re.sub(r'<img\b[^>]*>', replace, html)
+        if not count: raise ValueError(f"Imagem não encontrada no HTML: {path}")
+        if item.get("preload"):
+            if len(variants) != 1:
+                raise ValueError("Preload explícito suporta apenas imagem sem variantes")
+            def remove_old_preload(match):
+                tag = match.group()
+                href = re.search(r'\bhref=(["\'])(.*?)\1', tag)
+                return "" if href and href[2] == path else tag
+            html = re.sub(r'<link\b(?=[^>]*\brel=["\']preload["\'])(?=[^>]*\bas=["\']image["\'])[^>]*>', remove_old_preload, html, flags=re.I)
+            link = f'<link rel="preload" as="image" href="{variants[0][1]}" fetchpriority="high">'
+            html = re.sub(r'<head\b[^>]*>', lambda m: m.group() + link, html, count=1)
+        print(f"  imagem responsiva: {path}, larguras {widths}")
+    return html
+
+
 def _aplicar_desempenho_config(html, src_dir, out_dir):
     """Ajustes explícitos de fontes críticas e preloads, sem alterar o desenho."""
     config_path = os.path.join(src_dir, "desempenho.json")
@@ -287,6 +370,8 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         html = html.replace('</head>', head + '</head>', 1)
         script = '<script>(function(){if(!("IntersectionObserver" in window))return;try{var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("cm-fundo-pronto");observer.unobserve(entry.target)}})},{rootMargin:"600px"});document.querySelectorAll(' + json.dumps(",".join(selectors)) + ').forEach(function(el){observer.observe(el)})}catch(e){document.documentElement.classList.remove("cm-fundos-adiados")}})();</script>'
         html = html.replace('</body>', script + '</body>', 1)
+    if config.get("imagens_responsivas"):
+        html = _imagens_responsivas(html, config["imagens_responsivas"], src_dir, out_dir)
     return html
 
 

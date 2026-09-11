@@ -5,21 +5,21 @@
 # O que ele faz:
 #   1. Chama a API oficial do PageSpeed (mesma engine do site) no celular e/ou desktop.
 #   2. Mostra a NOTA e as metricas que contam (LCP, CLS, tempo travado).
-#   3. Separa o que da pra consertar AQUI (imagem grande, coisa que trava a abertura)
-#      do que NAO e do codigo (tags do Google/Facebook, Cloudflare, dominio estranho).
-#   4. Para cada imagem grande, ja imprime a linha pronta do reduzir.json.
+#   3. Preserva todos os audits, inclusive novos, informativos e ganhos pequenos.
+#   4. Sugere reduzir.json para imagens elegiveis; demais detalhes ficam no JSON.
 #
 # Uso:
-#   python3 medir.py <slug-ou-url> [--desktop] [--both] [--json]
+#   python3 medir.py <slug-ou-url> [--desktop] [--both] [--json] [--output arquivo.json]
 #     ex: python3 medir.py ecm-26-v2            # celular (o que mais reprova)
 #         python3 medir.py ecm-26-v2 --both     # celular + desktop
 #         python3 medir.py https://exemplo/ --json   # saida p/ o afinar.sh
 #
-# Chave (opcional, mas recomendada): sem chave a API do Google recusa por excesso
-# de uso (erro 429). Crie uma gratis (console.cloud.google.com -> "PageSpeed
+# Chave (opcional, mas recomendada): identifica a cota do projeto, nao e ilimitada.
+# Crie uma gratis (console.cloud.google.com -> "PageSpeed
 # Insights API" -> Credenciais -> Chave de API) e ponha no .env:  PSI_API_KEY="..."
 
-import sys, os, re, json, time, urllib.request, urllib.parse, urllib.error
+import sys, os, re, json, time, argparse, pathlib, urllib.request, urllib.parse, urllib.error
+from email.utils import parsedate_to_datetime
 
 BASE_SITE = "https://contemmagia.com.br/"
 API = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
@@ -34,12 +34,12 @@ NO_CODIGO = {
     "unminified-javascript": "JS podia estar mais enxuto",
     "unused-css-rules": "sobra CSS que a pagina nao usa",
 }
-# Audits cujo peso vem de TERCEIROS (nao moram no nosso codigo).
+# Estes audits exigem atribuir a causa pelas URLs, nao pelo nome do audit.
 FORA_DO_CODIGO = {
-    "unused-javascript": "JS de terceiros (Google Tag Manager, Facebook) — some no painel do Google, nao aqui",
-    "legacy-javascript": "JS antigo de terceiro (Cloudflare/GTM) — nao e do nosso codigo",
+    "unused-javascript": "JavaScript nao utilizado — conferir arquivos e funcoes antes de remover",
+    "legacy-javascript": "JavaScript legado — conferir a origem e compatibilidade necessaria",
     "third-party-summary": "peso de terceiros (tags, Cloudflare)",
-    "uses-long-cache-ttl": "cache curto em arquivo de terceiro (Cloudflare) — fora do nosso controle",
+    "uses-long-cache-ttl": "cache curto — conferir URLs e quem controla os cabecalhos",
     "server-response-time": "tempo de resposta do servidor/hospedagem",
 }
 
@@ -61,33 +61,52 @@ def _url_de(alvo):
     return BASE_SITE + alvo.strip("/") + "/"
 
 
+def _espera_retry(headers, fallback):
+    value = headers.get("Retry-After") if headers else None
+    if value:
+        try:
+            return max(fallback, float(value))
+        except ValueError:
+            try:
+                return max(fallback, parsedate_to_datetime(value).timestamp() - time.time())
+            except (ValueError, TypeError, OverflowError):
+                pass
+    return fallback
+
+
 def chamar_psi(url, strategy, key=None, tentativas=4):
     q = {"url": url, "strategy": strategy, "category": "performance"}
     if key:
         q["key"] = key
     full = API + "?" + urllib.parse.urlencode(q)
-    espera = 3
+    espera = 30
     for i in range(tentativas):
         try:
             with urllib.request.urlopen(full, timeout=120) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
-            if e.code == 429 and i < tentativas - 1:
-                # sem chave a cota compartilhada estoura: espera e tenta de novo
-                time.sleep(espera)
-                espera *= 2
+            if e.code in (429, 500, 502, 503, 504) and i < tentativas - 1:
+                intervalo = _espera_retry(e.headers, espera)
+                print(f"PageSpeed {strategy}: HTTP {e.code}; nova tentativa {i + 2}/{tentativas} em {intervalo}s.", file=sys.stderr)
+                time.sleep(intervalo)
+                espera = min(espera * 2, 60)
                 continue
             corpo = ""
-            try: corpo = e.read().decode("utf-8", "ignore")[:300]
+            try:
+                corpo = e.read().decode("utf-8", "ignore")
+                if key: corpo = corpo.replace(key, "[CHAVE OMITIDA]")
+                corpo = corpo[:500]
             except Exception: pass
             raise RuntimeError(
                 f"PageSpeed recusou ({e.code}). "
-                + ("Ponha uma PSI_API_KEY no .env (gratis) — sem chave o Google "
-                   "limita por excesso de uso." if e.code == 429 else corpo))
+                + (("Cota da chave/projeto atingida; confira as cotas no Google Cloud. " if key else
+                    "Sem chave; configure PSI_API_KEY para usar a cota do projeto. ")
+                   if e.code == 429 else "") + corpo) from None
         except Exception as e:
             if i < tentativas - 1:
-                time.sleep(espera); espera *= 2; continue
-            raise RuntimeError(f"nao consegui falar com o PageSpeed: {e}")
+                time.sleep(espera); espera = min(espera * 2, 60); continue
+            mensagem = str(e).replace(key, "[CHAVE OMITIDA]") if key else str(e)
+            raise RuntimeError(f"nao consegui falar com o PageSpeed: {mensagem}") from None
     raise RuntimeError("PageSpeed nao respondeu")
 
 
@@ -100,8 +119,13 @@ def analisar(psi):
     """Extrai da resposta do PageSpeed o que interessa. Devolve um dicionario
     simples que serve tanto pro relatorio humano quanto pro afinar.sh."""
     lh = psi["lighthouseResult"]
+    if lh.get("runtimeError"):
+        raise RuntimeError("Lighthouse nao concluiu: " + json.dumps(lh["runtimeError"], ensure_ascii=False))
     aud = lh["audits"]
-    score = round(lh["categories"]["performance"]["score"] * 100)
+    valor = lh["categories"]["performance"].get("score")
+    if valor is None:
+        raise RuntimeError("Lighthouse nao retornou nota; coleta incompleta.")
+    score = round(valor * 100)
     metr = {}
     for k, rot in [("largest-contentful-paint", "LCP"),
                    ("cumulative-layout-shift", "CLS"),
@@ -119,8 +143,8 @@ def analisar(psi):
 
     no_codigo, fora, reduzir = [], [], {}
     for aid, a in aud.items():
-        if a.get("score") is None or a.get("score", 1) >= 0.9:
-            continue  # passou (ou nao pontua): nao e problema
+        if a.get("score") == 1 or a.get("scoreDisplayMode") == "notApplicable":
+            continue
         det = a.get("details", {})
         if aid in NO_CODIGO:
             kb = savings_kb(a)
@@ -151,7 +175,10 @@ def analisar(psi):
         if ent: dominios.add(str(ent))
 
     return {"score": score, "metricas": metr, "no_codigo": no_codigo,
-            "fora": fora, "reduzir": reduzir, "terceiros": sorted(dominios)}
+            "fora": fora, "reduzir": reduzir, "terceiros": sorted(dominios),
+            "audits": aud, "avisos": lh.get("runWarnings", []),
+            "coleta": lh.get("fetchTime"), "url_final": lh.get("finalDisplayedUrl", lh.get("finalUrl")),
+            "lighthouse_version": lh.get("lighthouseVersion")}
 
 
 def relatorio(url, strategy, r, fh=sys.stdout):
@@ -172,44 +199,62 @@ def relatorio(url, strategy, r, fh=sys.stdout):
         for linha in json.dumps(r["reduzir"], indent=2).splitlines():
             p("    " + linha)
     if r["fora"]:
-        p("\n  Peso que NAO e do nosso codigo (decisao sua, fora daqui):")
+        p("\n  Diagnosticos que exigem conferir a origem dos recursos:")
         for aid, desc, kb in sorted(r["fora"], key=lambda x: -x[2]):
             eco = f"  (~{kb} KB)" if kb else ""
             p(f"    - {desc}{eco}")
     if r["terceiros"]:
         p("  Terceiros carregados:", ", ".join(r["terceiros"]))
-    if not r["no_codigo"] and not r["fora"]:
-        p("\n  Nada a consertar: a pagina esta limpa.")
+    p("\n  Todos os audits recebidos (detalhes completos no JSON):")
+    for aid, audit in r["audits"].items():
+        mode = audit.get("scoreDisplayMode", "sem classificacao")
+        status = "aprovado" if audit.get("score") == 1 else mode
+        p(f"    - [{status}] {aid}: {audit.get('title', aid)} — {audit.get('displayValue', '')}")
+    for aviso in r["avisos"]:
+        p("  AVISO da coleta:", aviso)
     p("")
 
 
 def main():
-    args = sys.argv[1:]
-    if not args:
-        print("uso: python3 medir.py <slug-ou-url> [--desktop] [--both] [--json]",
-              file=sys.stderr)
-        sys.exit(1)
-    quer_json = "--json" in args
-    both = "--both" in args
-    desktop = "--desktop" in args
-    alvo = [a for a in args if not a.startswith("--")][0]
-    url = _url_de(alvo)
+    parser = argparse.ArgumentParser(description="PageSpeed: notas e todos os diagnosticos, sem filtro de ganho.")
+    parser.add_argument("alvo")
+    parser.add_argument("--desktop", action="store_true")
+    parser.add_argument("--both", action="store_true")
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--output", help="Salvar resposta integral da API por dispositivo em arquivo JSON")
+    parser.add_argument("--tentativas", type=int, default=4, help="Tentativas por dispositivo; em lote use 1 e retome depois")
+    args = parser.parse_args()
+    if not 1 <= args.tentativas <= 4:
+        parser.error("--tentativas deve ser entre 1 e 4")
+    quer_json = args.json
+    url = _url_de(args.alvo)
     key = os.environ.get("PSI_API_KEY") or _ler_env().get("PSI_API_KEY") or None
 
-    estrategias = ["mobile", "desktop"] if both else (["desktop"] if desktop else ["mobile"])
-    resultados = {}
+    estrategias = ["mobile", "desktop"] if args.both else (["desktop"] if args.desktop else ["mobile"])
+    resultados, respostas, erros = {}, {}, {}
     for st in estrategias:
-        psi = chamar_psi(url, st, key)
-        resultados[st] = analisar(psi)
+        try:
+            psi = chamar_psi(url, st, key, tentativas=args.tentativas)
+            respostas[st] = psi
+            resultados[st] = analisar(psi)
+        except (RuntimeError, KeyError, TypeError, ValueError) as e:
+            erros[st] = str(e).replace(key, "[CHAVE OMITIDA]") if key else str(e)
+            print(f"{st}: {erros[st]}", file=sys.stderr)
+            continue
         # relatorio legivel sempre; quando pedem --json ele vai pro stderr, pra
         # a saida limpa (o json) ficar sozinha no stdout p/ o afinar.sh capturar.
         relatorio(url, st, resultados[st], fh=(sys.stderr if quer_json else sys.stdout))
 
+    if args.output:
+        pathlib.Path(args.output).write_text(json.dumps({"url": url, "respostas": respostas, "erros": erros}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if quer_json:
         # o afinar.sh consome isto: nota do celular + reduzir sugerido
-        principal = resultados.get("mobile") or next(iter(resultados.values()))
-        print(json.dumps({"url": url, "score": principal["score"],
-                          "reduzir": principal["reduzir"]}))
+        principal = resultados.get(estrategias[0], {})
+        print(json.dumps({"url": url, "score": principal.get("score"),
+                          "reduzir": principal.get("reduzir", {}),
+                          "resultados": resultados, "erros": erros}, ensure_ascii=False))
+    if erros:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

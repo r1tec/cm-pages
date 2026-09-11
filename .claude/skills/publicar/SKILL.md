@@ -13,6 +13,22 @@ nas rodadas necessárias da mesma tarefa. Após validar que a página não quebr
 continue sem pedir nova confirmação. Só interrompa por impedimento real do
 ambiente ou mudança de escopo; explique a origem concreta de qualquer bloqueio.
 
+## Entrega completa e continuidade
+
+Pedido de otimizar e publicar é um serviço completo: diagnóstico → ajustes →
+validação → publicação pelo pipeline → conferência pública → PageSpeed dos dois
+dispositivos → commit/push da tarefa. Não encerrar na medição inicial nem na
+preparação local. Quando o dono disser "teste antes de mudar", o teste é uma
+condição para continuar o trabalho já autorizado; sucesso libera a etapa seguinte,
+não transforma a tarefa em somente medição. Atualização do dono em 11/09/2026:
+falha transitória do PageSpeed não interrompe o lote. Avisar, registrar a medição
+pendente e avançar para a próxima tarefa conforme a política de retomada abaixo.
+Perguntas como "já publicou?" são pedidos de status dentro da mesma entrega:
+responder se a NOVA alteração foi publicada, sem confundir com a página antiga
+já estar no ar, e continuar o que falta. Apenas um limite explícito como "só medir"
+ou "não altere" restringe o trabalho ao diagnóstico. Esta continuidade preserva
+o destino e a autorização aplicável; não inventa autorização para outras páginas.
+
 Antes de preparar qualquer publicação, leia
 [PUBLICACAO-DESEMPENHO.md](PUBLICACAO-DESEMPENHO.md). Esse procedimento consolida
 o aceite do dono: desempenho mínimo 90 em celular e desktop, conteúdo e compras
@@ -79,16 +95,66 @@ NAO peca ao dono para colar a tela do PageSpeed. Puxe os insights sozinho:
 ```
 python3 medir.py <slug>          # celular (o que mais reprova)
 python3 medir.py <slug> --both   # celular + desktop
+python3 medir.py <slug> --both --json --output /tmp/pagespeed-<slug>.json
 ```
 
 O `medir.py` chama a API oficial do Google para a página já no ar. Seus rótulos
 de terceiros são apenas heurísticas: confira URLs e audits antes de atribuir a
-causa ao GTM ou ao Cloudflare. Agendamento, duplicação de tags, embeds e limpeza
+causa ao GTM ou ao Cloudflare. O JSON de --output preserva a resposta integral
+por dispositivo; --json inclui todos os audits e mantém score/reduzir para o loop.
+Analisar esse arquivo por context-mode, sem despejar o relatório bruto no chat.
+Agendamento, duplicação de tags, embeds e limpeza
 de cache podem ser corrigidos no projeto; não encerrar a investigação pelo rótulo.
 Para cada imagem grande, ele imprime a linha pronta do `reduzir.json`.
 
-Precisa de uma chave gratis no `.env` (`PSI_API_KEY`) — sem ela o Google recusa
-por excesso de uso (erro 429). Como criar: ver o comentario no `.env.example`.
+Usa `PSI_API_KEY` do ambiente ou do `.env`, sem exibir o segredo. A chave usa a
+cota do projeto; não significa chamadas ilimitadas. HTTP 429 indica limitação
+de uso; HTTP 500 indica falha interna da medição, não falta de chave. O coletor
+repete 429/500/502/503/504 até quatro tentativas, com esperas 30/60/60s ou o
+`Retry-After` do servidor, se maior; tenta o outro dispositivo mesmo se um falhar.
+Erros mantêm saída de falha e nunca viram nota.
+
+Em lotes, usar `--tentativas 1 --both --output /tmp/psi-<slug>-<fase>.json`:
+não prender o trabalho em chamadas consecutivas da página que falhou. Em HTTP
+500/502/503/504 ou timeout, avisar o dono, registrar URL/dispositivo/versão/erro,
+horário e próxima tentativa no relatório do lote, e seguir para a próxima página.
+Retomar só as medições pendentes após pelo menos 5, 15 e 30 minutos, no máximo
+três retornos durante o lote, respeitando `Retry-After` maior quando presente.
+Usar o intervalo para trabalho útil; não manter o agente bloqueado em sleep longo.
+Esses intervalos são política operacional, não um limite por URL confirmado pelo
+Google. Não rodar consultas concorrentes para a mesma URL. HTTP 429 exige conferir
+cota da chave/projeto; trocar de URL não contorna cota global. 401/403 exige conferir
+chave/permissão ou acesso, sem retries cegos nem exposição de credenciais.
+
+Se faltar PSI inicial, usar diagnóstico recente da mesma versão e Lighthouse
+local como complemento para avançar com ajustes comprovados. Se faltar PSI final,
+validação funcional/visual e versão pública continuam obrigatórias, mas informar
+"publicada; PageSpeed pendente", nunca nota presumida ou entrega 100% validada.
+Commit/push do trabalho validado não fica preso a indisponibilidade da medição.
+Depois de percorrer as páginas, revisitar as pendências elegíveis e registrar as
+que permanecerem indisponíveis. Não desativar proteções nem alterar GTM para sanar
+erro do serviço. Referência: https://docs.cloud.google.com/monitoring/api/troubleshooting
+
+### Cobertura completa dos diagnósticos
+
+Preferência do dono: em tarefas de otimização, avaliar TODOS os audits recebidos
+em celular e desktop, incluindo insights novos/desconhecidos, informativos,
+sem pontuação e economias pequenas. Nota atingida não encerra essa análise.
+Executar cada melhoria aplicável com ganho demonstrável, mesmo pequeno, dentro
+do escopo autorizado. Audit aprovado/não aplicável não exige inventar alteração.
+Para cada achado, registrar no relatório da tarefa: ID, recurso/causa, ação,
+prova antes/depois e estado (corrigido, já atendido, não aplicável, preservado por
+função importante ou bloqueado com motivo). Não descartar apenas por poucos KB/ms.
+
+Preservar GTM, pixels/eventos, consentimento, compras, conteúdo, qualidade visual,
+acessibilidade e interações importantes. Otimizar carregamento/duplicações quando
+possível; não cortar essas funções para eliminar avisos. Terceiro não significa
+automaticamente intocável: verificar controle real e alternativas sem perda.
+Economia estimada não comprova ganho nem autoriza compressão com perda visual.
+Validar comportamento e visual, medir novamente após mudanças e registrar o que
+restar. Se uma tentativa não trouxer ganho ou causar regressão, reverter e explicar.
+Esta preferência não autoriza publicar sem pedido aplicável nem ampliar a tarefa
+para outras páginas. Pedido só de revisão continua somente leitura.
 
 ## Afinar ate a nota (loop automatico)
 
@@ -102,7 +168,8 @@ Quando o dono quiser "chegar na nota X" sem ficar no vai-e-vem manual:
 O ciclo: publica -> mede no PageSpeed -> se a nota bateu, para; se falta E ha
 imagem grande, encolhe (mexe SO no `reduzir.json`, que e reversivel) e repete.
 O script para quando a nota bate, não há mais imagens elegíveis ou chega ao
-limite. Isso não encerra a tarefa se o aceite não foi cumprido: investigar fontes,
+limite. Ele é apenas um auxiliar de imagens, não a revisão completa. Mesmo com
+a nota atingida, concluir a cobertura dos diagnósticos acima: investigar fontes,
 CLS, imagem LCP, scripts, cache e interações conforme o procedimento. Não alterar
 copy, oferta ou identidade visual para obter nota.
 

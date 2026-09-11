@@ -70,6 +70,12 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
 - `desempenho.json` aplica fontes/preloads/fundos no ramo HTML direto; `reduzir.json`
   atende imagens do ramo bundler. Conferir qual ramo consome a configuração:
   criar um arquivo de configuração não prova que o build o utilizou.
+- Para WebP do HTML direto, `imagens_responsivas` em `desempenho.json` aceita
+  `arquivo`, `qualidade`, `larguras` e `sizes` medido. Preserva o maior tamanho
+  original para telas densas, a proporção no layout e os arquivos-fonte; gera
+  variantes no build com nome por conteúdo. `preload: true` atende a imagem LCP
+  sem variantes e antecipa sua descoberta no início do HTML. Usar somente após
+  medir o uso real e comparar visual/CLS. Não comprimir indiscriminadamente.
 - Remover apenas recursos comprovadamente órfãos, como script do editor que
   retorna 404. Não tratar scripts de compra/rastreamento como lixo pelo tamanho.
 - Executar `verificar.py` e conferir visual em celular/desktop. Avisos do publisher
@@ -185,7 +191,10 @@ altura automática às imagens selecionadas; conferir as medidas finais do layou
 - Core Web Vitals de campo acumulam28dias e podem ser da origem; não prometer
   aprovação imediata por uma nota Lighthouse. Não usar detecção de Lighthouse,
   tratamentos especiais para bots, conteúdo escondido ou remoção de funcionalidades.
-- Concluir quando o desempenho medido e as funções cumprem o aceite. Registrar
+- Em otimização, cumprir também a seção "Cobertura completa dos diagnósticos"
+  do SKILL.md: revisar todos os audits e executar melhorias aplicáveis mesmo
+  pequenas, preservando funções importantes. Nota mínima não dispensa esse passo.
+- Concluir quando o desempenho medido, as funções e a cobertura dos diagnósticos cumprem o aceite. Registrar
   eventual bloqueio real com evidência; não afirmar nota constante garantida.
 - Atualizar regras/relatório da página e conhecimento reutilizável quando houver
   aprendizado novo; commit/push apenas da tarefa. Entregar URL, notas dos dois

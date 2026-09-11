@@ -52,7 +52,8 @@ for RODADA in $(seq 1 "$MAX"); do
 
   if [ "$NOTA" -ge "$ALVO" ]; then
     echo ""
-    echo "✓ Alvo atingido: $SLUG esta com $NOTA/100. Nada mais a fazer aqui."
+    echo "✓ Alvo atingido: $SLUG esta com $NOTA/100. Fim do auxiliar de imagens."
+    echo "Ainda revisar todos os diagnosticos nos dois dispositivos conforme a skill publicar."
     exit 0
   fi
 
@@ -81,10 +82,8 @@ PY
   if [ "$MUDOU" != "SIM" ]; then
     echo ""
     echo "Parei: a nota ($NOTA) ainda esta abaixo do alvo ($ALVO), mas nao ha mais"
-    echo "imagem grande p/ encolher. O que sobra nao e do codigo da pagina — em"
-    echo "geral e peso das tags de terceiros (Google Tag Manager, Facebook,"
-    echo "Cloudflare). Isso se resolve no painel do Google, nao aqui."
-    echo "Veja o relatorio acima (secao 'Peso que NAO e do nosso codigo')."
+    echo "imagem elegivel neste auxiliar. Isso nao encerra a otimizacao."
+    echo "Investigue todos os audits e seus recursos, preservando funcoes importantes."
     exit 0
   fi
 
