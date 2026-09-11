@@ -92,6 +92,10 @@ def fonte_critica(match):
     rule = match.group()
     if not re.search(r'unicode-range:\s*U\+0000-00FF', rule):
         return rule
+    # Itálico de depoimentos aparece abaixo da dobra: fica externo para não
+    # aumentar o HTML que precisa chegar antes da primeira pintura.
+    if 'Roboto Condensed' in rule and 'font-style: italic' in rule:
+        return rule
     resource = re.search(r'url\([\"\']?([^\"\')]+)', rule)[1]
     path = Path(__file__).resolve().parents[1] / 'fsa/assets/fonts' / (resource + '.woff2')
     raw = path.read_bytes()
@@ -101,6 +105,28 @@ def fonte_critica(match):
         font_preloads[resource] = '<link rel="preload" as="font" type="font/woff2" crossorigin href="' + url + '">'
     return re.sub(r'url\([^)]*\)', lambda _: 'url(' + url + ')', rule)
 template = re.sub(r'@font-face\s*\{[^}]*\}', fonte_critica, template)
+# Cada arquivo é variável. Uma declaração com intervalo substitui as cópias
+# idênticas por peso, sem mudar a seleção dos pesos usados no design.
+font_faces = {}
+for face in re.findall(r'@font-face\s*\{[^}]*\}', template):
+    weight = re.search(r'font-weight:\s*(\d+)\s*;', face)
+    if weight:
+        key = face[:weight.start(1)] + '{weight}' + face[weight.end(1):]
+        font_faces.setdefault(key, []).append(int(weight[1]))
+seen_faces = set()
+def unir_pesos(match):
+    face = match.group()
+    weight = re.search(r'font-weight:\s*(\d+)\s*;', face)
+    if not weight:
+        return face
+    key = face[:weight.start(1)] + '{weight}' + face[weight.end(1):]
+    if key in seen_faces:
+        return ''
+    seen_faces.add(key)
+    weights = font_faces[key]
+    value = str(min(weights)) if min(weights) == max(weights) else f'{min(weights)} {max(weights)}'
+    return key.replace('{weight}', value)
+template = re.sub(r'@font-face\s*\{[^}]*\}', unir_pesos, template)
 template = template.replace('<helmet>', '<helmet>' + ''.join(font_preloads.values()), 1)
 template, count = re.subn(r'(<span\b[^>]*)(>Recomendado</span>)',
                         lambda m: re.sub(r'color:[^;"\']+', 'color:#87376A', m[1]) + m[2], template)

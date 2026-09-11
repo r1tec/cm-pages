@@ -11,11 +11,18 @@
   primeira interação ou cinco segundos; não duplicar pixels diretos.
 - FAQ nativo, imagem principal com proporção reservada e enquadramento por CSS,
   demais imagens lazy. Fontes são as fornecidas no arquivo: subconjuntos Latin
-  incorporados e preload das três famílias críticas; Latin-ext continua externo,
+  das três famílias críticas incorporados e em preload. Roboto Condensed itálico,
+  usado abaixo da dobra, fica externo; Latin-ext também continua externo,
   também reduzido ao texto da página, para Ọmọlúàbí e Àṣẹ.
   `scripts/preparar-fontes-fsa.py` regenera todos os subconjuntos
   da exportação original (fonttools + brotli), antes de `preparar-fsa.py` quando
   mudar a copy. Preservar métricas, eixos e composição tipográfica padrão.
+- Playfair inclui apenas os caracteres dos trechos que usam essa família,
+  coletados da exportação pelo gerador; conferir toda a página após mudar copy.
+  Declarações de pesos do mesmo arquivo variável são unificadas por intervalo.
+  Não voltar a embutir o itálico de depoimentos nem todas as letras de outras
+  famílias: isso aumenta o HTML antes da primeira pintura. Manter teste de CLS
+  com fontes lentas e comparação visual/medidas também no desktop.
 - Capa responsiva em 640, 960 e 1289px, gerada da imagem original pelo importador,
   sem recomprimir uma derivada. Manter `srcset`/`sizes` e o preload correspondente
   (`imagesrcset`/`imagesizes`), para baixar somente a variante escolhida. Preservar
