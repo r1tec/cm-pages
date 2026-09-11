@@ -250,6 +250,25 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
             href = re.search(r'href=["\']([^"\']+)', match.group(), re.I)
             return '' if href and href[1] in managed_font_urls else match.group()
         html = re.sub(r'<link\b(?=[^>]*\brel=["\']preload["\'])(?=[^>]*\bas=["\']font["\'])[^>]*>', remover_preload_gerenciado, html, flags=re.I)
+    for image_path in config.get("reservar_dimensoes_imagens", []):
+        if image_path.startswith("/") or ".." in image_path.split("/"):
+            raise ValueError("Caminho de imagem inválido")
+        from PIL import Image
+        with Image.open(os.path.join(out_dir, image_path)) as img:
+            width, height = img.size
+        def reservar_dimensoes(match):
+            tag = match.group()
+            source = re.search(r'\bsrc=["\']([^"\']+)', tag)
+            if not source or source[1] != image_path:
+                return tag
+            if re.search(r'\s(?:width|height)=', tag):
+                raise ValueError("Imagem selecionada já possui dimensão explícita")
+            if re.search(r'\bstyle=["\']', tag):
+                tag = re.sub(r'\bstyle=(["\'])', r'style=\1height:auto;', tag, count=1)
+            else:
+                tag = tag.replace('<img', '<img style="height:auto;"', 1)
+            return tag.replace('<img', f'<img width="{width}" height="{height}"', 1)
+        html = re.sub(r'<img\b[^>]*>', reservar_dimensoes, html)
     links = []
     links.extend(font_links.values())
     for path in config.get("preload_imagens", []):

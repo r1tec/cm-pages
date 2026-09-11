@@ -114,6 +114,14 @@ imprime a configuração para revisão. Não gerar a partir de build já reduzid
 O preload seletivo só substitui URLs gerenciadas, preservando fontes alheias.
 Em BCE, retirar preload da fonte embutida introduziu CLS; antecipá-la novamente
 resolveu. Portanto, base64 no CSS sozinho não comprova estabilidade da abertura.
+Em DRB, reduzir as fontes eliminou CLS, mas não reduziu o FCP público medido.
+Reportar esse limite; não chamar economia de bytes de ganho de tempo comprovado.
+Quando a primeira coleta após purge divergir, conferir latência do documento
+antes de atribuir tudo ao código. Registrar as coletas, sem selecionar só a melhor.
+Antecipar texto pode revelar CLS de uma imagem que antes carregava antes dele.
+Na ECM atual, o logotipo com largura responsiva precisava reservar sua proporção.
+`reservar_dimensoes_imagens` em `desempenho.json` adiciona dimensões do arquivo e
+altura automática às imagens selecionadas; conferir as medidas finais do layout.
 
 ### Revisão visual que acompanha a otimização
 

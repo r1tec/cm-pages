@@ -24,7 +24,7 @@ em lote sem conferir individualmente. Erro de API não conta como nota.
 | BCE | Publicada e validada | Mobile 97 / desktop 99; FCP 1,4s / 0,5s; CLS 0 |
 | COE | Publicada e validada | 100 mobile/desktop; FCP 0,9s/0,5s; CLS 0 |
 | DRB | Publicada e validada | Mobile 96 / desktop 99; FCP 1,8s/0,5s; CLS 0 |
-| ECM atual (`ecm-26`) | Pendente | — |
+| ECM atual (`ecm-26`) | Publicada e validada | Mobile 96 / desktop 98; FCP 1,9s/0,3s; CLS 0 |
 | GDP | Pendente | — |
 | MCE | Pendente | — |
 | MPG | Pendente | — |
@@ -101,6 +101,32 @@ o ganho comprovado foi redução das fontes e eliminação de CLS. Alternativa
 externa antecipada melhorou FCP local em 0,15s, mas trouxe CLS 0,0179 com
 fontes lentas; descartada, configuração final permanece a publicada embutida.
 Chat público carregou uma única vez em 12.014ms. Espelho e cache concluídos.
+
+## ECM atual
+
+As três fontes Cera Pro originais WOFF viraram subconjuntos WOFF2: soma de
+200.472 → 34.480 bytes. Pesos 400/700/800 preservados, fontes críticas embutidas
+com preload. Mesmos 102 blocos em 390/1440; única diferença textual é o contador
+avançando segundos. 15 imagens, nove FAQs, cinco compras com UTM e GTM único
+passaram. Lighthouse local 99, FCP 1,0s, LCP 1,96s, TBT/CLS 0. Referência pública
+mobile 91, FCP 1,7s, LCP 3,3s, TBT/CLS 0. ECM v1 não acessada pelo build.
+Primeira coleta pública final: desktop 98, FCP 0,6s, LCP 0,7s, TBT 0,
+CLS 0,008. Mobile 62, FCP 1,1s, LCP 2,3s, TBT 9.170ms, CLS 0,023; executor
+Google com benchmark 116 contra 1214 da referência, execução ~60s contra ~11s.
+Repetindo para investigar a divergência com Lighthouse local e referência.
+Revisão independente dos helpers de fontes/bundler/SFTP concluída sem achados.
+Repetição mobile: 94, FCP 1,9s, LCP 2,7s, TBT 0, CLS 0,023. Auditoria
+identificou logotipo Raízes sem dimensões: a pintura antecipada revelou o salto.
+Configurada reserva das dimensões intrínsecas 838×372, com altura automática.
+Mesmos 102 blocos após correção; logo atrasado 2.200ms agora gera CLS 0.
+Lighthouse local 99, FCP 0,91s, LCP 1,96s, CLS 0. Republicando versão estável.
+Na republicação estável, a configuração compartilhada de espelhamento estava
+desativada (mudança paralela); respeitada, sem reativá-la. Publicação principal
+em contemmagia.com.br e purge concluídos normalmente.
+Resultado estável público: mobile 96, FCP 1,9s, LCP 2,1s, TBT/CLS 0;
+desktop 98, FCP 0,3s, LCP 0,5s, TBT/CLS 0. Resultado comunicado antes da GDP.
+Regeneração de fontes preserva outras opções do desempenho.json, comprovado
+com a reserva do logotipo. Nenhuma duplicação de arquivos ao regenerar.
 
 GitHub: commit BCE enviado; envio do commit COE foi bloqueado pela revisão
 automática, mesmo após verificar o remoto canônico `r1tec/cm-pages`. Pergunta

@@ -59,7 +59,7 @@ for face in re.findall(r'@font-face\s*\{[^}]*\}', (build / 'index.html').read_te
     font.flavor = 'woff2'
     folder = root / 'assets/fonts'
     folder.mkdir(parents=True, exist_ok=True)
-    destination = folder / ('fcp-' + Path(source).name)
+    destination = folder / ('fcp-' + Path(source).with_suffix('.woff2').name)
     font.save(destination)
     # Nome com hash permite cache imutável mesmo após nova geração.
     hashed = destination.with_stem(destination.stem + '-' + hashlib.sha256(destination.read_bytes()).hexdigest()[:10])
@@ -69,4 +69,7 @@ for face in re.findall(r'@font-face\s*\{[^}]*\}', (build / 'index.html').read_te
     config.append({'familia': family, 'peso': weight, 'origem': source,
                    'arquivo': str(hashed.relative_to(root)), 'inline': critical, 'preload': critical})
     print(f'{family} {key[1]} {weight}: {(build/source).stat().st_size} -> {hashed.stat().st_size}; crítica={critical}')
-(root / 'desempenho.json').write_text(json.dumps({'preload_fontes_seletivo': True, 'fontes': config}, ensure_ascii=False, indent=2) + '\n')
+config_path = root / 'desempenho.json'
+settings = json.loads(config_path.read_text()) if config_path.exists() else {}
+settings.update({'preload_fontes_seletivo': True, 'fontes': config})
+config_path.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + '\n')

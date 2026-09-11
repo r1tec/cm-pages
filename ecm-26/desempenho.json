@@ -1,0 +1,32 @@
+{
+  "preload_fontes_seletivo": true,
+  "reservar_dimensoes_imagens": [
+    "assets/40b1de22-6db0-4d08-9732-108ecaa593a3.webp"
+  ],
+  "fontes": [
+    {
+      "familia": "Cera Pro",
+      "peso": "400",
+      "origem": "assets/666127ec-3622-4217-b84f-600f34b22d3c.woff",
+      "arquivo": "assets/fonts/fcp-666127ec-3622-4217-b84f-600f34b22d3c-9bbde1ab86.woff2",
+      "inline": true,
+      "preload": true
+    },
+    {
+      "familia": "Cera Pro",
+      "peso": "700",
+      "origem": "assets/ce3cca79-eab5-4e6e-b213-318c44a28146.woff",
+      "arquivo": "assets/fonts/fcp-ce3cca79-eab5-4e6e-b213-318c44a28146-be7cba8c7a.woff2",
+      "inline": true,
+      "preload": true
+    },
+    {
+      "familia": "Cera Pro",
+      "peso": "800",
+      "origem": "assets/c7482651-7b0f-4dbe-b3bf-521a1764ed6c.woff",
+      "arquivo": "assets/fonts/fcp-c7482651-7b0f-4dbe-b3bf-521a1764ed6c-1d9f0d61a8.woff2",
+      "inline": true,
+      "preload": true
+    }
+  ]
+}
