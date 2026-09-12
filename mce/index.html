@@ -144,4 +144,18 @@ ATENÇÃO				</span>
  items.forEach(function(d){d.addEventListener('toggle',function(){
    if(d.open){items.forEach(function(o){if(o!==d)o.open=false;});}});});});}
  if(document.readyState!='loading')init();else addEventListener('DOMContentLoaded',init);})();</script>
+<script id="cm-chat-loader">
+(function () {
+  var widgetId = '6a0e1e3957ddb4d64b351981';
+  window.setTimeout(function () {
+    if (document.querySelector('chat-widget, script[data-widget-id="' + widgetId + '"]')) return;
+    var script = document.createElement('script');
+    script.src = 'https://widgets.leadconnectorhq.com/loader.js';
+    script.async = true;
+    script.setAttribute('data-resources-url', 'https://beta.leadconnectorhq.com/chat-widget/loader.js');
+    script.setAttribute('data-widget-id', widgetId);
+    document.body.appendChild(script);
+  }, Math.max(0, 10000 - performance.now()));
+})();
+</script>
 </body></html>
