@@ -771,7 +771,7 @@ def main():
 
     # Copia outros arquivos da origem (ex: favicon), menos o index
     for name in os.listdir(src_dir):
-        if name in ("index.html", "reduzir.json", "cores.json", "desempenho.json"): continue  # config local, não publica
+        if name in ("index.html", "reduzir.json", "cores.json", "desempenho.json", "rastreamento.json"): continue  # config local, não publica
         s = os.path.join(src_dir, name)
         if os.path.isdir(s): continue
         shutil.copy2(s, os.path.join(out_dir, name))
@@ -813,6 +813,7 @@ def main():
                     except Exception as e:
                         print(f"  AVISO: cores.json invalido ({e}); ignorado.", file=sys.stderr)
                 static_html = _aplicar_desempenho_config(static_html, src_dir, out_dir)
+                static_html = normalizar_gtm(static_html, meta_antecipado=meta_antecipado_na_pagina(src_dir))
                 with open(index_path, "w", encoding="utf-8") as f:
                     f.write(static_html)
                 static_ok = True
