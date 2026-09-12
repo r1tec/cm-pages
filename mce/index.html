@@ -154,6 +154,25 @@ ATENÇÃO				</span>
     script.async = true;
     script.setAttribute('data-resources-url', 'https://beta.leadconnectorhq.com/chat-widget/loader.js');
     script.setAttribute('data-widget-id', widgetId);
+    script.addEventListener('load', function () {
+      window.setInterval(function () {
+        if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var widget = document.querySelector('chat-widget');
+        var root = widget && widget.shadowRoot;
+        var icon = root && root.querySelector('#lc_text-widget--btn:not(.active) .widget-open-icon svg');
+        if (!icon || !icon.animate) return;
+        icon.style.transformOrigin = 'center';
+        icon.style.transformBox = 'fill-box';
+        icon.animate([
+          { transform: 'rotate(0deg)' },
+          { transform: 'rotate(-6deg)' },
+          { transform: 'rotate(6deg)' },
+          { transform: 'rotate(-4deg)' },
+          { transform: 'rotate(4deg)' },
+          { transform: 'rotate(0deg)' }
+        ], { duration: 420, easing: 'ease-in-out' });
+      }, 5000);
+    });
     document.body.appendChild(script);
   }, Math.max(0, 10000 - performance.now()));
 })();
