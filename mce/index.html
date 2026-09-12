@@ -168,7 +168,12 @@ ATENÇÃO				</span>
         }
         window.clearInterval(ready);
         var style = document.createElement('style');
-        style.textContent = '#lc_text-widget--btn::after{content:"1";position:absolute;top:-4px;right:-4px;width:21px;height:21px;box-sizing:border-box;border:2px solid white;border-radius:50%;background:#d71920;color:white;font:700 12px/17px Arial,sans-serif;text-align:center;pointer-events:none;box-shadow:0 1px 3px #0003}#lc_text-widget--btn.active::after,:host([data-cm-chat-seen]) #lc_text-widget--btn::after{display:none}';
+        var appIcon = new URL('assets/whatsapp-app.png', document.baseURI).href;
+        style.textContent = '#lc_text-widget--btn:not(.active){width:60px;height:60px;padding:0;border-radius:14px!important;background:transparent!important;overflow:visible;box-shadow:0 2px 8px #0003}' +
+          '#lc_text-widget--btn:not(.active) .widget-open-icon{display:block!important;width:60px;height:60px;border-radius:14px;background:center/cover no-repeat url("' + appIcon + '")}' +
+          '#lc_text-widget--btn:not(.active) .widget-open-icon svg{visibility:hidden}' +
+          '#lc_text-widget--btn::after{content:"1";position:absolute;top:-8px;right:-8px;width:24px;height:24px;box-sizing:border-box;border:0;border-radius:50%;background:#ff3b30;color:white;font:400 16px/24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;pointer-events:none;box-shadow:0 1px 3px #0002}' +
+          '#lc_text-widget--btn.active::after,:host([data-cm-chat-seen]) #lc_text-widget--btn::after{display:none}';
         root.appendChild(style);
         root.addEventListener('click', function (event) {
           if (event.composedPath().some(function (node) { return node.id === 'lc_text-widget--btn'; })) widget.setAttribute('data-cm-chat-seen', '');
@@ -178,7 +183,7 @@ ATENÇÃO				</span>
         if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var widget = document.querySelector('chat-widget');
         var root = widget && widget.shadowRoot;
-        var icon = root && root.querySelector('#lc_text-widget--btn:not(.active) .widget-open-icon svg');
+        var icon = root && root.querySelector('#lc_text-widget--btn:not(.active) .widget-open-icon');
         if (!icon || !icon.animate) return;
         icon.style.transformOrigin = 'center';
         icon.style.transformBox = 'fill-box';
