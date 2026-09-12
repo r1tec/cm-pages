@@ -169,9 +169,10 @@ ATENÇÃO				</span>
         window.clearInterval(ready);
         var style = document.createElement('style');
         var appIcon = new URL('assets/whatsapp-app.png', document.baseURI).href;
-        style.textContent = '#lc_text-widget--btn:not(.active){width:60px;height:60px;padding:0;border-radius:14px!important;background:transparent!important;overflow:visible;box-shadow:0 2px 8px #0003}' +
-          '#lc_text-widget--btn:not(.active) .widget-open-icon{display:block!important;width:60px;height:60px;border-radius:14px;background:center/cover no-repeat url("' + appIcon + '")}' +
-          '#lc_text-widget--btn:not(.active) .widget-open-icon svg{visibility:hidden}' +
+        style.textContent = '#lc_text-widget--btn{width:60px;height:60px;padding:0;border-radius:14px!important;background:transparent!important;overflow:visible;box-shadow:0 2px 8px #0003}' +
+          '#lc_text-widget--btn .widget-open-icon{display:block!important;width:60px;height:60px;border-radius:14px;background:center/cover no-repeat url("' + appIcon + '")}' +
+          '#lc_text-widget--btn .widget-open-icon svg{visibility:hidden}' +
+          '#lc_text-widget--btn .widget-close-icon{display:none!important}' +
           '#lc_text-widget--btn::after{content:"1";position:absolute;top:-8px;right:-8px;width:24px;height:24px;box-sizing:border-box;border:0;border-radius:50%;background:#ff3b30;color:white;font:400 16px/24px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;pointer-events:none;box-shadow:0 1px 3px #0002}' +
           '#lc_text-widget--btn.active::after,:host([data-cm-chat-seen]) #lc_text-widget--btn::after{display:none}';
         root.appendChild(style);
