@@ -23,6 +23,12 @@ aprovação para cada ajuste técnico reversível dentro do escopo.
 
 ## 2. Rastreamento e adendos
 
+- Exceção autorizada em 12/09/2026: piloto DRB com Meta antecipada, opt-in em
+  `drb/rastreamento.json`. Seguir `docs/PLANO-DRB-PIXEL-ANTECIPADO.md` para
+  publicar/reverter. O GTM continua adiado; o adaptador evita a primeira repetição
+  das chamadas Meta do container v28. Revalidar se as tags mudarem; não copiar
+  o piloto para outras páginas sem escopo aplicável. Sua presença não prova
+  recebimento no Gerenciador de Eventos.
 - `rastreamento.py` é a fonte única do GTM `GTM-P629X98`: carregar uma vez na
   primeira interação (scroll, mousemove, touchstart, click, keydown) ou após 5s.
   Inicializar dataLayer cedo e preservar sua fila. Não somar loaders nem inserir

@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import re
 
-from rastreamento import GTM_ID, normalizar_gtm
+from rastreamento import GTM_ID, normalizar_gtm, meta_antecipado_na_pagina
 from limpar_cache import limpar_paginas
 
 SLUGS = {"bce", "coe", "drb", "mce", "mpg", "gdp", "ecm-26", "ecm-26-v1"}
@@ -23,14 +23,29 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--aplicar", action="store_true")
     parser.add_argument("--imediato", action="store_true")
+    parser.add_argument("--meta-antecipado", action="store_true")
+    parser.add_argument("--restaurar-backup", help="Pasta .build com before/after; exige versão remota igual ao after")
     parser.add_argument("slugs", nargs="+", choices=sorted(SLUGS))
     args = parser.parse_args()
+    if args.imediato and args.meta_antecipado:
+        parser.error("--imediato e --meta-antecipado são modos distintos")
+    restore = None
+    if args.restaurar_backup:
+        if args.imediato or args.meta_antecipado:
+            parser.error("Restauração não pode ser combinada com outro modo")
+        restore = Path(args.restaurar_backup).resolve()
+        try:
+            restore.relative_to(Path('.build').resolve())
+        except ValueError:
+            parser.error("Restauração limitada aos backups locais em .build")
+    if args.meta_antecipado and any(not meta_antecipado_na_pagina(s) for s in args.slugs):
+        parser.error("Piloto Meta exige opt-in no rastreamento.json de cada página")
     ftp = ftplib.FTP_TLS(os.environ["FTP_HOST"], timeout=30)
     ftp.login(os.environ["FTP_USUARIO"], os.environ["FTP_SENHA"])
     ftp.prot_p()
     root = os.environ.get("FTP_BASE", "/public_html/").rstrip("/")
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    modo = "original" if args.imediato else "performance"
+    modo = "restauracao" if restore else ("meta-antecipado" if args.meta_antecipado else ("original" if args.imediato else "performance"))
     backup = Path(f".build/gtm-{modo}-backup") / stamp
     backup.mkdir(parents=True, mode=0o700)
 
@@ -51,8 +66,14 @@ def main():
                      and "gtm.start" in m.group()]
             if len(found) != 1:
                 raise ValueError(f"{slug}: esperado exatamente um carregador GTM")
-            after = normalizar_gtm(html, imediato=args.imediato).encode("utf-8")
-            # O prefixo/sufixo são preservados pelo normalizador, sem reserializar HTML.
+            if restore:
+                if before != (restore / f"{slug}.after.html").read_bytes():
+                    raise RuntimeError(f"{slug}: versão remota mudou; não restaurar sobre trabalho posterior")
+                after = (restore / f"{slug}.before.html").read_bytes()
+            else:
+                after = normalizar_gtm(html, imediato=args.imediato,
+                                      meta_antecipado=args.meta_antecipado).encode("utf-8")
+            # Não reserializa HTML; restauração só admite o par before/after exato.
             old = backup / f"{slug}.before.html"
             new = backup / f"{slug}.after.html"
             old.write_bytes(before)
@@ -60,7 +81,7 @@ def main():
             old.chmod(0o600)
             new.chmod(0o600)
             plans.append((slug, remote, before, after))
-            print(f"{slug}: GTM único; HTML {len(before)} -> {len(after)} bytes; demais elementos preservados")
+            print(f"{slug}: GTM único; HTML {len(before)} -> {len(after)} bytes; modo {modo}")
 
         print(f"Backups e prévia: {backup}")
         if not args.aplicar:

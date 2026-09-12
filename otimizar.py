@@ -14,7 +14,7 @@
 
 import sys, os, re, json, base64, gzip, shutil, subprocess, hashlib
 import estatico
-from rastreamento import normalizar_gtm
+from rastreamento import normalizar_gtm, meta_antecipado_na_pagina
 
 CWEBP = shutil.which("cwebp")  # se existir, reencoda imagens para WebP (menor)
 DWEBP = shutil.which("dwebp")  # decodifica webp -> png (p/ reencodar do original)
@@ -649,7 +649,7 @@ def main():
             html_out = _podar_css_morto(html_out)
             print(f"  CSS podado: {antes_css//1024}KB -> {len(html_out)//1024}KB de HTML")
         for name in os.listdir(src_dir):
-            if name in ("index.html", "desempenho.json"): continue
+            if name in ("index.html", "desempenho.json", "rastreamento.json"): continue
             s = os.path.join(src_dir, name); d = os.path.join(out_dir, name)
             (shutil.copytree if os.path.isdir(s) else shutil.copy2)(s, d)
         # Tira as fotos coladas no HTML (data:base64) para arquivos próprios: some
@@ -660,7 +660,7 @@ def main():
             print(f"  fotos embutidas externalizadas: {inl['n']} imagens "
                   f"({inl['kb']}KB p/ inline-assets/)")
         with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
-            f.write(normalizar_gtm(html_out))
+            f.write(normalizar_gtm(html_out, meta_antecipado=meta_antecipado_na_pagina(src_dir)))
         _escrever_htaccess(out_dir)
         # Recomprime as imagens no build (fonte fica intocada). Repetível e seguro.
         recomprimir_assets_webp(src_dir, out_dir)
