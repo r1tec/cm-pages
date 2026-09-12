@@ -147,6 +147,9 @@ ATENÇÃO				</span>
 <script id="cm-chat-loader">
 (function () {
   var widgetId = '6a0e1e3957ddb4d64b351981';
+  var chatDelay = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches ? 7000 : 5000;
+  var connection = navigator.connection;
+  if (connection && (connection.saveData || /^(slow-)?2g$/.test(connection.effectiveType))) chatDelay = 10000;
   window.setTimeout(function () {
     if (document.querySelector('chat-widget, script[data-widget-id="' + widgetId + '"]')) return;
     var script = document.createElement('script');
@@ -155,6 +158,22 @@ ATENÇÃO				</span>
     script.setAttribute('data-resources-url', 'https://beta.leadconnectorhq.com/chat-widget/loader.js');
     script.setAttribute('data-widget-id', widgetId);
     script.addEventListener('load', function () {
+      var attempts = 0;
+      var ready = window.setInterval(function () {
+        var widget = document.querySelector('chat-widget');
+        var root = widget && widget.shadowRoot;
+        if (!root || !root.querySelector('#lc_text-widget--btn')) {
+          if (++attempts >= 150) window.clearInterval(ready);
+          return;
+        }
+        window.clearInterval(ready);
+        var style = document.createElement('style');
+        style.textContent = '#lc_text-widget--btn::after{content:"1";position:absolute;top:-4px;right:-4px;width:21px;height:21px;box-sizing:border-box;border:2px solid white;border-radius:50%;background:#d71920;color:white;font:700 12px/17px Arial,sans-serif;text-align:center;pointer-events:none;box-shadow:0 1px 3px #0003}#lc_text-widget--btn.active::after,:host([data-cm-chat-seen]) #lc_text-widget--btn::after{display:none}';
+        root.appendChild(style);
+        root.addEventListener('click', function (event) {
+          if (event.composedPath().some(function (node) { return node.id === 'lc_text-widget--btn'; })) widget.setAttribute('data-cm-chat-seen', '');
+        });
+      }, 200);
       window.setInterval(function () {
         if (document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var widget = document.querySelector('chat-widget');
@@ -165,16 +184,16 @@ ATENÇÃO				</span>
         icon.style.transformBox = 'fill-box';
         icon.animate([
           { transform: 'rotate(0deg)' },
-          { transform: 'rotate(-6deg)' },
-          { transform: 'rotate(6deg)' },
-          { transform: 'rotate(-4deg)' },
-          { transform: 'rotate(4deg)' },
+          { transform: 'translateX(-2px) rotate(-14deg)' },
+          { transform: 'translateX(2px) rotate(14deg)' },
+          { transform: 'translateX(-1px) rotate(-10deg)' },
+          { transform: 'translateX(1px) rotate(10deg)' },
           { transform: 'rotate(0deg)' }
-        ], { duration: 420, easing: 'ease-in-out' });
+        ], { duration: 560, easing: 'ease-in-out' });
       }, 5000);
     });
     document.body.appendChild(script);
-  }, Math.max(0, 10000 - performance.now()));
+  }, Math.max(0, chatDelay - performance.now()));
 })();
 </script>
 </body></html>
