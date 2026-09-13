@@ -1,0 +1,16 @@
+# WordPress LP. As paginas estaticas continuam na conta original.
+DirectoryIndex index.php
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://lp.eduparmeggiani.com%{REQUEST_URI} [R=302,L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^(bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1)(/.*)?$ https://eduparmeggiani.com/$1$2 [R=302,L]
+RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1)(?:/|$) - [R=404,L]
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>

@@ -13,11 +13,11 @@ RewriteRule ^\.well-known/(?:acme-challenge|pki-validation)/ - [L]
 # Never change POST requests into GET redirects.
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
-RewriteRule ^(iat|mpp|t3x|wmpp-obrigado|bpa|bco|6-edb|6-edb-obrigado|drb-vsl)/?$ https://crhishmxlb.wpdns.site/$1/ [R=302,L]
+RewriteRule ^(iat|mpp|t3x|wmpp-obrigado|bpa|bco|6-edb|6-edb-obrigado|drb-vsl)/?$ https://lp.eduparmeggiani.com/$1/ [R=302,L]
 
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
-RewriteRule ^$ https://crhishmxlb.wpdns.site/ [R=302,L]
+RewriteRule ^$ https://lp.eduparmeggiani.com/ [R=302,L]
 
 # Missing assets must return 404, not the unrelated WordPress in this root.
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
