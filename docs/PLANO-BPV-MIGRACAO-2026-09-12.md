@@ -1,12 +1,51 @@
 # BPV — migração do Lovable para cm-pages
 
-**Estado: plano, sem execução da migração.** Pedido de 12/09/2026: trazer a BPV
+**Estado em 13/09/2026: nova BPV publicada e redirecionamento 301 validado.** A remoção física da fonte no Lovable permanece pendente; nenhuma alteração foi salva/publicada lá. Pedido de 12/09/2026: trazer a BPV
 de `https://pv.contemmagia.com.br/bpv` para `https://contemmagia.com.br/bpv`,
 otimizar, instalar seu chat e redirecionar o endereço antigo; retirar a BPV do
-Lovable somente depois da entrega. O pedido mais recente delimita esta etapa
-à investigação e ao plano. Nenhuma BPV, regra de redirecionamento ou DNS foi alterada.
+Lovable somente depois da entrega. Em 13/09/2026 o dono pediu aplicar o plano,
+autorizando seus builds, publicação e corte conforme as verificações previstas.
 
 ## Diagnóstico confirmado
+
+### Resultado da execução em 13/09/2026
+
+- Nova página em `https://contemmagia.com.br/bpv/`, estática, com assets locais,
+  chat próprio e Meta antecipada. Fonte pública preservada e código Lovable
+  exportado em `.build/bpv-migration/lovable-codebase.zip`.
+- Fidelidade em 390/1440 px, oito CTAs com campanhas, quatro vídeos sob demanda,
+  âncoras e chat aberto/fechado verificados. Sem overflow, imagens quebradas ou
+  erros JavaScript nos testes. Meta iniciou em 10–18 ms, antes do GTM (~5 s).
+- PageSpeed público: **90 celular / 99 desktop**, antes 77/93. LCP 1,0/0,7 s,
+  TBT 200/80 ms e CLS zero. Medição anterior ao acréscimo do texto do rodapé;
+  esse ajuste de texto foi conferido em ambas as larguras, sem repetir PSI.
+- Rodapé acrescentado somente na nova BPV e confirmado publicamente:
+  “Escola Contém Magia © Todos os Direitos Reservados 2026 · Versão 2.0”.
+- Regra Cloudflare `59ae225857cc427c9e2dd11a731d3861`, ruleset
+  `b051210a138f462095e633b56896e79b`: host exato `pv.contemmagia.com.br`,
+  caminhos `/bpv` e `/bpv/`, destino `https://contemmagia.com.br/bpv/`, query
+  preservada. Testada com 302 e promovida para 301; navegador confirmou uma
+  resposta 301, chegada 200 e preservação de campanha e hash.
+- Proxy do subdomínio autorizado explicitamente pelo dono. O registro A
+  `185.158.133.1` não aplicava a regra devido à prioridade do hostname SaaS.
+  Convertido para CNAME proxied `contemmagia-pv.lovable.app`, origem confirmada
+  nas configurações do mesmo projeto Lovable. Essa configuração permitiu O2O.
+- Nenhum apontamento, conteúdo ou redirecionamento COE/ECM foi alterado no
+  Lovable nesta migração. As rotas foram apenas verificadas após a mudança do
+  DNS compartilhado. O dono esclareceu que todas as demais estão descontinuadas
+  e já divulgam os novos endereços; não executar migração adicional dessas rotas.
+- A entrega da BPV e seus assets vêm agora do cm-pages. A publicação/fonte antiga
+  permanece preservada no Lovable; não houve despublicação do projeto inteiro.
+
+Rollback do corte: desativar somente a regra BPV acima e restaurar o registro
+DNS `c7dfcd890aa84926c7e6e9cae1399675` para A `185.158.133.1`, DNS-only, TTL
+3600. Não executar rollback automaticamente; a nova página está funcional.
+
+Referências de infraestrutura consultadas:
+[O2O e requisito CNAME](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/saas-customers/how-it-works/)
+e [prioridade de hostname SaaS](https://developers.cloudflare.com/ssl/reference/certificate-and-hostname-priority/).
+
+### Referência anterior à migração
 
 Inspeção pública em Chrome, 390/1440 px, e PageSpeed em 12/09/2026:
 
