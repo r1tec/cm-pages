@@ -1,125 +1,146 @@
-# Receita única — recriar páginas do WordPress como páginas leves
+# Receita — migrar uma página do WordPress para o cm-pages
 
-Uma só receita, seguida igual para as 5 slugs: **bce, drb, mce, mpg, gdp**.
-Original de cada uma: `https://eduparmeggiani.com/<slug>`.
-Destino: `https://contemmagia.com.br/<slug>` (pasta `<slug>/index.html` no repo).
+Recriar a página de `https://eduparmeggiani.com/<slug>/` como página leve em
+`<slug>/index.html`, publicada em `https://contemmagia.com.br/<slug>/`.
 
-O `coe/` é **referência de organização e otimização de código**, não de visual.
-Cada página preserva o layout, o conteúdo, as imagens, os vídeos e os efeitos
-**dela mesma** — só reescritos de forma leve.
+Usada nas 5 primeiras (bce, drb, mce, mpg, gdp) e na BPV; vale para as próximas.
+O `coe/` é referência de **organização de código**, não de visual: cada página
+preserva o layout, o conteúdo, as imagens, os vídeos e os efeitos dela mesma.
 
----
-
-## Quem executa
-
-**Engenheiros de tempo de carregamento de página** — agentes cuja missão é
-espremer o tempo de carregamento ao máximo (carregamento recorde, notas de
-PageSpeed no teto) **mantendo 100% da fidelidade de layout**. Performance nunca
-é desculpa para o menor desvio visual: se otimizar ameaça o layout, o layout
-vence e a otimização se busca por outro caminho. Um por slug, contexto fresco.
-
-## Regras de operação (valem para todos)
-
-1. **Não parar por nada.** Travou numa decisão → consulta um **agente sênior**
-   (subagente) para destravar; nunca devolve a bola pro dono no meio. O que for
-   realmente insuperável **anota no relatório final** e segue.
-2. **Não trazer o bruto pro contexto.** O HTML pesado do original e o JSON do
-   PageSpeed são processados **fora** (sandbox/puxadinho); volta só o extrato.
-3. **Baixar o original UMA vez**, salvar em disco, trabalhar do arquivo. Nunca
-   rebaixar a mesma página.
-4. **Reusar o pipeline existente** (`otimizar.py`, `verificar.py`,
-   `publicar.sh`) — não reimplementar otimização.
-5. **Relatório curto e fixo** (schema no fim). Zero prosa, zero narração.
+Leia junto: `CLAUDE.md` (canônico), `docs/engenheiro-kit.md` (o terreno já
+descoberto) e, quando existir, `<slug>/REGRAS.md`.
 
 ---
 
-## Passo a passo por slug
+## Regras de operação
+
+1. **Fidelidade é lei.** Mesmo texto, mesmas imagens, mesmos vídeos, mesmas
+   cores/fontes/espaçamentos, mesma ordem de seções, os efeitos da própria
+   página. Performance nunca justifica desvio visual.
+2. **Baixar o original UMA vez**, salvar no scratchpad, trabalhar do arquivo.
+   HTML pesado e JSON de PageSpeed se processam fora do contexto; volta o extrato.
+3. **Reusar o pipeline** (`preparar.py`, `otimizar.py`, `verificar.py`,
+   `publicar.sh`, `rastreamento.py`) — não reimplementar otimização nem pixel.
+4. **Publicar só com pedido do dono** aplicável à tarefa. Preparar, conferir e
+   medir localmente não autorizam pôr no ar (CLAUDE.md).
+5. Travou numa decisão técnica: decida e registre. Só volte ao dono no que for
+   escolha dele (texto, oferta, checkout, publicação).
+
+---
+
+## Passo a passo
 
 ### 1. Copiar o original fiel
-- Baixar a página `https://eduparmeggiani.com/<slug>` **completa**: HTML
-  renderizado + CSS + imagens + fontes + embeds de vídeo.
-- Salvar tudo em disco (fora do repo, ex.: scratchpad `originais/<slug>/`).
-- Extrair e registrar, do original: **todo o texto**, a ordem e o layout das
-  seções, cada **imagem** (URL/arquivo), cada **link de vídeo/embed**, o
-  **link exato do botão de compra** e o **pixel** embutido (Facebook e/ou
-  Google — ID e snippet).
+Baixar `https://eduparmeggiani.com/<slug>/` **com barra final** (sem barra dá
+301), completa: HTML renderizado, CSS, imagens, fontes e embeds de vídeo, para
+`originais/<slug>/` no scratchpad. Registrar: todo o texto, a ordem das seções,
+cada imagem, cada vídeo/embed, o **link exato do botão de compra** e o
+rastreamento embutido no original (só como inventário — o que vai para a página
+nova é o padrão do repo, item 3).
 
 ### 2. Reescrever leve em `<slug>/index.html`
-- Reconstruir a página em **HTML/CSS estático enxuto**, no padrão de
-  organização do `coe/` (autocontido, sem framework, sem CDN, sem build).
-- **Fidelidade é lei:** mesma sequência de seções, mesmo texto, mesmas imagens,
-  mesmas cores/fontes/espaçamentos e os **efeitos da própria página**. Sem
-  inventar, sem trocar imagem, sem trocar vídeo, sem trocar link.
-- Preservar o **link de compra exato do original** (não padronizar para
-  pay.contemmagia).
-- Incluir o **pixel do próprio original** (o `otimizar.py` cuida de adiá-lo).
+HTML/CSS estático enxuto, autocontido, sem framework, sem CDN, sem build, no
+padrão de organização do `coe/`. Imagens e fontes em `assets/`.
 
-### 3. Pixel + carregador de slug/UTM
-- Pixel: o mesmo do original, no `index.html`.
-- Script de slug/UTM: portar o do `coe/` (leva as UTMs da URL atual para o
-  link de checkout), **apontando o `CHECKOUT_HOST` para o host do checkout
-  desta página** (o do original, não pay.contemmagia).
+Não escreva à mão o que o pipeline faz: `.htaccess`, embutir CSS/fontes,
+externalizar imagens coladas em base64, recomprimir WebP, preload de fonte e de
+imagem, adiar fundos e posters. Isso sai de `otimizar.py` + `desempenho.json`
+(ver kit). A pasta versionada guarda o **original leve**; o build é derivado.
 
-### 4. Publicar
-- `./publicar.sh <slug>` (otimiza → confere peso/contraste → sobe por FTP →
-  limpa cache do Cloudflare). Ler a saída da conferência.
+Checklist mínimo do HTML: `<html lang="pt-BR">`, `role="main"` no container do
+conteúdo, `<img>` com `width`/`height`, `<video preload="none">`, emoji como
+caractere (não `<img>` do CDN s.w.org).
 
-### 5. Medir no PageSpeed e subir a nota
-- Rodar PageSpeed Insights (via API, JSON processado fora) na URL publicada
-  `https://contemmagia.com.br/<slug>`, **mobile e desktop**, capturando as 4
-  categorias: **Performance, Acessibilidade, Boas Práticas (Best Practices) e
-  SEO**.
-- **Se qualquer nota < 97:** aplicar mais otimização possível **sem tocar no
-  layout** (ex.: reduzir imagem além do padrão, ajustar contraste reprovado,
-  atributos de acessibilidade que faltem, meta/SEO, adiar/dividir script),
-  republicar e **remedir**. Repetir até o teto viável.
-- Registrar as notas finais e, se alguma ficou < 97 mesmo após otimizar, o
-  motivo (trava anotada, não parada).
+### 3. Rastreamento: um GTM + `rastreamento.json`
+A página nova **não leva o pixel do original**. Ela nasce com o carregador GTM
+conhecido do repo (`GTM-P629X98`) — copie o bloco do `coe/index.html`. Com
+exatamente um carregador na página, `rastreamento.py` assume o resto no build:
+adia o GTM para a 1ª interação ou 5s e, quando a página tem `rastreamento.json`,
+injeta o registro leve da visita.
 
-### 6. Conferir fidelidade
-- Comparar a página publicada com o original, seção por seção. Qualquer desvio
-  visual → corrigir antes de dar a slug por pronta.
+`<slug>/rastreamento.json` (padrão atual das 8 páginas no ar):
 
-### 7. Espelhar no GitHub
-- `git add -A`, commit da pasta `<slug>/`, push. (Mirror; a hospedagem é o
-  resultado.)
+```json
+{
+  "meta_pageview_antecipado": true,
+  "meta_envio_leve": true,
+  "oferta": "texto:R$ 39,90"
+}
+```
+
+- `meta_pageview_antecipado`: PageView Meta registrado no início, sem o SDK.
+- `meta_envio_leve`: envia por requisição leve a `facebook.com/tr`, criando
+  `_fbp`/`_fbc` em `.contemmagia.com.br`; o SDK completo só entra com o GTM.
+- `oferta`: alvo do evento `ViuOferta` (com `Leitura30s`, alimenta remarketing).
+  Sem esse campo, a página não gera sinal de engajamento.
+
+Reversão é editar o JSON e republicar. Arquivo inválido interrompe o build.
+
+### 4. Checkout e UTM
+Destino padrão: `https://pay.contemmagia.com.br/c/<slug>` (é o que as 8 páginas
+publicadas usam), salvo se o pedido indicar outro checkout. Porte o script de
+slug/UTM do `coe/` apontando `H` para o host usado, para repassar UTMs e
+`fbclid` até o checkout. Confira os links no preview antes de fechar.
+
+### 5. Preparar e conferir
+`python3 preparar.py <slug> --saida /tmp/preview-<slug> --conferir`.
+Abrir o preview em celular e desktop: fidelidade seção a seção contra o
+original, imagens e fundos, overflow, FAQ, vídeos e CTAs. Interação nova se
+exercita no preview — screenshot não prova comportamento.
+
+Regressões do rastreamento: `python3 scripts/testar-rastreamento.py`
+(e `scripts/testar-meta-leve.cjs` quando mexer no envio leve).
+
+### 6. Desempenho
+Use a skill `otimizar` quando o pedido for de desempenho ou houver impacto
+concreto. Ajustes entram por `<slug>/desempenho.json` (fontes, preload de
+imagem, `fundos_adiados`, `posters_adiados`, `imagens_responsivas`), não
+editando o HTML à mão. Meta de nota vem do pedido; não perseguir 100 constante.
+PageSpeed público exige a página no ar — sem autorização, medir localmente e
+distinguir Lighthouse local de medição pública.
+
+### 7. Publicar (só com pedido)
+`./publicar.sh <slug>` ou `./publicar.sh --build /tmp/preview-<slug> <slug>`
+para enviar exatamente o build já conferido. Troca restrita só do script de
+rastreamento (sem rebuild): `./publicar.sh --gtm-performance --meta-antecipado
+--aplicar <slug>` — sempre pelo `publicar.sh`, não chamando `alinhar_gtm.py`
+direto. Depois de publicar, conferir a URL real com barra final.
+
+### 8. Versionar
+Commit e push só dos arquivos da tarefa (`<slug>/` e o doc que registrou a
+migração), em português, direto na `main`. Nada de `git add -A`.
 
 ---
 
 ## Aceite por slug
 
 **Tem que fazer**
-- Página no ar em `contemmagia.com.br/<slug>`, visualmente idêntica ao original.
-- Texto, imagens, vídeos e link de compra **exatamente** os do original.
-- Pixel presente e carregador de slug/UTM funcionando até o checkout.
-- 4 notas do PageSpeed medidas (mobile+desktop); alvo ≥ 97 em todas.
-- Cópia commitada e no GitHub.
+- Página visualmente idêntica ao original, em celular e desktop.
+- Texto, imagens, vídeos e link de compra exatamente os definidos no pedido.
+- Um único carregador GTM, `rastreamento.json` presente e visita registrada uma
+  vez por pixel; UTMs e `fbclid` chegando ao checkout.
+- Preview conferido com interações exercitadas; testes de rastreamento verdes.
+- Cópia commitada.
 
-**Não pode acontecer** (é o que pega regressão)
-- Qualquer diferença visual do original (seção fora de ordem, cor/fonte/imagem
-  trocada, quebra de layout no mobile).
-- Trocar o link de compra, o vídeo, ou uma imagem.
-- Página mais lenta que o padrão do coe / notas travadas por descuido (imagem
-  não otimizada, contraste reprovado, acessibilidade faltando) que dava para
-  resolver.
-- Parar a esteira à espera de decisão do dono.
+**Não pode acontecer**
+- Diferença visual do original (seção fora de ordem, cor/fonte/imagem trocada,
+  quebra no mobile).
+- Trocar link de compra, vídeo ou imagem sem pedido.
+- Dois carregadores GTM ou PageView duplicado.
+- Pixel do original solto na página, fora do padrão do repo.
+- Publicar sem pedido, ou publicar build diferente do conferido.
 
 ---
 
-## Formato do relatório por slug (fixo, curto)
+## Relatório por slug (curto)
 
 ```
 slug: <slug>
-publicada: https://contemmagia.com.br/<slug>  (sim/não)
+preview: <caminho>     publicada: <url ou não>
 peso: <antes> -> <depois>
-pagespeed_mobile:  perf / a11y / bestpractices / seo
-pagespeed_desktop: perf / a11y / bestpractices / seo
-otimizacoes_extra: <o que foi feito para passar de 97, se aplicável>
+rastreamento: <1 GTM | envio leve sim/não | oferta: ...>
+desempenho: <medições feitas, se houve pedido>
 fidelidade: <ok | desvios corrigidos: ...>
-travas: <nenhuma | descrição do que ficou insuperável e por quê>
+travas: <nenhuma | o que ficou e por quê>
 commit: <hash>
 ```
-
-## Ordem da esteira
-bce → drb → mce → mpg → gdp. Cada slug fecha os 7 passos antes da próxima.
-Ao final, um **relatório consolidado** com as 5 linhas + travas agregadas.

@@ -18,6 +18,11 @@ resolvidos aqui. Não acione esse fluxo para ícone, cor ou correção delimitad
 2. Prepare um build: `python3 preparar.py <slug> --saida /tmp/preview-<slug>`.
    O pipeline preserva os originais. No bundler, React é removido depois do
    pré-render; comportamentos necessários precisam sobreviver em JavaScript leve.
+2b. Rastreamento é padrão do repo, não do original: um único carregador GTM na
+   página (copie o do `coe/`) e `<slug>/rastreamento.json` decidindo registro
+   leve da visita e evento de oferta. Ajuste de carregamento entra por
+   `<slug>/desempenho.json` (fontes, preloads, fundos e posters adiados), não
+   editando o HTML à mão. Regressões: `scripts/testar-rastreamento.py`.
 3. Confira fidelidade e funcionamento em celular/desktop. Verifique imagens e
    fundos, tipografia, overflow, respostas de FAQ, CTAs e compra sem transações.
    Use `--conferir` para a análise de imagens/contraste. Corrija defeitos antes

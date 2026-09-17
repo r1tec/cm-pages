@@ -1,99 +1,103 @@
 # Kit do engenheiro de carregamento (por slug)
 
-Leia junto com `docs/receita-paginas.md` (a receita) e `README.md` (o pipeline).
+Leia junto com `docs/RECEITA-PAGINAS.md` (a receita) e `README.md` (o pipeline).
 Este kit traz o que já foi descoberto do terreno — não redescubra.
 
-## Fatos do pipeline (importante)
-- `otimizar.py`, para uma página que **não é do Claude Design** (sem
-  `<script type="__bundler/manifest">`), **só copia a pasta como está**. Ele
-  NÃO externaliza imagem, NÃO injeta pixel, NÃO adia script, NÃO cria `.htaccess`.
-  → Portanto **a pasta `<slug>/` já tem que nascer otimizada e pronta**:
-  `index.html` enxuto + `assets/` com imagens/fontes em arquivos próprios +
-  `.htaccess` de cache/compressão (modelo abaixo).
-- `verificar.py` só avisa (peso de imagem, contraste) — não bloqueia.
-- `publicar.sh <slug>` faz: otimizar (copia) → verificar → FTP → limpa cache CF.
-- Ferramentas presentes: Chrome, `cwebp`, `lftp`, credenciais no `.env`.
+## O que o pipeline faz sozinho (não refaça à mão)
+Para uma página **fora do bundler** (export de WordPress/Elementor ou HTML
+escrito à mão), `otimizar.py` já:
+- embute o CSS e as fontes locais no `index.html` e **poda o CSS morto**;
+- externaliza imagens coladas em `data:base64` para `inline-assets/`;
+- recomprime as imagens do build em WebP (a pasta fonte fica intocada);
+- aplica o `desempenho.json` da página (fontes, preloads, fundos, posters…);
+- normaliza o carregador GTM e injeta o registro leve da visita
+  (`rastreamento.py` + `rastreamento.json`);
+- escreve o `.htaccess` de compressão e cache.
+
+`preparar.py` gera o build com manifesto e cache de imagens; `--conferir` roda a
+conferência visual. `verificar.py` avisa (peso de imagem, contraste), não
+bloqueia. `publicar.sh` reutiliza o build atual, congela um snapshot, envia por
+FTP e limpa o cache; `--build <pasta> <slug>` exige um build íntegro e atual.
+Ferramentas presentes: Chrome, `cwebp`, `lftp`, credenciais no `.env`.
+
+**Consequência:** a pasta `<slug>/` versionada guarda a página leve e legível +
+`assets/` + os dois JSON de configuração. Não versione `.htaccess`, CSS embutido
+à mão nem imagens já recomprimidas "na mão" — o build é derivado.
 
 ## Originais
 `https://eduparmeggiani.com/<slug>/` (com barra final; sem barra dá 301).
-Baixe UMA vez para o scratchpad, trabalhe do arquivo. Processe o HTML pesado
-**no sandbox (ctx_execute)**, traga só o extrato — nunca cole o bruto no contexto.
+Baixe UMA vez para o scratchpad e trabalhe do arquivo. Processe o HTML pesado
+no sandbox e traga só o extrato — nunca cole o bruto no contexto.
 
-## `.htaccess` que a pasta deve conter
-```
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
-</IfModule>
-<IfModule mod_headers.c>
-  <FilesMatch "\.(webp|png|jpe?g|gif|avif|woff2?|svg)$">
-    Header set Cache-Control "public, max-age=31536000, immutable"
-  </FilesMatch>
-  <FilesMatch "\.html$">
-    Header set Cache-Control "public, max-age=600"
-  </FilesMatch>
-</IfModule>
+## Rastreamento (padrão atual, 17/09/2026)
+Um único carregador GTM (`GTM-P629X98`) na página — copie o do `coe/`. O pixel
+do original **não** vai junto; molde de "pixel adiado escrito à mão" está
+aposentado. O comportamento é escolhido por `<slug>/rastreamento.json`:
+
+```json
+{"meta_pageview_antecipado": true, "meta_envio_leve": true, "oferta": "texto:R$ 39,90"}
 ```
 
-## Pixel do próprio original, ADIADO (carrega após a página aparecer)
-Extraia o pixel do original (Facebook `fbq` e/ou Google `gtag`/GTM — ID + snippet)
-e inclua no `index.html` adiado, no molde abaixo (troca o miolo pelo snippet real):
-```html
-<script>(function(){var l=false;function go(){if(l)return;l=true;
-/* AQUI: o snippet real do pixel do original (fbq init+PageView, ou gtm.js, ou gtag) */
-}
-['scroll','mousemove','touchstart','click','keydown'].forEach(function(e){
- addEventListener(e,go,{once:true,passive:true})});setTimeout(go,3000);})();</script>
-```
+- Sem o arquivo: GTM adiado (1ª interação ou 5s) e nada mais.
+- `meta_envio_leve`: PageView Meta nos primeiros ms por requisição leve a
+  `facebook.com/tr`, com `_fbp`/`_fbc` em `.contemmagia.com.br`; o SDK
+  (`fbevents.js`, ~215 KB) só carrega junto do GTM, com o PageView suprimido.
+- `oferta`: dispara `ViuOferta` (alvo visível 1s) e habilita `Leitura30s`;
+  ambos `trackCustom`, uma vez por carregamento, nos 2 pixels.
+- Mais de um carregador GTM na página interrompe o build de propósito
+  (evita evento duplicado).
 
-## Script de slug/UTM (checkout) — porte do coe, apontando para o host DESTA página
-Use o host de checkout **do próprio original** (não force pay.contemmagia):
-```html
-<script>(function(){var H='HOST_DO_CHECKOUT_DESTA_PAGINA';
- function u(url){try{var x=new URL(url,location.href);if(x.hostname.indexOf(H)===-1)return null;
-  new URLSearchParams(location.search).forEach(function(v,k){if(!x.searchParams.has(k))x.searchParams.set(k,v)});
-  return x.toString()}catch(e){return null}}
- function p(){document.querySelectorAll('a[href*="'+H+'"]').forEach(function(a){
-  a.setAttribute('target','_blank');a.setAttribute('rel','noopener');
-  var n=u(a.getAttribute('href'));if(n)a.setAttribute('href',n)})}
- if(document.readyState!='loading')p();else addEventListener('DOMContentLoaded',p);
- addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a');
-  if(!a||!a.href||a.href.indexOf(H)===-1)return;var n=u(a.getAttribute('href')||a.href);
-  if(!n)return;e.preventDefault();open(n,'_blank','noopener')},true);})();</script>
-```
+Regressões: `scripts/testar-rastreamento.py`, `scripts/testar-meta-leve.cjs`,
+`scripts/testar-meta-antecipado.cjs`. Histórico e medições:
+`docs/REVISAO-TRACKING-PERFORMANCE-2026-09-17.md`.
 
-## PageSpeed (sem chave, JSON processado no sandbox)
-`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL>&strategy=mobile&category=PERFORMANCE&category=ACCESSIBILITY&category=BEST_PRACTICES&category=SEO`
-(e `strategy=desktop`). Extraia só as 4 notas ×100. Se alguma <97, otimize sem
-tocar no layout (reduzir imagem, contraste, atributos a11y, meta/SEO, adiar/dividir
-script), republique e remeça. Repita até o teto viável.
+## `desempenho.json` — o lugar dos ajustes de carregamento
+Chaves em uso hoje (exemplos reais em `bce/`, `drb/`, `ecm-26/`):
+- `fontes`: `{familia, peso, arquivo, inline, preload}` — com
+  `preload_fontes_seletivo: true`, só as fontes comprovadas na abertura recebem
+  preload; as outras perdem o preload antigo.
+- `preload_imagens`: LCP com `fetchpriority="high"`.
+- `reservar_dimensoes_imagens`: injeta `width`/`height` reais (corta CLS).
+- `imagens_responsivas`: `{arquivo, qualidade, sizes}` gera variantes.
+- `fundos_adiados`: seletores (aceita `::before`/`::after`) cujo
+  `background-image` só carrega a 600px da tela.
+- `posters_adiados`: adia as capas de `<video>` pelo mesmo observador.
+- `fundo_acordeao`: cor de fundo do acordeão Elementor.
 
-## Checklist de otimização (já nasça com tudo isto — validado no bce)
+Valor inválido derruba o build com mensagem — é proposital.
+
+## Checklist do HTML (já nasça com tudo isto)
 - `<html lang="pt-BR">` (não en-US).
-- `role="main"` no container raiz do conteúdo (ex.: no `<div data-elementor-type="wp-page" ...>`).
-- Emojis: se o original usa `<img class="emoji" ... alt="X">` do CDN s.w.org, troque pelo
-  caractere unicode do próprio alt (tira requisição de terceiro + corrige unsized-images).
-- `<video>`: use `preload="none"` (corta megabytes de metadata; vídeos remotos ficam remotos).
-- Imagem de topo (LCP): `<link rel="preload" as="image" href="assets/<capa>.webp" fetchpriority="high">`
-  no head, e `fetchpriority="high"` sem `loading="lazy"` na tag dela.
-- Toda `<img>` com `width` e `height` explícitos (evita CLS).
-- `.htaccess` com cache: imagens/fontes `immutable 1 ano`, **css/js `max-age=604800`**, html 600s.
-- **Contraste:** o plano permite ajustar contraste reprovado, MAS quando o tom reprovado é a
-  COR DA MARCA (verdes) usada em botão de compra e no mesmo tom sobre fundo claro E escuro,
-  repintar quebra fidelidade — nesse caso MANTENHA a cor do original e anote como trava. Só
-  ajuste contraste quando dá pra escurecer sem virar "outra cor" perceptível.
-- MEÇA em `https://contemmagia.com.br/<slug>/` COM BARRA FINAL (sem barra = 301, -1s de perf).
-- **CUIDADO caminho relativo do CSS:** se `styles.css` fica em `<slug>/assets/`, os `url()`
-  dentro dele resolvem RELATIVO a `assets/`. Então a capa é `url(diario.webp)`, NUNCA
-  `url(assets/diario.webp)` (isso vira `assets/assets/` e quebra o LCP). No `index.html` (que
-  fica em `<slug>/`) o certo é `assets/diario.webp`. Bug real que afundou o LCP do drb (8.5s→2.8s).
+- `role="main"` no container raiz do conteúdo.
+- Emojis: troque `<img class="emoji">` do CDN s.w.org pelo caractere do `alt`.
+- `<video preload="none">` (corta megabytes de metadata).
+- Toda `<img>` com `width` e `height` explícitos.
+- **Contraste:** quando o tom reprovado é a cor da marca (os verdes) usada no
+  botão de compra, repintar quebra fidelidade — mantenha e anote como trava.
+  Só ajuste quando dá para escurecer sem virar "outra cor" perceptível.
+- **CUIDADO com caminho relativo no CSS:** em `<slug>/assets/styles.css` os
+  `url()` resolvem relativo a `assets/` — a capa é `url(diario.webp)`, nunca
+  `url(assets/diario.webp)`. No `index.html` o certo é `assets/diario.webp`.
+  Bug real que afundou o LCP da drb (8,5s → 2,8s).
+- MEÇA em `https://contemmagia.com.br/<slug>/` COM BARRA FINAL.
 
-## Tetos estruturais conhecidos (iguais nas 5, anote como trava, não pare)
-- **best-practices mobile ~77:** cookies de terceiro do GTM (o pixel exigido). Insuperável mantendo o pixel.
-- **acessibilidade ~94:** contraste dos verdes da marca do próprio original (preservado por fidelidade).
-- **perf mobile ~78-85:** CSS do Elementor (render-blocking, ~200KB) + JS do GTM (exigido). Desktop fica ~99.
+## PageSpeed (só quando o pedido é de desempenho)
+`medir.py` consulta a API; `afinar.sh` publica e mede em rodadas limitadas. Sem
+eles: `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL>&strategy=mobile`
+(+ `&category=...`), JSON processado no sandbox, só as notas voltam.
+PageSpeed público exige a página no ar — e publicar exige pedido.
+
+## Patamar conhecido (celular, 17/09/2026, 1 amostra)
+Depois do envio leve nas 8 páginas: DRB 97, BPV 98, COE 94, MPG 83, GDP 81,
+BCE 78, ECM-26 74, MCE 73. Antes de qualquer Meta antecipado, o lote media
+96–100 — o custo dominante restante ainda é o SDK da Meta carregado cedo onde
+isso ainda acontece, não o CSS do Elementor.
+
+Travas estruturais que permanecem:
+- **acessibilidade ~94:** contraste dos verdes da marca (preservado por fidelidade).
+- **best practices:** cookies de terceiro do GTM, exigido pelo negócio.
+- CSS do Elementor (~200 KB) ainda pesa nas páginas migradas, mesmo podado.
 
 ## Regra de ouro
-Fidelidade é lei: mesmo texto, mesmas imagens, mesmos vídeos, mesmo link de compra,
-mesmas cores/fontes/espaçamentos, mesma ordem de seções, os efeitos da própria página.
-Performance nunca justifica desvio visual. Não parar por nada: travou → consulta
-subagente sênior; insuperável → anota no relatório e segue.
+Fidelidade é lei. Performance nunca justifica desvio visual. Decisão técnica é
+sua; escolha de negócio (texto, oferta, checkout, publicar) é do dono.
