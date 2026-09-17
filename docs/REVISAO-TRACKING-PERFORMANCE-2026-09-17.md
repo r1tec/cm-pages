@@ -119,3 +119,11 @@ Chat pós-publicação (celular, sem preencher/enviar): DRB, BCE, BPV, MPG, MCE 
 abrem e fecham pela seta do topo, ícone do WhatsApp volta; sem erros JS. COE não tem chat.
 Observação de processo: COE/ECM-26 foram enviadas chamando `alinhar_gtm.py` direto — o mesmo script que
 `publicar.sh --gtm-performance` executa; próximas trocas restritas devem entrar pelo `publicar.sh`.
+
+## Envio leve nas 8 páginas — 17/09/2026 15:20 UTC
+
+`meta_envio_leve` ativado em BCE, BPV, MPG, MCE, COE, GDP e ECM-26. Seis pelo modo restrito
+`./publicar.sh --gtm-performance --meta-antecipado --aplicar` (só a configuração do script muda, +20 bytes;
+backup `.build/gtm-meta-antecipado-backup/20260917T151931528597Z/`); BPV por `--build`. No ar, com link de
+campanha: 1 visita por pixel pelo envio leve, SDK ausente nos 3s iniciais, `fbc` presente, ViuOferta 1×,
+zero erros/imagens quebradas, links de checkout preservados.
