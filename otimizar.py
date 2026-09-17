@@ -12,7 +12,7 @@
 # Uso:  python3 otimizar.py <pasta_origem> <pasta_saida>
 #   ex: python3 otimizar.py coe .build/coe
 
-import sys, os, re, json, base64, gzip, shutil, subprocess, hashlib
+import sys, os, re, json, base64, gzip, shutil, subprocess, hashlib, tempfile
 import estatico
 from rastreamento import normalizar_gtm, meta_antecipado_na_pagina
 
@@ -117,7 +117,10 @@ def recomprimir_assets_webp(src_dir, out_dir):
     out_assets = os.path.join(out_dir, "assets")
     if not os.path.isdir(out_assets):
         return 0, 0
-    recomp = economizados = 0
+    recomp = economizados = reutilizadas = 0
+    cache_dir = os.environ.get("CM_WEBP_CACHE")
+    if cache_dir:
+        os.makedirs(cache_dir, exist_ok=True)
     for root, _dirs, files in os.walk(out_assets):
         # ignora fontes: só imagem entra
         if os.path.basename(root) == "fonts" or os.sep + "fonts" in root + os.sep:
@@ -133,6 +136,31 @@ def recomprimir_assets_webp(src_dir, out_dir):
             orig_sz = os.path.getsize(src)
             if orig_sz < RECOMP_MIN_BYTES:
                 continue
+            cache_path = None
+            if cache_dir:
+                # A fonte e a versão/opções dos codificadores definem o resultado.
+                # Nunca usar uma imagem já recomprimida como entrada de outra rodada.
+                tools = [(p, os.stat(p).st_size, os.stat(p).st_mtime_ns) for p in (CWEBP, DWEBP)]
+                options = json.dumps([1, RECOMP_Q, RECOMP_KEEP_RATIO, tools]).encode()
+                with open(src, "rb") as original_file:
+                    original = original_file.read()
+                key = hashlib.sha256(options + original).hexdigest()
+                cache_path = os.path.join(cache_dir, key + ".webp")
+                try:
+                    with open(cache_path, "rb") as cached_file:
+                        cached = cached_file.read()
+                    with open(cache_path + ".sha256") as hash_file:
+                        expected = hash_file.read().strip()
+                    if hashlib.sha256(cached).hexdigest() == expected:
+                        with open(dst, "wb") as out:
+                            out.write(cached)
+                        reutilizadas += 1
+                        if len(cached) < orig_sz:
+                            recomp += 1
+                            economizados += orig_sz - len(cached)
+                        continue
+                except (OSError, UnicodeError):
+                    pass
             png = dst + ".dec.png"
             tmp = dst + ".re.tmp"
             try:
@@ -149,6 +177,15 @@ def recomprimir_assets_webp(src_dir, out_dir):
                     os.replace(tmp, dst)
                     recomp += 1
                     economizados += orig_sz - new_sz
+                if cache_path:
+                    with open(dst, "rb") as result_file:
+                        result = result_file.read()
+                    # Trocas atômicas; uma entrada incompleta nunca é reutilizada.
+                    for path, data in ((cache_path, result),
+                                       (cache_path + ".sha256", hashlib.sha256(result).hexdigest().encode())):
+                        with tempfile.NamedTemporaryFile(dir=cache_dir, delete=False) as cached_file:
+                            cached_file.write(data)
+                        os.replace(cached_file.name, path)
             except Exception as e:
                 print(f"  AVISO: nao recomprimi {name} ({e}).", file=sys.stderr)
             finally:
@@ -158,6 +195,8 @@ def recomprimir_assets_webp(src_dir, out_dir):
                         except OSError: pass
     if recomp:
         print(f"  {recomp} imagens recomprimidas q{RECOMP_Q} (-{economizados//1024}KB)")
+    if reutilizadas:
+        print(f"  cache: {reutilizadas} imagens reutilizadas sem recodificar")
     return recomp, economizados
 
 

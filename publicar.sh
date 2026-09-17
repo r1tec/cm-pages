@@ -5,6 +5,7 @@
 #   ./publicar.sh          → publica TODAS as páginas (toda pasta com index.html)
 #   ./publicar.sh coe      → publica só a pasta coe/
 #   ./publicar.sh coe vsl  → publica só as pastas coe/ e vsl/
+#   ./publicar.sh --build /tmp/preview-mce mce → envia o build já preparado
 #
 # Cada pasta vira uma slug no ar:  coe/  →  https://contemmagia.com.br/coe
 #
@@ -13,6 +14,21 @@
 
 set -euo pipefail
 cd "$(dirname "$0")"
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+  cat <<'HELP'
+Uso: ./publicar.sh [slug ...]
+     ./publicar.sh --build /caminho/do/build slug
+
+Reutiliza builds atuais preparados por preparar.py. Sem build atual, prepara
+uma vez; não roda conferência visual nem PageSpeed automaticamente.
+--build envia exatamente o build indicado e recusa fonte/build desatualizado.
+Sem slugs, mantém o comportamento legado de publicar todas as páginas.
+Preparar preview: python3 preparar.py slug --saida /tmp/preview-slug
+Conferência visual opcional: python3 preparar.py slug --conferir
+HELP
+  exit 0
+fi
 
 # 1) Lê as credenciais do .env
 if [ ! -f .env ]; then
@@ -27,9 +43,14 @@ set -a; . ./.env; set +a
 # Pasta raiz no servidor (default se o .env não definir)
 : "${FTP_BASE:=/public_html/}"
 
+# Migração e manutenção do segundo destino: usa os arquivos já publicados.
 if [ "${1:-}" = "--limpar-cache" ]; then
   shift
   exec python3 limpar_cache.py "$@"
+fi
+if [ "${1:-}" = "--espelhar-edu" ]; then
+  shift
+  exec python3 espelhar_edu.py "$@"
 fi
 
 # Ajuste pontual sobre o HTML publicado: preserva conteúdo local em edição e assets.
@@ -37,11 +58,34 @@ fi
 # Aplicar: ./publicar.sh --gtm-original --aplicar bce coe
 if [ "${1:-}" = "--gtm-original" ]; then
   shift
-  exec python3 alinhar_gtm.py --imediato "$@"
+  python3 alinhar_gtm.py --imediato "$@"
+  if [[ " $* " == *" --aplicar "* ]]; then
+    edu_slugs=()
+    for arg in "$@"; do [[ "$arg" == --* ]] || edu_slugs+=("$arg"); done
+    python3 espelhar_edu.py --aplicar "${edu_slugs[@]}"
+  fi
+  exit 0
 fi
 if [ "${1:-}" = "--gtm-performance" ]; then
   shift
-  exec python3 alinhar_gtm.py "$@"
+  python3 alinhar_gtm.py "$@"
+  if [[ " $* " == *" --aplicar "* ]]; then
+    edu_slugs=()
+    for arg in "$@"; do [[ "$arg" == --* ]] || edu_slugs+=("$arg"); done
+    python3 espelhar_edu.py --aplicar "${edu_slugs[@]}"
+  fi
+  exit 0
+fi
+
+# Build explícito: não reconstruir silenciosamente um preview escolhido.
+build_pronto=""
+if [ "${1:-}" = "--build" ]; then
+  if [ "$#" -ne 3 ]; then
+    echo "Uso: ./publicar.sh --build /caminho/do/build slug" >&2
+    exit 1
+  fi
+  build_pronto="$2"
+  shift 2
 fi
 
 # 2) Garante que o lftp está instalado (instala sozinho via Homebrew se faltar)
@@ -71,48 +115,25 @@ if [ "${#SITES[@]}" -eq 0 ]; then
   exit 1
 fi
 
-# 4) Otimiza (enxuga o peso) e envia cada pasta, espelhando
-#    (apaga no servidor o que não existe mais aqui)
+# 4) Prepara/reutiliza e congela os arquivos antes de iniciar qualquer envio.
+# O snapshot impede que um build concorrente altere o que o FTP está lendo.
+publish_tmp="$(mktemp -d "${TMPDIR:-/tmp}/cm-pages-envio.XXXXXX")"
+trap 'rm -rf "$publish_tmp"' EXIT
 for slug in "${SITES[@]}"; do
   slug="${slug%/}"
-  if [ ! -f "$slug/index.html" ]; then
-    echo "Pulando '$slug': não tem index.html." >&2
-    continue
+  if [ -n "$build_pronto" ]; then
+    build="$build_pronto"
+  else
+    build=".build/$slug"
+    python3 preparar.py "$slug" --reusar
   fi
+  python3 preparar.py "$slug" --saida "$build" --snapshot "$publish_tmp/$slug"
+done
 
-  # Gera a versão leve em .build/<slug>/ (imagens e fontes viram arquivos com cache)
-  build=".build/$slug"
-  echo "Otimizando $slug/ ..."
-  # Guarda o que o otimizar avisa (ex.: script proprio que vai CONGELADO no ar),
-  # mostrando na tela ao mesmo tempo.
-  otim_log="$(mktemp)"
-  python3 otimizar.py "$slug" "$build" 2> >(tee "$otim_log" >&2)
-  grave=0
-  grep -q "CONGELADA" "$otim_log" && grave=1
-  rm -f "$otim_log"
-
-  # Confere imagem grande demais e contraste baixo. Sai com codigo 2 se achar
-  # algo grave — ai a publicacao para e pede confirmacao.
-  set +e
-  python3 verificar.py "$slug" "$build"
-  [ "$?" -eq 2 ] && grave=1
-  set -e
-
-  # Trava: achou coisa grave -> barra e pede "sim". No loop automatico (afinar.sh)
-  # ou com PUBLICAR_SIM=1, segue sozinho pra nao travar.
-  if [ "$grave" -eq 1 ]; then
-    if [ "${PUBLICAR_SIM:-0}" = "1" ] || [ ! -t 0 ]; then
-      echo "  (seguindo mesmo com o aviso acima — modo automatico/forcado)"
-    else
-      printf "  Publicar '%s' mesmo assim? digite 'sim' para seguir: " "$slug"
-      read -r resp
-      if [ "$resp" != "sim" ]; then
-        echo "  Pulei '$slug' — nada foi publicado."
-        continue
-      fi
-    fi
-  fi
-
+# 5) Envia apenas os snapshots conferidos e limpa o cache dos destinos vigentes.
+for slug in "${SITES[@]}"; do
+  slug="${slug%/}"
+  build="$publish_tmp/$slug"
   destino="${FTP_BASE%/}/$slug/"
   echo "Publicando $slug/ em $FTP_HOST$destino ..."
   lftp -u "$FTP_USUARIO","$FTP_SENHA" "$FTP_HOST" <<FTP
@@ -121,6 +142,7 @@ set ssl:verify-certificate no
 mirror --reverse --delete --verbose "$build/" "$destino"
 bye
 FTP
+  python3 espelhar_edu.py --aplicar "$slug"
   # Limpa o cache do Cloudflare dessa página, pra mudança aparecer NA HORA
   # (sem isso, a versão antiga fica guardada por até 10 min)
   if [ -n "${CF_API_TOKEN:-}" ] && [ -n "${CF_ZONE_ID:-}" ]; then
