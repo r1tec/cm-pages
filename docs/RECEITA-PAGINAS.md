@@ -18,12 +18,9 @@ descoberto) e, quando existir, `<slug>/REGRAS.md`.
    cores/fontes/espaçamentos, mesma ordem de seções, os efeitos da própria
    página. Performance nunca justifica desvio visual.
 2. **Baixar o original UMA vez**, salvar no scratchpad, trabalhar do arquivo.
-   HTML pesado e JSON de PageSpeed se processam fora do contexto; volta o extrato.
 3. **Reusar o pipeline** (`preparar.py`, `otimizar.py`, `verificar.py`,
    `publicar.sh`, `rastreamento.py`) — não reimplementar otimização nem pixel.
-4. **Publicar só com pedido do dono** aplicável à tarefa. Preparar, conferir e
-   medir localmente não autorizam pôr no ar (CLAUDE.md).
-5. Travou numa decisão técnica: decida e registre. Só volte ao dono no que for
+4. Travou numa decisão técnica: decida e registre. Só volte ao dono no que for
    escolha dele (texto, oferta, checkout, publicação).
 
 ---
@@ -74,7 +71,9 @@ injeta o registro leve da visita.
 - `oferta`: alvo do evento `ViuOferta` (com `Leitura30s`, alimenta remarketing).
   Sem esse campo, a página não gera sinal de engajamento.
 
-Reversão é editar o JSON e republicar. Arquivo inválido interrompe o build.
+Reversão é editar o JSON e republicar. Interrompem o build:
+`meta_pageview_antecipado` ausente ou não booleano, `oferta` vazia, chave fora
+dessas três, e mais de um carregador GTM na página.
 
 ### 4. Checkout e UTM
 Destino padrão: `https://pay.contemmagia.com.br/c/<slug>` (é o que as 8 páginas
@@ -83,10 +82,20 @@ slug/UTM do `coe/` apontando `H` para o host usado, para repassar UTMs e
 `fbclid` até o checkout. Confira os links no preview antes de fechar.
 
 ### 5. Preparar e conferir
-`python3 preparar.py <slug> --saida /tmp/preview-<slug> --conferir`.
+`python3 preparar.py <slug>` — o build sai em `.build/<slug>`, que é o que
+`./publicar.sh <slug>` reaproveita. Preparar em outra pasta (`--saida`) obriga a
+publicar com `--build <mesma pasta> <slug>`; misturar os dois reconstrói tudo.
+O build também vence quando muda o pipeline, o `cwebp`, o Pillow ou `NOPRUNE` —
+não só a pasta da página.
+
 Abrir o preview em celular e desktop: fidelidade seção a seção contra o
 original, imagens e fundos, overflow, FAQ, vídeos e CTAs. Interação nova se
 exercita no preview — screenshot não prova comportamento.
+
+Só com os defeitos corrigidos e o `desempenho.json` já aplicado, rode
+`python3 preparar.py <slug> --conferir` uma vez, no build final: conferir antes
+de mexer em fonte, preload ou fundo custa uma rodada. Código 2 é aviso de imagem
+pesada ou contraste (sugere `reduzir.json`/`cores.json`), não falha de build.
 
 Regressões do rastreamento: `python3 scripts/testar-rastreamento.py`
 (e `scripts/testar-meta-leve.cjs` quando mexer no envio leve).
@@ -95,20 +104,28 @@ Regressões do rastreamento: `python3 scripts/testar-rastreamento.py`
 Use a skill `otimizar` quando o pedido for de desempenho ou houver impacto
 concreto. Ajustes entram por `<slug>/desempenho.json` (fontes, preload de
 imagem, `fundos_adiados`, `posters_adiados`, `imagens_responsivas`), não
-editando o HTML à mão. Meta de nota vem do pedido; não perseguir 100 constante.
-PageSpeed público exige a página no ar — sem autorização, medir localmente e
-distinguir Lighthouse local de medição pública.
+editando o HTML à mão. Meta de nota vem do pedido. PageSpeed público exige a
+página no ar; sem autorização, medir localmente e distinguir Lighthouse local de
+medição pública.
 
 ### 7. Publicar (só com pedido)
-`./publicar.sh <slug>` ou `./publicar.sh --build /tmp/preview-<slug> <slug>`
-para enviar exatamente o build já conferido. Troca restrita só do script de
-rastreamento (sem rebuild): `./publicar.sh --gtm-performance --meta-antecipado
---aplicar <slug>` — sempre pelo `publicar.sh`, não chamando `alinhar_gtm.py`
-direto. Depois de publicar, conferir a URL real com barra final.
+`./publicar.sh <slug>` (reusa `.build/<slug>`) ou
+`./publicar.sh --build <pasta> <slug>` para enviar exatamente o build conferido.
+Todo envio espelha a página também no destino `edu` e limpa o cache — publicar é
+sempre nos dois lugares.
+
+Troca restrita só do script de rastreamento, sem rebuild:
+`./publicar.sh --gtm-performance --meta-antecipado --aplicar <slug>` — sempre
+pelo `publicar.sh`, nunca chamando `alinhar_gtm.py` direto. Esse modo só aceita
+slug já listada em `SLUGS` no `alinhar_gtm.py` e exige `meta_pageview_antecipado`
+na página; slug nova entra na lista antes, ou publica o build inteiro.
+
+Depois de publicar, conferir a URL real com barra final.
 
 ### 8. Versionar
-Commit e push só dos arquivos da tarefa (`<slug>/` e o doc que registrou a
-migração), em português, direto na `main`. Nada de `git add -A`.
+Quando a tarefa não passou por `publicar` (que já commita), faça o commit e o
+push só dos arquivos da tarefa (`<slug>/` e o doc da migração), em português,
+direto na `main`. Nada de `git add -A`.
 
 ---
 

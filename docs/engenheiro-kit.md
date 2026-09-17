@@ -1,7 +1,7 @@
 # Kit do engenheiro de carregamento (por slug)
 
-Leia junto com `docs/RECEITA-PAGINAS.md` (a receita) e `README.md` (o pipeline).
-Este kit traz o que já foi descoberto do terreno — não redescubra.
+O terreno já descoberto — não redescubra. Leia antes de escrever o HTML; o
+passo a passo é `docs/RECEITA-PAGINAS.md`.
 
 ## O que o pipeline faz sozinho (não refaça à mão)
 Para uma página **fora do bundler** (export de WordPress/Elementor ou HTML
@@ -14,10 +14,18 @@ escrito à mão), `otimizar.py` já:
   (`rastreamento.py` + `rastreamento.json`);
 - escreve o `.htaccess` de compressão e cache.
 
-`preparar.py` gera o build com manifesto e cache de imagens; `--conferir` roda a
-conferência visual. `verificar.py` avisa (peso de imagem, contraste), não
-bloqueia. `publicar.sh` reutiliza o build atual, congela um snapshot, envia por
-FTP e limpa o cache; `--build <pasta> <slug>` exige um build íntegro e atual.
+`preparar.py` gera o build com manifesto e cache de imagens (padrão:
+`.build/<slug>`); `--conferir` roda a conferência visual. `verificar.py` sai com
+código 2 quando acha imagem pesada ou contraste baixo, e `--conferir` propaga
+esse código: o build está pronto, o 2 é aviso a tratar (sugere `reduzir.json`
+para imagem e `cores.json` para cor — configuração local, não publicada).
+Quem bloqueia envio é o `--build`, que recusa build alterado ou desatualizado.
+`publicar.sh` reutiliza o build atual, congela um snapshot, envia por FTP,
+espelha no destino `edu` e limpa o cache.
+
+O build vence também quando mudam `otimizar.py`/`estatico.py`/`rastreamento.py`,
+o `cwebp`, o Pillow ou `NOPRUNE` — não só a pasta da página. Página do bundler
+exige Chrome: sem pré-render o build morre de propósito, para não publicar React.
 Ferramentas presentes: Chrome, `cwebp`, `lftp`, credenciais no `.env`.
 
 **Consequência:** a pasta `<slug>/` versionada guarda a página leve e legível +
@@ -64,7 +72,11 @@ Chaves em uso hoje (exemplos reais em `bce/`, `drb/`, `ecm-26/`):
 - `posters_adiados`: adia as capas de `<video>` pelo mesmo observador.
 - `fundo_acordeao`: cor de fundo do acordeão Elementor.
 
-Valor inválido derruba o build com mensagem — é proposital.
+Derrubam o build, de propósito: seletor de fundo com vírgula, `#id` ou
+`[attr]` (e pseudo que não seja `::before`/`::after`); `posters_adiados` sem
+`<video poster>`; fonte que não é WOFF2 ou sem `@font-face` correspondente;
+imagem de preload/responsiva que não aparece no HTML ou já está tratada.
+Confira essas escolhas antes do primeiro build.
 
 ## Checklist do HTML (já nasça com tudo isto)
 - `<html lang="pt-BR">` (não en-US).
@@ -85,7 +97,7 @@ Valor inválido derruba o build com mensagem — é proposital.
 `medir.py` consulta a API; `afinar.sh` publica e mede em rodadas limitadas. Sem
 eles: `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=<URL>&strategy=mobile`
 (+ `&category=...`), JSON processado no sandbox, só as notas voltam.
-PageSpeed público exige a página no ar — e publicar exige pedido.
+PageSpeed público exige a página no ar.
 
 ## Patamar conhecido (celular, 17/09/2026, 1 amostra)
 Depois do envio leve nas 8 páginas: DRB 97, BPV 98, COE 94, MPG 83, GDP 81,
