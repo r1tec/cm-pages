@@ -8,5 +8,6 @@
   ],
   "imagens_responsivas": [
     {"arquivo": "assets/completo.webp", "qualidade": 80, "larguras": [275, 550, 860], "sizes": "(max-width: 1023px) 198px, 275px"}
-  ]
+  ],
+  "fundos_adiados": [".elementor-element-eaa9c12::before", ".elementor-element-354bb53::before", ".elementor-element-ebd6b3f::before", ".elementor-element-43d4c08::before", ".elementor-element-cc684a5::before", ".elementor-element-17d19c7", ".elementor-element-526c0c1", ".elementor-element-0aeb10f"]
 }

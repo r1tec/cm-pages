@@ -33,6 +33,28 @@ class RastreamentoTest(unittest.TestCase):
             config.write_text(json.dumps({'meta_pageview_antecipado': False}))
             self.assertFalse(meta_antecipado_na_pagina(folder))
 
+    def test_configuracao_por_pagina(self):
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / 'rastreamento.json'
+            config.write_text(json.dumps({'meta_pageview_antecipado': True, 'meta_envio_leve': True,
+                                          'oferta': 'texto:R$ 39,90</script>'}))
+            cfg = meta_antecipado_na_pagina(folder)
+            self.assertEqual(cfg, {'envio_leve': True, 'oferta': 'texto:R$ 39,90</script>'})
+            html = normalizar_gtm('<head>' + GTM_SCRIPT + '</head>', meta_antecipado=cfg)
+            self.assertEqual(html.count('window.__cmMetaCfg='), 1)
+            self.assertNotIn('39,90</script>', html)
+            self.assertEqual(normalizar_gtm(html, meta_antecipado=cfg), html)
+            self.assertNotIn('window.__cmMetaCfg=', normalizar_gtm(html, meta_antecipado=True))
+            for bad in ({'meta_pageview_antecipado': True, 'extra': 1},
+                        {'meta_pageview_antecipado': True, 'meta_envio_leve': 'sim'},
+                        {'meta_pageview_antecipado': True, 'oferta': ' '},
+                        {'oferta': 'x'}):
+                config.write_text(json.dumps(bad))
+                with self.assertRaises(ValueError):
+                    meta_antecipado_na_pagina(folder)
+            config.write_text(json.dumps({'meta_pageview_antecipado': False, 'oferta': 'x'}))
+            self.assertFalse(meta_antecipado_na_pagina(folder))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -71,8 +71,9 @@ def main():
                     raise RuntimeError(f"{slug}: versão remota mudou; não restaurar sobre trabalho posterior")
                 after = (restore / f"{slug}.before.html").read_bytes()
             else:
+                meta = meta_antecipado_na_pagina(slug) if args.meta_antecipado else False
                 after = normalizar_gtm(html, imediato=args.imediato,
-                                      meta_antecipado=args.meta_antecipado).encode("utf-8")
+                                      meta_antecipado=meta).encode("utf-8")
             # Não reserializa HTML; restauração só admite o par before/after exato.
             old = backup / f"{slug}.before.html"
             new = backup / f"{slug}.after.html"

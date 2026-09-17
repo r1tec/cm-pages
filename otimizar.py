@@ -384,11 +384,25 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
     if selectors:
         if any(not re.fullmatch(r"[.a-zA-Z0-9_ >:-]+(?:\([0-9]+\))?", s) for s in selectors):
             raise ValueError("Seletor de fundo inválido")
-        rules = ",".join("html.cm-fundos-adiados " + s + ":not(.cm-fundo-pronto)" for s in selectors)
+        # "::before"/"::after" no fim: o fundo fica no pseudo-elemento, observado pelo elemento.
+        def partes(s):
+            base, sep, pseudo = s.partition("::")
+            if sep and pseudo not in ("before", "after"):
+                raise ValueError("Seletor de fundo inválido")
+            return base, ("::" + pseudo if sep else "")
+        rules = ",".join("html.cm-fundos-adiados " + b + ":not(.cm-fundo-pronto)" + p for b, p in map(partes, selectors))
+        observados = ",".join(dict.fromkeys(b for b, _ in map(partes, selectors)))
         head = '<script>if("IntersectionObserver" in window)document.documentElement.classList.add("cm-fundos-adiados");</script>'
         head += '<style>' + rules + '{background-image:none!important}</style>'
         html = html.replace('</head>', head + '</head>', 1)
-        script = '<script>(function(){if(!("IntersectionObserver" in window))return;try{var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("cm-fundo-pronto");observer.unobserve(entry.target)}})},{rootMargin:"600px"});document.querySelectorAll(' + json.dumps(",".join(selectors)) + ').forEach(function(el){observer.observe(el)})}catch(e){document.documentElement.classList.remove("cm-fundos-adiados")}})();</script>'
+        script = '<script>(function(){if(!("IntersectionObserver" in window))return;try{var observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add("cm-fundo-pronto");observer.unobserve(entry.target)}})},{rootMargin:"600px"});document.querySelectorAll(' + json.dumps(observados) + ').forEach(function(el){observer.observe(el)})}catch(e){document.documentElement.classList.remove("cm-fundos-adiados")}})();</script>'
+        html = html.replace('</body>', script + '</body>', 1)
+    if config.get("posters_adiados"):
+        # Capa do vídeo só perto da tela; sem IntersectionObserver aplica todas na hora.
+        html, total = re.subn(r'(<video\b[^>]*?)\sposter=(["\'])([^"\']+)\2', r'\1 data-cm-poster=\2\3\2', html)
+        if not total:
+            raise ValueError("posters_adiados sem <video poster> na página")
+        script = '<script>(function(){var vs=document.querySelectorAll("video[data-cm-poster]");function put(v){v.poster=v.getAttribute("data-cm-poster");v.removeAttribute("data-cm-poster")}if(!("IntersectionObserver" in window)){vs.forEach(put);return}try{var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){put(e.target);o.unobserve(e.target)}})},{rootMargin:"600px"});vs.forEach(function(v){o.observe(v)})}catch(e){vs.forEach(put)}})();</script>'
         html = html.replace('</body>', script + '</body>', 1)
     if config.get("fundo_acordeao"):
         color = config["fundo_acordeao"]

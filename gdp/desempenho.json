@@ -8,5 +8,7 @@
   "imagens_responsivas": [
     {"arquivo": "assets/logo.webp", "qualidade": 80, "larguras": [295, 522], "sizes": "(max-width: 767px) 100vw, 295px"},
     {"arquivo": "assets/mockup.webp", "qualidade": 80, "larguras": [460, 632], "sizes": "(max-width: 767px) 100vw, 460px"}
-  ]
+  ],
+  "fundos_adiados": [".elementor-element-467ac9d", ".elementor-element-526c0c1", ".elementor-element-0aeb10f"],
+  "posters_adiados": true
 }

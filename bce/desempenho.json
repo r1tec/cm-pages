@@ -12,5 +12,7 @@
     {"arquivo": "assets/04.webp", "qualidade": 80, "larguras": [250, 400], "sizes": "250px"},
     {"arquivo": "assets/logo_topo_hz.webp", "qualidade": 80, "larguras": [430, 739], "sizes": "(max-width: 739px) 100vw, 739px"},
     {"arquivo": "assets/benzedeira_topo2.webp", "qualidade": 60, "preload": true}
-  ]
+  ],
+  "fundos_adiados": [".elementor-element-15906e1", ".elementor-element-9596b3e", ".elementor-element-e25d0b0", ".elementor-element-79f3009"],
+  "posters_adiados": true
 }
