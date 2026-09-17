@@ -71,3 +71,46 @@ eventos no checkout, novas tags GTM. Reavaliar depois de medir o item 1 no paine
 
 Scratchpad da sessão: `psi/*.json` (PageSpeed), `pw/perf.cjs` (A/B laboratório),
 `pw/img.cjs` (imagens), `pw/k.cjs` e `pw/l.cjs` (cookies, links e checkout).
+
+## Implementação — 17/09/2026 (autorizada pelo dono)
+
+- **DRB, envio leve** (`meta_envio_leve` em `drb/rastreamento.json`): script no `<head>` cria/reaproveita
+  `_fbp`/`_fbc` (formato `fb.2.<ms>.<id>`, domínio `.contemmagia.com.br`) e envia PageView aos 2 pixels
+  por GET (ou `sendBeacon` se a URL passar de ~2.000 caracteres). SDK só na 1ª interação/5s; GTM não
+  repete a visita. Cookie recusado → volta ao fluxo antigo pelo SDK.
+- **8 páginas, engajamento**: `ViuOferta` (alvo `oferta` do `rastreamento.json` visível 1s) e
+  `Leitura30s` (30s com aba visível + interação), `trackCustom`, uma vez por carregamento, 2 pixels.
+- **Imagens adiadas** (`desempenho.json`): `fundos_adiados` aceita `::before/::after`; novo
+  `posters_adiados`. MCE/MPG 8 fundos, BCE 4 fundos + posters, GDP 3 fundos + posters, DRB posters.
+- Publicação: DRB, BCE, MPG, MCE, GDP, BPV por `publicar.sh --build`; COE e ECM-26 pelo modo restrito
+  `alinhar_gtm.py --meta-antecipado --aplicar` (só o script trocado; backup
+  `.build/gtm-meta-antecipado-backup/20260917T143337706286Z/`), porque o rebuild da COE recapturava estilos
+  de animação e o da ECM o cronômetro.
+
+Provas: testes `scripts/testar-meta-leve.cjs`, `testar-meta-antecipado.cjs`, `testar-rastreamento.py`;
+Chrome no domínio real (envios abortados) antes e depois de publicar: 1 PageView por pixel nas 8, sem
+duplicidade após GTM/SDK, mesmo `_fbp` do início ao fim, `fbc` com fbclid, URL longa via beacon,
+ViuOferta e Leitura30s uma vez, zero imagens quebradas/erros JS, links de checkout com UTM. DRB: SDK
+ausente nos 3s iniciais; imagens baixadas na abertura DRB 6→2, BCE 12→4. Capturas página inteira
+390/1440 px (atual × nova) com ≤0,06% de pixels diferentes (suavização de texto). HTML público conferido
+igual ao build/after. Revisão independente: sem bloqueios.
+
+PageSpeed celular após publicar (1 amostra, 17/09 ~14:40 UTC):
+
+| Página | Antes | Depois | LCP antes → depois |
+| --- | --- | --- | --- |
+| DRB (envio leve) | 70 | **97** | 4,2 → 2,0 s (TBT 550 → 0 ms) |
+| BCE | 81 | 78 | 4,8 → 4,4 s |
+| BPV | 90 | 98 | 3,1 → 1,7 s (CLS 0,039) |
+| MPG | 84 | 83 | 4,3 → 3,8 s |
+| MCE | 75 | 73 | 4,9 → 4,6 s |
+| COE | 85 | 94 | 3,8 → 2,6 s |
+| GDP | 78 | 81 | 4,9 → 4,2 s |
+| ECM-26 | 80 | 74 | 4,4 → 4,7 s |
+
+Leitura: o salto da DRB é compatível com a retirada do SDK da abertura. Nas demais, notas oscilam dentro
+do ruído de uma amostra; o adiamento de imagens reduz dados baixados, mas o SDK Meta imediato segue sendo
+o custo dominante. COE/BPV/ECM-26 não tiveram mudança de carregamento.
+
+Reversão: `meta_envio_leve` false (DRB) ou remover `oferta`/opções de `desempenho.json` e publicar a
+página; COE/ECM-26 também por `alinhar_gtm.py --restaurar-backup=<pasta acima> --aplicar <slug>`.
