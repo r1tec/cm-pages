@@ -36,10 +36,11 @@ imagem, o tamanho certo.
 
 ## Conferir depois da exportação
 
-O `publicar.sh` fornece WebP, cache, pré-montagem
+O build com `preparar.py` fornece WebP, cache, pré-montagem
 estática sem React, GTM na primeira interação ou em até 5 segundos (autorização em
 `docs/PERFORMANCE-MIGRACAO.md`), `lang=pt-BR`, `role=main`, hover dos botões,
 animações de entrada e limpeza do cache do Cloudflare. Conferir o resultado:
 FAQ, imagens, responsividade, checkout e pixels podem depender da exportação.
-Seguir `.claude/skills/publicar/PUBLICACAO-DESEMPENHO.md`, com PageSpeed público
-mínimo 90 em celular e desktop após publicar. Chat somente por pedido explícito.
+Para página nova, seguir `.claude/skills/preparar-pagina/SKILL.md`.
+Publicação simples não exige PageSpeed; otimização segue sua meta e escopo.
+Chat somente por pedido explícito.

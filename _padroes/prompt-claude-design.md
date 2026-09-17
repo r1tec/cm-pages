@@ -68,11 +68,12 @@ ESTRUTURA
 
 1. Salve a exportação como `<slug>/index.html`.
 2. Escreva as regras de conteúdo da página em `<slug>/REGRAS.md`.
-3. Siga `.claude/skills/publicar/PUBLICACAO-DESEMPENHO.md`: construir, conferir
+3. Siga `.claude/skills/preparar-pagina/SKILL.md`: construir, conferir
    imagens/fontes/FAQ/checkout e ajustar o arquivo local antes de publicar.
-4. Com publicação autorizada, rode `./publicar.sh <slug>` e meça a URL pública
-   no PageSpeed em celular e desktop. Corrigir até atingir 90 nos dois, com
-   funcionalidades preservadas. Não exigir outra exportação para ajustes técnicos.
+4. Com publicação autorizada, envie o build validado usando `publicar`.
+   Na preparação completa, compare desempenho nos dois dispositivos e busque
+   ganhos demonstráveis conforme a meta; manutenção posterior não repete todo
+   o roteiro. Não exigir outra exportação para ajustes técnicos.
 5. GTM na primeira interação ou após 5s; chat somente se solicitado pelo dono.
 
 Um aviso que se repete em páginas diferentes não é problema da página: é sinal
