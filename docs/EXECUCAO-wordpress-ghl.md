@@ -6,6 +6,14 @@ Plano: `docs/PLANO-wordpress-ghl-hospedagem-propria.md`.
 
 ## Estado comprovado
 
+### Auditoria para exclusão da conta temporária
+
+- Verificação solicitada pelo usuário, sem exclusão executada. Conta temporária correta: `eduwpcom`, domínio `migracao-wp.eduparmeggiani.com`. Conta de produção: `edulp`, domínio `lp.eduparmeggiani.com`.
+- Nenhuma referência à conta/caminho antigo em wp-config, .htaccess e script de backup de LP; cron LP aponta apenas à conta nova. Roteamento do domínio principal não referencia `migracao-wp`; espelhamento antigo está desativado.
+- Busca WP-CLI em todas as tabelas prefixadas, dry-run e GUIDs excluídos: **0 referências ao endereço HTTPS temporário**, código 0. Tarefa temporária de auditoria removida.
+- Conta antiga tem somente o domínio temporário, sem aliases/adicionais e sem caixas criadas (a entrada `Main Account` é a caixa padrão do cPanel). Banco `edulp_eduwpcom_site` pertence à conta **edulp**, apesar do nome conter `eduwpcom`.
+- Backup externo final de produção e manifesto presentes em `lp-producao-20260913-114002`. Não foi encontrada dependência ativa que impeça excluir somente a conta temporária; origem GHL e contas de produção devem permanecer preservadas. Referências históricas em documentos, backups e nomes de credenciais não são apontamentos ativos.
+
 ### Ativação concluída — 13/09/2026
 
 - Usuário confirmou manualmente login e Elementor funcionando no domínio LP. Esse aceite resolveu o bloqueio de verificação humana do navegador automatizado.
