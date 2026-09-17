@@ -114,3 +114,8 @@ o custo dominante. COE/BPV/ECM-26 não tiveram mudança de carregamento.
 
 Reversão: `meta_envio_leve` false (DRB) ou remover `oferta`/opções de `desempenho.json` e publicar a
 página; COE/ECM-26 também por `alinhar_gtm.py --restaurar-backup=<pasta acima> --aplicar <slug>`.
+
+Chat pós-publicação (celular, sem preencher/enviar): DRB, BCE, BPV, MPG, MCE e GDP carregam 1 instância,
+abrem e fecham pela seta do topo, ícone do WhatsApp volta; sem erros JS. COE não tem chat.
+Observação de processo: COE/ECM-26 foram enviadas chamando `alinhar_gtm.py` direto — o mesmo script que
+`publicar.sh --gtm-performance` executa; próximas trocas restritas devem entrar pelo `publicar.sh`.
