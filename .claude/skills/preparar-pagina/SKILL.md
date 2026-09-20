@@ -23,7 +23,8 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
    `LIVE_JS`; o pipeline só avisa no stderr, depois do build. O bundler também
    exige Chrome: sem pré-render o build morre de propósito, para não publicar React.
    Migração WordPress: leia `docs/engenheiro-kit.md` antes de escrever o HTML e
-   siga `docs/RECEITA-PAGINAS.md` como passo a passo.
+   siga `docs/RECEITA-PAGINAS.md` como passo a passo; confira a página em
+   `docs/LISTA-SITES-WORDPRESS.md` (é lá que a migração é registrada no fim).
 2. **Configure antes do primeiro build.** Rastreamento é padrão do repo, não do
    original: um GTM só e `<slug>/rastreamento.json` (§ Rastreamento do kit).
    Ajuste de carregamento entra por `<slug>/desempenho.json`, nunca editando o
@@ -48,6 +49,11 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
 6. **Encerre no que foi pedido.** Pedido de preview termina no preview: entregue
    o caminho e o que ficou pendente. Se o pedido já inclui publicar, siga com
    `publicar` enviando o mesmo build validado, sem pedir aprovação de novo.
+7. **Migração de WordPress atualiza a lista.** Página do
+   `lp.eduparmeggiani.com` publicada em `contemmagia.com.br`: edite
+   `docs/LISTA-SITES-WORDPRESS.md` na mesma tarefa — linha para "Sim" com a URL,
+   total e data corrigidos — e inclua o arquivo no commit. Slug novo no
+   WordPress que ainda não esteja na tabela entra como "Não".
 
 ## Encerramento proporcional
 
