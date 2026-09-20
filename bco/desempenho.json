@@ -1,0 +1,10 @@
+{
+  "fontes": [
+    {"familia": "Montserrat", "peso": "100 900", "arquivo": "assets/fonts/montserrat.woff2", "inline": false, "preload": true},
+    {"familia": "Nunito Sans", "peso": "100 900", "arquivo": "assets/fonts/nunitosans.woff2", "inline": false, "preload": false},
+    {"familia": "Roboto", "peso": "100 900", "arquivo": "assets/fonts/roboto.woff2", "inline": false, "preload": false}
+  ],
+  "preload_fontes_seletivo": true,
+  "fundos_adiados": [".elementor-element-201eebe", ".elementor-element-4d03141", ".elementor-element-21a6a69", ".elementor-element-665f134", ".elementor-element-a0c8e4b", ".elementor-element-ec49901", ".elementor-element-bb4e138", ".elementor-element-ec64f52", ".elementor-element-6fe05c6", ".elementor-element-6f7cafd", ".elementor-element-d1f74fc"],
+  "posters_adiados": true
+}
