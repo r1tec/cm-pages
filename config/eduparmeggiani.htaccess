@@ -33,35 +33,3 @@ RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
 RewriteRule ^ - [R=404,L]
 </IfModule>
 # END CM migration eduparmeggiani.com
-
-RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br$ [OR]
-RewriteCond %{HTTP_HOST} ^www\.contemmagia\.com\.br$
-RewriteRule ^p\-trilha\-da\-benzedeira\/?(.*)$ "https\:\/\/vembenzer\.com\.br\/p\-trilha\-da\-benzedeira$1" [R=301,L]
-
-# BEGIN WordPress
-# As diretrizes (linhas) entre "BEGIN WordPress" e "END WordPress" são
-# geradas dinamicamente e só devem ser modificadas através de filtros do WordPress.
-# Quaisquer alterações nas diretivas entre esses marcadores serão sobrescritas.
-<IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /
-RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-</IfModule>
-
-# END WordPress
-
-# BEGIN HttpHeaders
-# As diretrizes (linhas) entre "BEGIN HttpHeaders" e "END HttpHeaders" são
-# geradas dinamicamente e só devem ser modificadas através de filtros do WordPress.
-# Quaisquer alterações nas diretivas entre esses marcadores serão sobrescritas.
-<IfModule mod_headers.c>
-  <FilesMatch "\.(php|html)$">
-    Header set X-Frame-Options "ALLOW-FROM https://clkdmg.site"
-    Header set Content-Security-Policy "frame-ancestors 'self'; frame-src 'self' https://clkdmg.site https://www.facebook.com"
-  </FilesMatch>
-</IfModule>
-# END HttpHeaders
