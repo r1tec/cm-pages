@@ -1,0 +1,36 @@
+{
+  "fontes": [
+    {
+      "familia": "Montserrat",
+      "peso": "100 900",
+      "arquivo": "assets/fonts/montserrat.woff2",
+      "inline": false,
+      "preload": true
+    },
+    {
+      "familia": "Noticia Text",
+      "peso": "400",
+      "arquivo": "assets/fonts/noticiatext-400.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Noticia Text",
+      "peso": "700",
+      "arquivo": "assets/fonts/noticiatext-700.woff2",
+      "inline": false,
+      "preload": false
+    }
+  ],
+  "preload_fontes_seletivo": true,
+  "fundos_adiados": [
+    ".elementor-element-79ff7c6",
+    ".elementor-element-6acf3b7",
+    ".elementor-element-fe3d4fb",
+    ".elementor-element-526c0c1",
+    ".elementor-element-0aeb10f",
+    ".elementor-element-c16ab24",
+    ".elementor-element-a6f0ca3",
+    ".elementor-element-2ebf770"
+  ]
+}
