@@ -23,10 +23,10 @@ RewriteRule ^$ https://lp.eduparmeggiani.com/ [R=302,L]
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1|mpp|bco)(?:/|$) - [R=404,L]
+RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1|mpp|bco|bpv)(?:/|$) - [R=404,L]
 
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
-RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1|mpp|bco)(?:/|$) - [L]
+RewriteRule ^(?:bce|coe|drb|mce|mpg|gdp|ecm-26|ecm-26-v1|mpp|bco|bpv)(?:/|$) - [L]
 
 # Any route outside the explicit migration map stays a real 404.
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
