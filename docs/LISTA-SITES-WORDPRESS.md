@@ -16,14 +16,14 @@ status HTTP de cada slug em `contemmagia.com.br`.
 | `gdp` | GDP — Guia de Pemba V2 | Sim | https://contemmagia.com.br/gdp |
 | `drb` | DRB — Diário de Rezas e Benzimentos V3 | Sim | https://contemmagia.com.br/drb |
 | `iat` | IAT — IA para Terapeutas V1 | Não | só no WordPress |
-| `mpp` | MPP — Magia Prática com Pemba V1 | Não | só no WordPress |
+| `mpp` | MPP — Magia Prática com Pemba V1 | Sim | https://contemmagia.com.br/mpp |
 | `t3x` | T3X — Transição 3X V1 (ON) | Não | só no WordPress |
 | `wmpp-obrigado` | WMPP — Obrigado | Não | só no WordPress |
 | `6-edb` | 6º Encontro das Benzedeiras (marcada DEV) | Não | só no WordPress |
 | `6-edb-obrigado` | 6º Encontro das Benzedeiras — Obrigado | Não | só no WordPress |
 | `drb-vsl` | DRB — VSL (variação da `drb`) | Não | só no WordPress |
 
-Total: 14 páginas no WordPress — 7 migradas, 7 pendentes.
+Total: 14 páginas no WordPress — 8 migradas, 6 pendentes.
 
 ## Páginas que só existem em código
 
