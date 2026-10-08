@@ -734,6 +734,10 @@ def main():
     if os.path.isdir(out_dir): shutil.rmtree(out_dir)
     assets_dir = os.path.join(out_dir, "assets")
     os.makedirs(assets_dir, exist_ok=True)
+    # Vídeos da página (fora do manifesto do bundler): vão como estão, por caminho relativo.
+    videos_src = os.path.join(src_dir, "videos")
+    if os.path.isdir(videos_src):
+        shutil.copytree(videos_src, os.path.join(out_dir, "videos"))
 
     before = len(html.encode("utf-8"))
     externalized = 0
