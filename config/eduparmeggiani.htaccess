@@ -9,6 +9,11 @@ RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^\.well-known/(?:acme-challenge|pki-validation)/ - [L]
 
+# Endereço oficial destas páginas é contemmagia.com.br (decisão do dono, 17/10/2026).
+RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^(eba|fsa|gdp)(?:/(.*))?$ https://contemmagia.com.br/$1/$2 [R=301,L]
+
 # Old pages confirmed in the WordPress sitemap. Query strings are retained.
 # Never change POST requests into GET redirects.
 RewriteCond %{HTTP_HOST} ^(?:www\.)?eduparmeggiani\.com(?::[0-9]+)?$ [NC]
