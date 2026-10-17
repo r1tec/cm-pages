@@ -1,0 +1,15 @@
+html,body{margin:0;padding:0;background:#F5EADB;color:#2E2018;-webkit-font-smoothing:antialiased}
+body{font-family:'Source Sans 3',Helvetica,Arial,sans-serif;font-size:20px;line-height:1.6;font-weight:500}
+*{box-sizing:border-box}
+a{color:#A0522D;text-decoration:none}
+a:hover{color:#2E2018}
+p,h1,h2,h3,figure,blockquote,ul{margin:0}
+h1,h2,h3{font-weight:600}
+button{font:inherit}
+img{display:block}
+@keyframes eba-float{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-14px) rotate(var(--r,0deg))}}
+@keyframes eba-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+img{height:auto}
+.hv1:hover{color:#FFFFFF!important;background:#178046!important}.hv2:hover{transform:scale(1.07)!important;box-shadow:0 22px 30px -14px rgba(46,32,24,0.6)!important}.hv3:hover{background:#2E2018!important;color:#F5EADB!important}.hv4:hover{background:#A0522D!important;color:#F5EADB!important}.hv5:hover{color:#2E2018!important;background:#178046!important}
+@media (max-width:952px){.foto-ervas{margin-top:0!important}}

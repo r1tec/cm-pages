@@ -1,0 +1,227 @@
+{
+  "preload_fontes_seletivo": true,
+  "fontes": [
+    {
+      "familia": "Cormorant Garamond",
+      "peso": "500 700",
+      "arquivo": "assets/fonts/fcp-cormorant.woff2",
+      "inline": true,
+      "preload": false
+    },
+    {
+      "familia": "Cormorant Garamond",
+      "peso": "500 600",
+      "arquivo": "assets/fonts/fcp-cormorant-italic.woff2",
+      "inline": true,
+      "preload": false
+    },
+    {
+      "familia": "Source Sans 3",
+      "peso": "500 700",
+      "arquivo": "assets/fonts/fcp-sourcesans3.woff2",
+      "inline": false,
+      "preload": true
+    },
+    {
+      "familia": "Barlow Condensed",
+      "peso": "600",
+      "arquivo": "assets/fonts/fcp-barlowcondensed-600.woff2",
+      "inline": true,
+      "preload": false
+    },
+    {
+      "familia": "Barlow Condensed",
+      "peso": "500",
+      "arquivo": "assets/fonts/fcp-barlowcondensed-500.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Source Sans 3",
+      "peso": "500",
+      "arquivo": "assets/fonts/fcp-sourcesans3-italic.woff2",
+      "inline": false,
+      "preload": false
+    },
+    {
+      "familia": "Caveat",
+      "peso": "600",
+      "arquivo": "assets/fonts/fcp-caveat.woff2",
+      "inline": false,
+      "preload": false
+    }
+  ],
+  "imagens_responsivas": [
+    {
+      "arquivo": "assets/img/hero-benzendo.webp",
+      "qualidade": 78,
+      "larguras": [
+        400,
+        886
+      ],
+      "sizes": "(max-width: 700px) 50vw, 330px"
+    },
+    {
+      "arquivo": "assets/img/bencao.webp",
+      "qualidade": 78,
+      "larguras": [
+        320,
+        886
+      ],
+      "sizes": "(max-width: 700px) 38vw, 230px"
+    },
+    {
+      "arquivo": "assets/img/maos-agua.webp",
+      "qualidade": 78,
+      "larguras": [
+        500,
+        886
+      ],
+      "sizes": "(max-width: 700px) 82vw, 492px"
+    },
+    {
+      "arquivo": "assets/img/maos-ervas.webp",
+      "qualidade": 78,
+      "larguras": [
+        480,
+        929
+      ],
+      "sizes": "(max-width: 700px) 95vw, 677px"
+    },
+    {
+      "arquivo": "assets/img/fumaca.webp",
+      "qualidade": 70,
+      "larguras": [
+        480,
+        900,
+        1400
+      ],
+      "sizes": "100vw"
+    },
+    {
+      "arquivo": "assets/img/roda-grupo.webp",
+      "qualidade": 78,
+      "larguras": [
+        480,
+        900,
+        1400
+      ],
+      "sizes": "100vw"
+    },
+    {
+      "arquivo": "assets/img/folhagem-ervas.webp",
+      "qualidade": 78,
+      "larguras": [
+        480,
+        900,
+        1344
+      ],
+      "sizes": "100vw"
+    },
+    {
+      "arquivo": "assets/img/edu-vela.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        821
+      ],
+      "sizes": "(max-width: 700px) 83vw, 551px"
+    },
+    {
+      "arquivo": "assets/img/card-aulas.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        800,
+        1344
+      ],
+      "sizes": "(max-width: 700px) 90vw, 400px"
+    },
+    {
+      "arquivo": "assets/img/card-rezos.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        800,
+        1344
+      ],
+      "sizes": "(max-width: 700px) 90vw, 400px"
+    },
+    {
+      "arquivo": "assets/img/card-comunidade.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        800,
+        1344
+      ],
+      "sizes": "(max-width: 700px) 90vw, 400px"
+    },
+    {
+      "arquivo": "assets/img/edu-bio.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        803
+      ],
+      "sizes": "(max-width: 700px) 82vw, 544px"
+    },
+    {
+      "arquivo": "assets/img/carta.webp",
+      "qualidade": 78,
+      "larguras": [
+        420,
+        1100
+      ],
+      "sizes": "(max-width: 700px) 86vw, 446px"
+    },
+    {
+      "arquivo": "assets/img/selo-garantia-b.webp",
+      "qualidade": 78,
+      "larguras": [
+        300,
+        560,
+        800
+      ],
+      "sizes": "(max-width: 700px) 49vw, 267px"
+    },
+    {
+      "arquivo": "assets/img/livro-mockup-a-transp.webp",
+      "qualidade": 85,
+      "larguras": [
+        240,
+        630
+      ],
+      "sizes": "110px"
+    },
+    {
+      "arquivo": "assets/img/assinatura-edu.webp",
+      "qualidade": 85,
+      "larguras": [
+        320,
+        640,
+        1340
+      ],
+      "sizes": "(max-width: 700px) 220px, 300px"
+    },
+    {
+      "arquivo": "assets/img/logo-escola-720.webp",
+      "qualidade": 85,
+      "larguras": [
+        260,
+        480,
+        720
+      ],
+      "sizes": "240px"
+    },
+    {
+      "arquivo": "assets/float/chave.webp",
+      "qualidade": 85,
+      "larguras": [
+        260,
+        551
+      ],
+      "sizes": "(max-width: 700px) 171px, 240px"
+    }
+  ]
+}
