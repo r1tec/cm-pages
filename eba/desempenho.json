@@ -75,6 +75,7 @@
       "qualidade": 78,
       "larguras": [
         500,
+        680,
         886
       ],
       "sizes": "(max-width: 700px) 82vw, 492px"
@@ -219,9 +220,19 @@
       "qualidade": 85,
       "larguras": [
         260,
+        320,
         551
       ],
       "sizes": "(max-width: 700px) 171px, 240px"
+    },
+    {
+      "arquivo": "assets/float/alecrim.webp",
+      "qualidade": 85,
+      "larguras": [
+        180,
+        258
+      ],
+      "sizes": "(max-width: 700px) 96px, 130px"
     }
   ]
 }
