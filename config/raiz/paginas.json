@@ -1,5 +1,5 @@
 {
-  "_leia": "Páginas que o Google deve conhecer: entram no sitemap.xml e na home da raiz. Variações de teste (ex.: ecm-26-v1) ficam fora. Publicar: python3 raiz.py --publicar",
+  "_leia": "Páginas que o Google deve conhecer: entram no sitemap.xml e na home da raiz. Variações de teste (ex.: ecm-26-v1) e eventos encerrados (ecm-26, 10–11/10/2026) ficam fora. Publicar: python3 raiz.py --publicar",
   "grupos": [
     {"titulo": "Benzimento", "paginas": [
       {"slug": "drb", "nome": "Diário de Rezas e Benzimentos"},
@@ -17,8 +17,7 @@
     ]},
     {"titulo": "Espiritualidade", "paginas": [
       {"slug": "coe", "nome": "Manual de Como Ouvir Suas Entidades"},
-      {"slug": "fsa", "nome": "Formação Saberes Ancestrais"},
-      {"slug": "ecm-26", "nome": "Celebração Contém Magia · Edição Raízes"}
+      {"slug": "fsa", "nome": "Formação Saberes Ancestrais"}
     ]}
   ]
 }

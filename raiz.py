@@ -13,6 +13,7 @@ import json
 import os
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 
 RAIZ = os.path.dirname(os.path.abspath(__file__))
@@ -103,10 +104,33 @@ footer{{color:var(--suave);font-size:14px;margin-top:48px}}
 """
 
 
+def chave_indexnow():
+    return open(os.path.join(RAIZ, 'config', 'raiz', 'indexnow-chave.txt'), encoding='utf-8').read().strip()
+
+
+def urls(grupos):
+    return [SITE + '/'] + [f"{SITE}/{p['slug']}/" for g in grupos for p in g['paginas']]
+
+
+def avisar_indexnow(grupos):
+    """Avisa Bing, Yandex e demais buscadores do IndexNow (o Google não participa)."""
+    chave = chave_indexnow()
+    corpo = {'host': 'contemmagia.com.br', 'key': chave, 'keyLocation': f'{SITE}/{chave}.txt',
+             'urlList': urls(grupos)}
+    req = urllib.request.Request('https://api.indexnow.org/indexnow', data=json.dumps(corpo).encode(),
+                                 headers={'Content-Type': 'application/json; charset=utf-8'}, method='POST')
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            print(f'IndexNow: {r.status} para {len(corpo["urlList"])} endereços')
+    except urllib.error.HTTPError as erro:
+        print(f'IndexNow recusou: {erro.code} {erro.read()[:200]!r}')
+
+
 def gerar():
     grupos = paginas()
     os.makedirs(SAIDA, exist_ok=True)
-    arquivos = {'robots.txt': robots(), 'sitemap.xml': sitemap(grupos), 'inicio.html': inicio(grupos)}
+    arquivos = {'robots.txt': robots(), 'sitemap.xml': sitemap(grupos), 'inicio.html': inicio(grupos),
+                f'{chave_indexnow()}.txt': chave_indexnow()}
     for nome, conteudo in arquivos.items():
         with open(os.path.join(SAIDA, nome), 'w', encoding='utf-8') as f:
             f.write(conteudo)
@@ -125,9 +149,14 @@ def ler_env():
 
 
 def lftp(env, comandos):
-    script = 'set ftp:ssl-allow true\nset ssl:verify-certificate no\n' + comandos + '\nbye\n'
-    subprocess.run(['lftp', '-u', f"{env['FTP_USUARIO']},{env['FTP_SENHA']}", env['FTP_HOST']],
-                   input=script, text=True, check=True)
+    script = ('set ftp:ssl-allow true\nset ssl:verify-certificate no\nset xfer:clobber on\n'
+              + comandos + '\nbye\n')
+    # Senha por variável de ambiente: nunca aparece em mensagem de erro nem na lista de processos.
+    ambiente = dict(os.environ, LFTP_PASSWORD=env['FTP_SENHA'])
+    r = subprocess.run(['lftp', '--env-password', '-u', env['FTP_USUARIO'], env['FTP_HOST']],
+                       input=script, text=True, env=ambiente, capture_output=True)
+    if r.returncode:
+        raise SystemExit('Falha no FTP: ' + (r.stderr or r.stdout).strip()[-500:])
 
 
 def com_bloco(atual):
@@ -159,6 +188,7 @@ def publicar(nomes):
     lftp(env, f'cd {base}\n{envios}')
     print('Enviado:', ', '.join(nomes), '| .htaccess', 'atualizado' if alterado != atual else 'sem mudança')
     limpar_cache(env, ['/', '/robots.txt', '/sitemap.xml', '/inicio.html'])
+    avisar_indexnow(paginas())
 
 
 def limpar_cache(env, caminhos):
