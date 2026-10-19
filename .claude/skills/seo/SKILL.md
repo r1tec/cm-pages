@@ -42,8 +42,9 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
    rótulo de venda orgânica (`utm_medium=organic` para visita de buscador) entra
    sozinho com o `seo.json`; o botão de compra precisa repassar a URL ao checkout,
    como as páginas atuais já fazem.
-7. **Publicar** segue a skill `publicar`. Depois, no Search Console (quando
-   ligado), peça indexação da URL nova.
+7. **Publicar** segue a skill `publicar`. Depois, no Search Console (propriedade
+   de domínio `contemmagia.com.br`, conta operacoes@raiz1.com.br; sitemap já
+   enviado em 19/10/2026), peça indexação da URL nova.
 
 ## Não fazer
 
