@@ -80,9 +80,9 @@ Registro: `n:título@arquivos<dependências`.
 2:search-console@(fora: Google + Cloudflare DNS)<0
 3:seo-no-pipeline@preparar.py+seo.py+<slug>/seo.json+tests<1    FEITO 19/10
 4:skill-seo@.claude/skills/seo/+.claude/skills/preparar-pagina/<3   FEITO 19/10
-5:front1-em-lote@bce,bco,bpa,bpv,coe,gdp,mce,mpg,mpp/seo.json<3,4   FEITO 19/10
+5:front1-em-lote@bce,bco,bpa,bpv,coe,eba,fsa,gdp,mce,mpg,mpp/seo.json<3,4   FEITO 19/10
 6:conteudo-informativo@(decisão do dono)<2,5
-7:origem-na-pagina@estatico.py+drb/index.html+limpar_cache?<-   (cm-pages)
+7:origem-na-pagina@seo.py (ORGANICO_JS)   FEITO 19/10
 8:painel-coleta-gsc@raiz1-lovable: supabase/functions+migrations<2
 9:painel-cwv-indexacao@raiz1-lovable<8
 10:origem-no-pedido@raiz1-lovable checkout (financeiro, /esteira)<7
@@ -101,12 +101,31 @@ Registro: `n:título@arquivos<dependências`.
 - **Lote:** 10 páginas com `seo.json` e imagem `assets/og-<slug>.jpg`; corpo de
   cada página conferido idêntico ao que estava no ar. Corrigidas descrições
   trocadas (mce/mpg/mpp exibiam a do Guia de Pemba; bce/bpa a do Diário).
-- **`coe` diverge do repositório:** a versão no ar foi feita com um `estatico.py`
-  antigo (contagem regressiva até 08/10 23:59 e animações de entrada gravadas).
-  Rebuild mudaria isso, então o SEO foi aplicado sobre o HTML publicado; original
-  guardado fora da área pública em `backup-cm-pages/coe-index-antes-seo-2026-10-19.html`.
-  Antes de republicar o `coe` pelo pipeline, decidir a contagem regressiva.
-- Fora do lote (já tinham título e descrição próprios): `eba`, `fsa`, `ecm-26`.
+- **`coe`:** a versão no ar vinha de um `estatico.py` antigo. Investigado: a data
+  diferente é do contador do evento ECM, que nem roda no `coe` (sem `data-cd`); a
+  outra diferença eram animações de entrada congeladas. Republicado pelo pipeline;
+  texto e links idênticos. Original guardado fora da área pública em
+  `backup-cm-pages/coe-index-antes-seo-2026-10-19.html`.
+- **`eba` e `fsa`** entraram no lote (preço = plano anual à vista: R$ 397 e R$ 1.297).
+- **`ecm-26`** (evento de 10–11/10/2026, inscrições encerradas) saiu do sitemap e
+  da home; a página continua no ar.
+- **DRB "59 × 49":** o produto diz "49 rezas/benzimentos" quatro vezes; o "59" do
+  topo veio errado do WordPress. Topo corrigido para 49 (prometer a mais gera
+  reembolso e reclamação).
+- **Venda orgânica rotulada (build 7, decidido e feito):** `seo.py` injeta o
+  `ORGANICO_JS`: visita vinda de buscador sem `utm_*`/`gclid`/`fbclid` ganha
+  `utm_source=<buscador>&utm_medium=organic` na URL, e os scripts de compra
+  existentes repassam ao checkout. Escolhido UTM (e não parâmetro próprio) porque
+  o checkout já recebe UTM dos anúncios e o GA4 classifica `medium=organic` como
+  busca orgânica — nada muda no checkout. Provado em Chrome real nas páginas
+  publicadas (Google, Bing, anúncio com UTM, fbclid, direto).
+- **IndexNow:** `raiz.py --publicar` avisa Bing/Yandex/outros (chave em
+  `config/raiz/indexnow-chave.txt`); primeira chamada aceita (202, 13 endereços).
+- **Search Console já existe:** o DNS tem `google-site-verification=1Whep…` e a raiz
+  tem `google35d534239d1ce1d6.html` (2022). A propriedade está em alguma conta
+  Google da escola; não apagar nenhum dos dois. Falta só entrar nela, enviar
+  `https://contemmagia.com.br/sitemap.xml` e liberar o acesso da conta de
+  serviço do painel (build 8).
 
 ### 0 — Destravar o rastreamento (bloqueador; fora do cm-pages)
 - **Hoje:** WordPress da raiz com erro crítico; `robots.txt` e sitemap em 500.
@@ -183,7 +202,9 @@ semanas a meses; só ~1,7% das páginas novas chegam ao top 10 em um ano
 (Ahrefs 2025). Marca e "compra" vêm primeiro; curiosidade só com conteúdo.
 
 ## Pendências
-- Build 0 e 2 dependem do dono (servidor/WordPress e conta Google).
-- Texto "59 × 49 rezas" na DRB: decidir o número certo.
-- `og-drb.jpg` foi composta a partir da foto do topo; trocar por arte própria se
-  quiser outra cara no WhatsApp.
+- Search Console: entrar com a conta Google que já tem a propriedade e enviar o
+  sitemap (só o dono tem o login).
+- Painel no raiz1-lovable (builds 8–11) e conteúdo informativo (build 6): segundo
+  momento. Conferir lá se o pedido grava `utm_source`/`utm_medium` vindos da URL.
+- Busca de marca mostra "edu parmeggiani é confiável" e "reclame aqui": uma
+  página "Sobre" com a trajetória real do Edu ajuda o Google e quem pesquisa.

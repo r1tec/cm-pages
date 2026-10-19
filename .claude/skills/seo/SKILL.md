@@ -37,7 +37,11 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
    `<title>`, uma descrição, um canonical, um `Product`, e que o corpo da
    página não mudou.
 6. **Sitemap e home:** inclua a página em `config/raiz/paginas.json` (variações
-   de teste ficam fora) e rode `python3 raiz.py --publicar` quando publicar.
+   de teste e eventos encerrados ficam fora) e rode `python3 raiz.py --publicar`
+   quando publicar — ele também avisa Bing e outros buscadores (IndexNow). O
+   rótulo de venda orgânica (`utm_medium=organic` para visita de buscador) entra
+   sozinho com o `seo.json`; o botão de compra precisa repassar a URL ao checkout,
+   como as páginas atuais já fazem.
 7. **Publicar** segue a skill `publicar`. Depois, no Search Console (quando
    ligado), peça indexação da URL nova.
 
