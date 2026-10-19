@@ -15,9 +15,11 @@ import subprocess
 import sys
 import tempfile
 
+import seo
+
 ROOT = Path(__file__).resolve().parent
 PIPELINE = ("preparar.py", "otimizar.py", "estatico.py", "rastreamento.py",
-            "meta-pageview-antecipado.js")
+            "meta-pageview-antecipado.js", "seo.py")
 
 
 def digest(path):
@@ -117,6 +119,7 @@ def build(slug, output):
         candidate = Path(temp) / "site"
         subprocess.run([sys.executable, str(ROOT / "otimizar.py"), str(ROOT / slug),
                         str(candidate)], cwd=ROOT, env=env, check=True)
+        seo.aplicar(ROOT / slug, candidate)
         files = inventory(candidate)
         if "index.html" not in files or not (candidate / "index.html").stat().st_size:
             raise ValueError("Preparação não produziu um index.html válido")
