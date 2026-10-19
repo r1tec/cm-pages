@@ -1,0 +1,15 @@
+# BEGIN cm-pages raiz contemmagia.com.br
+# WordPress desativado: a raiz de contemmagia.com.br serve só os arquivos do
+# cm-pages. "/" mostra inicio.html; endereço inexistente responde 404 em vez de
+# cair no WordPress quebrado (erro 500 travava o Google no domínio todo).
+# Inserido por raiz.py antes do bloco "# BEGIN WordPress"; não afeta eduparmeggiani.com.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^(?:www\.)?contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteRule ^$ /inicio.html [L]
+RewriteCond %{HTTP_HOST} ^(?:www\.)?contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ - [R=404,L]
+</IfModule>
+# END cm-pages raiz contemmagia.com.br
