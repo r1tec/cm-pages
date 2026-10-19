@@ -111,7 +111,8 @@ sitemap e pedir indexação da `/drb/`. Detalhe: pesquisa SEO, seção 5.
   página; o preço do dado de produto pode ficar velho quando a oferta mudar.
 - **Depois:** cada página tem `<slug>/seo.json` (título, descrição, imagem,
   nome do produto, preço). O `preparar.py` injeta as tags, confere tamanhos e o
-  preço contra o texto da oferta (`rastreamento.json` → `oferta`) e gera
+  preço contra o texto da oferta (`rastreamento.json` → `oferta`, que é texto
+  de exibição como `"texto:R$ 39,90"` — precisa ser lido, não é número) e gera
   `sitemap-paginas.xml` com todas as rotas.
 - **Tela:** nada visível. **Efeitos:** mudar preço sem atualizar `seo.json`
   passa a falhar o build (de propósito). **Custo:** médio, 1 build.
