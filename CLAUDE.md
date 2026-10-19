@@ -22,8 +22,10 @@ Design e páginas reescritas em HTML leve a partir do WordPress.
 
 ## Velocidade e travas contra refação
 
-- Pedido claro executa direto; pare para validar só em publicação, checkout/rastreamento
-  com efeito real ou pedido ambíguo (regra global). Termine a tarefa e pare: nada de
+- Pedido claro executa direto; pare para validar só em publicação sem pedido,
+  checkout/rastreamento com efeito real ou pedido ambíguo (regra global). Erro que
+  impede o objetivo da missão (ex.: `robots.txt` quebrado barrando o Google) faz
+  parte dela: corrija e siga, sem pedir licença. Termine a tarefa e pare: nada de
   melhoria não pedida; se vê algo melhor, 1 frase e siga.
 - Lista longa, cortada ou com imagem: devolva o entendimento (1 linha/item) antes de executar.
 - Bug: reproduza antes de corrigir (preview, navegador ou página pública).
@@ -53,6 +55,10 @@ desativados de propósito. Não reativá-los.
 - **Publicar ou afinar só com pedido** aplicável à tarefa ("publica", "sobe"). O
   pedido vale até o fim da tarefa e entre sessões: não repergunte. Editar ou
   diagnosticar sozinho não autoriza pôr no ar.
+- O destino de um pedido de publicar é o domínio inteiro, não só a pasta da página:
+  arquivos da raiz que a missão precisa (`robots.txt`, sitemap, home, 404, `.htaccess`)
+  entram sem nova consulta. Antes de trocar um deles, guarde o anterior para reverter.
+  A raiz não tem WordPress ativo, só restos dele: não trate como site no ar.
 - Defeito apontado pelo dono numa página publicada na tarefa: corrige, valida e
   republica no mesmo destino ("Continuação após entrega" do global).
 - Valide conforme a mudança e reutilize as provas da mesma versão. Ícone/cor/ajuste
@@ -66,6 +72,9 @@ Credenciais ficam no `.env`, fora do Git: não exibir nem versionar.
 - Trabalho direto na `main` (o GitHub não publica nada). Trabalho concluído termina
   com commit + push juntos, só dos arquivos da tarefa; mudança local alheia fica
   fora do commit. Commits pequenos em português, um assunto por commit.
+- Sessão que nasceu numa worktree (trabalho em segundo plano): ao terminar, junte a
+  branch na `main` você mesmo (`git merge`, sem rebase) e faça push. Esta linha é a
+  autorização do dono para push na `main` neste repositório; ele não roda git.
 - Nunca `--force`, rebase de história publicada ou `--no-verify`.
 
 ## Falar comigo
