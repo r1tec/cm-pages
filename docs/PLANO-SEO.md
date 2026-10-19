@@ -75,12 +75,12 @@ páginas de venda. Para captar essa massa é preciso conteúdo (build 6).
 Registro: `n:título@arquivos<dependências`.
 
 ```
-0:destravar-rastreamento@(fora: hospedagem WordPress / raiz do servidor)
-1:drb-cabecalho@drb/index.html+drb/assets/og-drb.jpg            FEITO
+0:destravar-rastreamento@raiz.py+config/raiz/+config/contemmagia-raiz.htaccess   FEITO 19/10
+1:drb-cabecalho@drb/index.html+drb/assets/og-drb.jpg            FEITO 19/10
 2:search-console@(fora: Google + Cloudflare DNS)<0
-3:seo-no-pipeline@preparar.py+seo.py+<slug>/seo.json+tests<1
-4:skill-seo@.claude/skills/seo/+.claude/skills/preparar-pagina/<3
-5:front1-em-lote@bce,bco,bpa,bpv,coe,gdp,mce,mpg,mpp,fsa/seo.json<3,4
+3:seo-no-pipeline@preparar.py+seo.py+<slug>/seo.json+tests<1    FEITO 19/10
+4:skill-seo@.claude/skills/seo/+.claude/skills/preparar-pagina/<3   FEITO 19/10
+5:front1-em-lote@bce,bco,bpa,bpv,coe,gdp,mce,mpg,mpp/seo.json<3,4   FEITO 19/10
 6:conteudo-informativo@(decisão do dono)<2,5
 7:origem-na-pagina@estatico.py+drb/index.html+limpar_cache?<-   (cm-pages)
 8:painel-coleta-gsc@raiz1-lovable: supabase/functions+migrations<2
@@ -88,6 +88,25 @@ Registro: `n:título@arquivos<dependências`.
 10:origem-no-pedido@raiz1-lovable checkout (financeiro, /esteira)<7
 11:tela-seo@raiz1-lovable src/<8,9,10
 ```
+
+### Feito em 19/10/2026 (builds 0, 3, 4, 5)
+- **Raiz:** `raiz.py --publicar` sobe `robots.txt`, `sitemap.xml` (de
+  `config/raiz/paginas.json`) e a home `inicio.html`, e instala o bloco
+  `config/contemmagia-raiz.htaccess` antes do WordPress (desativado): `/` mostra
+  a home e endereço inexistente responde 404. Backup do `.htaccess` original no
+  servidor: `public_html/.htaccess.bk-cm-raiz`. Conferido: home, robots e sitemap
+  200; páginas, redirecionamentos e eduparmeggiani.com iguais ao antes.
+- **Pipeline:** `seo.py` aplica `<slug>/seo.json` no build (título, descrição,
+  canonical, `og:`, JSON-LD `Product`) e recusa preço que a página não mostra.
+- **Lote:** 10 páginas com `seo.json` e imagem `assets/og-<slug>.jpg`; corpo de
+  cada página conferido idêntico ao que estava no ar. Corrigidas descrições
+  trocadas (mce/mpg/mpp exibiam a do Guia de Pemba; bce/bpa a do Diário).
+- **`coe` diverge do repositório:** a versão no ar foi feita com um `estatico.py`
+  antigo (contagem regressiva até 08/10 23:59 e animações de entrada gravadas).
+  Rebuild mudaria isso, então o SEO foi aplicado sobre o HTML publicado; original
+  guardado fora da área pública em `backup-cm-pages/coe-index-antes-seo-2026-10-19.html`.
+  Antes de republicar o `coe` pelo pipeline, decidir a contagem regressiva.
+- Fora do lote (já tinham título e descrição próprios): `eba`, `fsa`, `ecm-26`.
 
 ### 0 — Destravar o rastreamento (bloqueador; fora do cm-pages)
 - **Hoje:** WordPress da raiz com erro crítico; `robots.txt` e sitemap em 500.

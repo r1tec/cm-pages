@@ -29,7 +29,8 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
    original: um GTM só e `<slug>/rastreamento.json` (§ Rastreamento do kit).
    Ajuste de carregamento entra por `<slug>/desempenho.json`, nunca editando o
    HTML à mão. Ambos derrubam o build quando inválidos — configure agora, não
-   depois de conferir.
+   depois de conferir. O SEO (`<slug>/seo.json`, imagem de compartilhamento,
+   entrada no sitemap) segue a skill `seo` e também entra antes do build.
 3. **Construa uma vez:** `python3 preparar.py <slug>` (sai em `.build/<slug>`,
    que é o que `./publicar.sh <slug>` reaproveita). Preparar em outra pasta só
    com o compromisso de publicar com `--build <mesma pasta> <slug>`: misturar os

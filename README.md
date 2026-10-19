@@ -67,6 +67,14 @@ larguras afetadas. Checkout/pixels pedem testar esses fluxos. PageSpeed entra po
 pedido de desempenho ou impacto concreto em carregamento, não em toda publicação.
 Reutilize verificações da mesma versão em vez de repetir a sequência inteira.
 
+## SEO e raiz do domínio
+
+Título, descrição, imagem de compartilhamento e dados de produto de cada página
+vêm de `<slug>/seo.json`, aplicado pelo `preparar.py` (skill `seo`; plano em
+`docs/PLANO-SEO.md`). A raiz de `contemmagia.com.br` (`robots.txt`,
+`sitemap.xml`, home e 404) sai de `python3 raiz.py --publicar`, com a lista de
+páginas em `config/raiz/paginas.json`.
+
 ## Otimização quando solicitada
 
 `python3 medir.py <slug> --both --tentativas 1 --output /tmp/psi-<slug>.json`
