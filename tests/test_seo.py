@@ -1,4 +1,8 @@
+import json
 import pathlib
+import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -36,6 +40,36 @@ class SeoTests(unittest.TestCase):
             self.assertEqual(seo.conferir(CFG, PAGINA, tmp), [])
             erros = seo.conferir(dict(CFG, preco="49.90"), PAGINA, tmp)
             self.assertTrue(any("49,90" in e for e in erros))
+            plano = "<body>R$ 1.297 à vista ou 12x de R$ 130,22</body>"
+            self.assertEqual(seo.conferir(dict(CFG, preco="1297.00"), plano, tmp), [])
+            self.assertTrue(seo.conferir(dict(CFG, preco="129.00"), plano, tmp))
+            self.assertTrue(seo.conferir(dict(CFG, preco="397.00"), "<body>R$ 397,50</body>", tmp))
+
+    @unittest.skipUnless(shutil.which("node"), "sem node")
+    def test_organico_rotula_so_visita_de_buscador_sem_campanha(self):
+        js = re.search(r"<script>(.*)</script>", seo.ORGANICO_JS, re.S).group(1)
+        casos = [  # (busca na URL, referrer, busca esperada depois)
+            ("", "https://www.google.com.br/", "?utm_source=google&utm_medium=organic"),
+            ("", "android-app://com.google.android.googlequicksearchbox/", "?utm_source=google&utm_medium=organic"),
+            ("", "https://www.bing.com/", "?utm_source=bing&utm_medium=organic"),
+            ("?x=1", "https://duckduckgo.com/", "?x=1&utm_source=duckduckgo&utm_medium=organic"),
+            ("?utm_source=meta&utm_medium=cpc", "https://www.google.com/", "?utm_source=meta&utm_medium=cpc"),
+            ("?fbclid=abc", "https://www.google.com/", "?fbclid=abc"),
+            ("", "", ""),
+            ("", "https://mail.google.com/", ""),
+            ("", "https://instagram.com/", ""),
+        ]
+        roteiro = "const casos=" + json.dumps(casos) + ";const out=[];for(const [busca,ref,_] of casos){" \
+            "const location={pathname:'/drb/',hash:'',search:busca};" \
+            "const history={state:null,replaceState(s,t,u){location.search=new URL(u,'https://x').search}};" \
+            "const document={referrer:ref};" + "(function(location,history,document){" + js + "})(location,history,document);" \
+            "const c=new URL('https://pay.contemmagia.com.br/c/drb');" \
+            "new URLSearchParams(location.search).forEach((v,k)=>{if(!c.searchParams.has(k))c.searchParams.set(k,v)});" \
+            "out.push([location.search,c.search])}console.log(JSON.stringify(out))"
+        saida = json.loads(subprocess.run(["node", "-e", roteiro], capture_output=True, text=True, check=True).stdout)
+        for (busca, ref, esperado), (depois, checkout) in zip(casos, saida):
+            self.assertEqual(depois, esperado, ref)
+            self.assertEqual(checkout, esperado, ref)
 
     def test_sem_titulo_insere_depois_do_charset(self):
         pagina = "<html><head><meta charset='UTF-8'></head><body>R$ 39,90</body></html>"

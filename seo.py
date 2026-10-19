@@ -9,7 +9,9 @@ seo.json:
   imagem_alt — descrição da imagem
 
 O seo.json vence o que estiver escrito no HTML: título, descrição, canonical, og:*,
-twitter:* e o JSON-LD de Product são trocados no build. Método: docs/PLANO-SEO.md.
+twitter:* e o JSON-LD de Product são trocados no build. Também entra o ORGANICO_JS,
+que rotula visitas de buscador para a venda chegar ao checkout como orgânica.
+Método: docs/PLANO-SEO.md.
 """
 import html
 import json
@@ -24,6 +26,22 @@ CANONICAL = re.compile(r'<link\b[^>]*\brel\s*=\s*["\']canonical["\'][^>]*>\s*', 
 LD_PRODUTO = re.compile(
     r'<script\b[^>]*application/ld\+json[^>]*>(?:(?!</script>).)*"Product"(?:(?!</script>).)*</script>\s*', re.S | re.I)
 TITULO = re.compile(r'<title\b[^>]*>.*?</title>\s*', re.S | re.I)
+# Visita vinda de buscador e sem campanha ganha utm_source=<buscador>&utm_medium=organic
+# no endereço; os scripts de compra já repassam a URL ao checkout, então a venda
+# orgânica chega rotulada. Anúncio (utm/gclid/fbclid) nunca é tocado.
+ORGANICO_JS = (
+    "<script>(function(){try{var q=new URLSearchParams(location.search);"
+    "if(['utm_source','utm_medium','gclid','gbraid','wbraid','fbclid'].some(function(k){return q.has(k)}))return;"
+    "var h=new URL(document.referrer).hostname,s=null;"
+    "if(/^(www\\.)?google\\.[a-z.]+$/.test(h)||h==='com.google.android.googlequicksearchbox')s='google';"
+    "else if(/^(www\\.)?bing\\.com$/.test(h))s='bing';"
+    "else if(/(^|\\.)search\\.yahoo\\.com$/.test(h))s='yahoo';"
+    "else if(/^(www\\.)?duckduckgo\\.com$/.test(h))s='duckduckgo';"
+    "else if(/^(www\\.)?ecosia\\.org$/.test(h))s='ecosia';"
+    "else if(h==='search.brave.com')s='brave';"
+    "if(!s)return;q.set('utm_source',s);q.set('utm_medium','organic');"
+    "history.replaceState(history.state,'',location.pathname+'?'+q.toString()+location.hash)}catch(e){}})();</script>")
+ORGANICO = re.compile(r'<script>\(function\(\)\{try\{var q=new URLSearchParams\(location\.search\);.*?</script>\s*', re.S)
 
 
 def ler(pasta_fonte):
@@ -48,10 +66,13 @@ def conferir(cfg, html_pagina, pasta_build):
     if not os.path.isfile(os.path.join(pasta_build, cfg['imagem'])):
         erros.append(f'imagem {cfg["imagem"]} não chegou ao build')
     if cfg.get('preco'):
-        reais = cfg['preco'].replace('.', ',')
+        inteiro, centavos = (cfg['preco'].split('.') + ['00'])[:2]
+        milhar = f'{int(inteiro):,}'.replace(',', '.')
+        # "R$ 39,90", "R$39,90", "R$ 397" (sem centavos só quando são 00), "R$ 1.297"
+        numero = re.escape(milhar) + (f'(?:,{centavos})?' if centavos == '00' else f',{centavos}')
         texto = html.unescape(re.sub(r'<[^>]+>', ' ', html_pagina))
-        if not re.search(r'R\$\s?' + re.escape(reais) + r'(?!\d)', texto):
-            erros.append(f'preço R$ {reais} do seo.json não aparece na página')
+        if not re.search(r'R\$\s?' + numero + r'(?![\d,])', texto):
+            erros.append(f'preço R$ {milhar},{centavos} do seo.json não aparece na página')
     return erros
 
 
@@ -74,6 +95,7 @@ def bloco(cfg, slug):
         '<meta property="og:image:height" content="630">',
         f'<meta property="og:image:alt" content="{a(cfg["imagem_alt"])}">',
         '<meta name="twitter:card" content="summary_large_image">',
+        ORGANICO_JS,
     ]
     if cfg.get('preco'):
         produto = {"@context": "https://schema.org", "@type": "Product", "name": cfg['produto'],
@@ -93,7 +115,7 @@ def aplicar_html(texto, cfg, slug):
     if fim < 0:
         raise ValueError('HTML sem </head>')
     cabeca, resto = texto[:fim], texto[fim:]
-    for padrao in (TAGS_VELHAS, CANONICAL, LD_PRODUTO):
+    for padrao in (TAGS_VELHAS, CANONICAL, LD_PRODUTO, ORGANICO):
         cabeca = padrao.sub('', cabeca)
     novo = bloco(cfg, slug)
     if TITULO.search(cabeca):
