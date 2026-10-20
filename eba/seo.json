@@ -4,5 +4,6 @@
   "produto": "Grupo de Estudos de Benzimento — Plano Anual",
   "preco": "397.00",
   "imagem": "assets/og-eba.jpg",
-  "imagem_alt": "Benzedeiro benzendo uma senhora com um ramo de ervas"
+  "imagem_alt": "Benzedeiro benzendo uma senhora com um ramo de ervas",
+  "garantia_dias": 15
 }

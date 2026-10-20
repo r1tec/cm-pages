@@ -1,8 +1,9 @@
 {
-  "titulo": "Magia Prática com Pemba: Curso de Pemba e Pontos Riscados",
-  "descricao": "Curso para reativar o poder que sempre foi seu e manifestar seus desejos com a força da pemba e dos pontos riscados, módulo a módulo. Com Edu Parmeggiani.",
+  "titulo": "Curso de Pemba: Magia Prática com Pemba, Módulo a Módulo",
+  "descricao": "Curso de pemba com Edu Parmeggiani: o que é a magia, os mistérios da pemba e como riscar pontos para proteger, limpar e manifestar, módulo a módulo.",
   "produto": "Curso Magia Prática com Pemba",
   "preco": "282.85",
   "imagem": "assets/og-mpp.jpg",
-  "imagem_alt": "Mão segurando uma pemba branca"
+  "imagem_alt": "Mão segurando uma pemba branca",
+  "garantia_dias": 15
 }

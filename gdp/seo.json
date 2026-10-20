@@ -4,5 +4,6 @@
   "produto": "Guia de Pemba",
   "preco": "39.90",
   "imagem": "assets/og-gdp.jpg",
-  "imagem_alt": "Homem riscando um ponto com pemba no chão"
+  "imagem_alt": "Homem riscando um ponto com pemba no chão",
+  "garantia_dias": 7
 }
