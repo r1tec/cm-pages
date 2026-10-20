@@ -11,6 +11,7 @@ As páginas listadas vêm de config/raiz/paginas.json.
 import html
 import json
 import os
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -58,23 +59,63 @@ def sitemap(grupos):
     return '\n'.join(linhas) + '\n'
 
 
+EMPRESA = {"razao": "Escola Contém Magia Ltda", "cnpj": "48.923.018/0001-91",
+           "email": "contato@contemmagia.com.br", "telefone": "11 2799-0423"}
+# Arquivos fixos da raiz (ícone, logo e prévia de compartilhamento), gerados de
+# eba/assets/img/logo-escola-720.webp e guardados em config/raiz/marca.
+MARCA = ('favicon.ico', 'icone-192.png', 'logo-512.png', 'og-inicio.jpg')
+
+
+def dados_estruturados():
+    org = SITE + '/#organization'
+    edu = SITE + '/#edu-parmeggiani'
+    return {"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "@id": SITE + '/#website', "name": "Escola Contém Magia", "url": SITE + '/',
+         "inLanguage": "pt-BR", "publisher": {"@id": org}},
+        {"@type": "Organization", "@id": org, "name": "Escola Contém Magia", "url": SITE + '/',
+         "logo": {"@type": "ImageObject", "url": SITE + '/logo-512.png', "width": 512, "height": 512},
+         "legalName": EMPRESA['razao'], "taxID": EMPRESA['cnpj'], "email": EMPRESA['email'],
+         "telephone": "+55-" + EMPRESA['telefone'].replace(' ', '-'), "founder": {"@id": edu}},
+        {"@type": "Person", "@id": edu, "name": "Edu Parmeggiani",
+         "jobTitle": "Sacerdote, cientista da religião e escritor", "worksFor": {"@id": org}}]}
+
+
 def inicio(grupos):
     secoes = []
     for grupo in grupos:
-        itens = ''.join(f'<li><a href="/{p["slug"]}/">{html.escape(p["nome"])}</a></li>'
+        itens = ''.join(f'<li><a href="/{p["slug"]}/">{html.escape(p["nome"])}'
+                        f'<span>{html.escape(p.get("resumo", ""))}</span></a></li>'
                         for p in grupo['paginas'])
         secoes.append(f'<section><h2>{html.escape(grupo["titulo"])}</h2><ul>{itens}</ul></section>')
-    org = json.dumps({"@context": "https://schema.org", "@type": "Organization",
-                      "name": "Escola Contém Magia", "url": SITE + "/"}, ensure_ascii=False)
+    ld = json.dumps(dados_estruturados(), ensure_ascii=False).replace('</', '<\\/')
+    titulo = 'Escola Contém Magia, de Edu Parmeggiani: Benzimento e Rezas'
+    descricao = ('Guias, cursos e formações de Edu Parmeggiani sobre benzimento, rezas de benzedeira, ervas, '
+                 'pemba, Exu, Pombogira e espiritualidade ancestral. Comece por aqui.')
+    e = EMPRESA
     return f"""<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escola Contém Magia: benzimento, rezas e espiritualidade ancestral</title>
-<meta name="description" content="Guias, cursos e formações da Escola Contém Magia sobre benzimento, rezas de benzedeira, ervas, pemba e espiritualidade ancestral.">
+<title>{titulo}</title>
+<meta name="description" content="{descricao}">
 <link rel="canonical" href="{SITE}/">
-<script type="application/ld+json">{org}</script>
+<meta name="robots" content="max-image-preview:large">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/icone-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/icone-192.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Escola Contém Magia">
+<meta property="og:title" content="{titulo}">
+<meta property="og:description" content="{descricao}">
+<meta property="og:url" content="{SITE}/">
+<meta property="og:image" content="{SITE}/og-inicio.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Escola Contém Magia">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{ld}</script>
 <style>
 :root{{--fundo:#fbf7f2;--texto:#2b211b;--suave:#6b5a4e;--marca:rgb(200,50,0);--linha:#e8ddd2}}
 *{{box-sizing:border-box}}
@@ -86,18 +127,27 @@ h1::after{{content:"";display:block;width:56px;height:3px;background:rgb(255,67,
 h2{{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--suave);margin:32px 0 8px}}
 ul{{list-style:none;margin:0;padding:0;border-top:1px solid var(--linha)}}
 li{{border-bottom:1px solid var(--linha)}}
-a{{display:block;padding:14px 0;color:var(--texto);text-decoration:none;font-weight:600}}
-a::after{{content:"→";float:right;color:var(--marca)}}
-a:hover,a:focus-visible{{color:var(--marca)}}
-footer{{color:var(--suave);font-size:14px;margin-top:48px}}
+li a{{display:block;padding:14px 28px 14px 0;color:var(--texto);text-decoration:none;font-weight:600;position:relative}}
+li a::after{{content:"→";position:absolute;right:0;top:14px;color:var(--marca)}}
+li a span{{display:block;font-weight:400;font-size:15px;color:var(--suave)}}
+li a:hover,li a:focus-visible{{color:var(--marca)}}
+footer{{color:var(--suave);font-size:14px;margin-top:48px;border-top:1px solid var(--linha);padding-top:20px}}
+footer p{{margin:0 0 4px}}
+footer a{{color:var(--texto)}}
 </style>
 </head>
 <body>
 <main>
 <h1>Escola Contém Magia</h1>
-<p class="sub">Benzimento, rezas de benzedeira e espiritualidade ancestral.</p>
+<p class="sub">Fundada por Edu Parmeggiani, sacerdote, cientista da religião e escritor, autor do livro
+Magia com Plantas (Editora Planeta). Aqui estão os guias em PDF, cursos e formações da escola sobre
+benzimento, rezas de benzedeira, ervas, pemba, Exu, Pombogira e espiritualidade ancestral.</p>
 {''.join(secoes)}
-<footer>© Escola Contém Magia</footer>
+<footer>
+<p>{e["razao"]} · CNPJ {e["cnpj"]}</p>
+<p>Suporte: <a href="mailto:{e["email"]}">{e["email"]}</a> · {e["telefone"]}</p>
+<p>© Escola Contém Magia</p>
+</footer>
 </main>
 </body>
 </html>
@@ -134,8 +184,10 @@ def gerar():
     for nome, conteudo in arquivos.items():
         with open(os.path.join(SAIDA, nome), 'w', encoding='utf-8') as f:
             f.write(conteudo)
-    print('Gerado em', SAIDA, ':', ', '.join(arquivos))
-    return list(arquivos)
+    for nome in MARCA:
+        shutil.copyfile(os.path.join(RAIZ, 'config', 'raiz', 'marca', nome), os.path.join(SAIDA, nome))
+    print('Gerado em', SAIDA, ':', ', '.join(list(arquivos) + list(MARCA)))
+    return list(arquivos) + list(MARCA)
 
 
 def ler_env():
@@ -187,7 +239,7 @@ def publicar(nomes):
         envios += f'\n{backup}put "{novo}" -o .htaccess'
     lftp(env, f'cd {base}\n{envios}')
     print('Enviado:', ', '.join(nomes), '| .htaccess', 'atualizado' if alterado != atual else 'sem mudança')
-    limpar_cache(env, ['/', '/robots.txt', '/sitemap.xml', '/inicio.html'])
+    limpar_cache(env, ['/', '/robots.txt', '/sitemap.xml', '/inicio.html'] + ['/' + n for n in MARCA])
     avisar_indexnow(paginas())
 
 

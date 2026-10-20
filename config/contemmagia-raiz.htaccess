@@ -5,11 +5,24 @@
 # Inserido por raiz.py antes do bloco "# BEGIN WordPress"; não afeta eduparmeggiani.com.
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteCond %{HTTP_HOST} ^(?:www\.)?contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+# www → sem www (um endereço só para o Google), mantendo caminho e parâmetros.
+RewriteCond %{HTTP_HOST} ^www\.contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteRule ^(.*)$ https://contemmagia.com.br/$1 [R=301,L]
+# Restos do WordPress respondem "removido" (410), não erro 500 nem a home.
+RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteRule ^(?:index\.php|readme\.html|license\.txt|wp-config-sample\.php|wp-(?:admin|includes|content)(?:/.*)?)$ - [G,L]
+# Evento encerrado e variação de teste: continuam no ar, fora do Google.
+RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteRule ^ecm-26(?:-v1)?(?:/|$) - [E=CM_NOINDEX:1]
+RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
 RewriteRule ^$ /inicio.html [L]
-RewriteCond %{HTTP_HOST} ^(?:www\.)?contemmagia\.com\.br(?::[0-9]+)?$ [NC]
+RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ - [R=404,L]
+</IfModule>
+<IfModule mod_headers.c>
+Header set X-Robots-Tag "noindex, follow" env=CM_NOINDEX
+Header set X-Robots-Tag "noindex, follow" env=REDIRECT_CM_NOINDEX
 </IfModule>
 # END cm-pages raiz contemmagia.com.br
