@@ -135,6 +135,10 @@ template, count = re.subn(r'(<span\b[^>]*)(>Recomendado</span>)',
                         lambda m: re.sub(r'color:[^;"\']+', 'color:#87376A', m[1]) + m[2], template)
 assert count == 1
 template = template.replace('<strong>12x de R$ 130,22</strong>', '<strong style="color:#87376A">12x de R$ 130,22</strong>')
+# Plano trimestral segue o checkout (?offer=alt): a exportação trazia R$ 333 / 3x de R$ 117,70.
+for old, new in (('>R$ 333</strong>', '>R$ 393</strong>'), ('3x de R$ 117,70', '3x de R$ 138,91')):
+    assert template.count(old) == 1
+    template = template.replace(old, new)
 template, count = re.subn(r'<div(?=[^>]*background:#EDE7DD)', '<div data-fsa-light=""', template)
 assert count == 1
 css = """<style>
