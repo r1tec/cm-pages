@@ -31,7 +31,34 @@ class SeoTests(unittest.TestCase):
         self.assertEqual(uma.count('"Product"'), 1)
         self.assertNotIn("V3", uma)
         self.assertIn("var manter=1", uma)
-        self.assertIn("<body>Por R$ 39,90</body>", uma)
+        self.assertIn("<body>Por R$ 39,90", uma)
+        self.assertEqual(uma.count('class="cm-outros"'), 1)
+
+    def test_limpa_cabecalho_e_corpo(self):
+        pagina = ('<html><head><link rel="preload" as="font" href="data:font/woff2;base64,AAAA" crossorigin>'
+                  '<meta name="viewport" content="a"><meta name="viewport" content="b">'
+                  '<link rel="icon" href="assets/favicon.png"><meta name="robots" content="index">'
+                  "<meta charset='UTF-8'><title>x</title></head><body><h1></h1><h1>Oi</h1>"
+                  'Por R$ 39,90 e 7 dias de garantia</body></html>')
+        cfg = dict(CFG, garantia_dias=7)
+        uma = seo.aplicar_html(pagina, cfg, "drb")
+        self.assertEqual(uma, seo.aplicar_html(uma, cfg, "drb"))
+        self.assertTrue(uma.startswith('<html><head>\n<meta charset="utf-8">'))
+        self.assertNotIn("data:font", uma)
+        self.assertEqual(uma.count('name="viewport"'), 1)
+        self.assertNotIn("assets/favicon.png", uma)
+        self.assertEqual(uma.count('name="robots"'), 1)
+        self.assertNotIn("<h1></h1>", uma)
+        self.assertIn("<h1>Oi</h1>", uma)
+        self.assertIn('"merchantReturnDays": 7', uma)
+        self.assertNotIn('href="/drb/"', uma)  # o rodapé não liga a página a ela mesma
+
+    def test_recusa_garantia_que_a_pagina_nao_mostra(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (pathlib.Path(tmp) / "assets").mkdir()
+            (pathlib.Path(tmp) / "assets/og.jpg").write_bytes(b"x")
+            self.assertEqual(seo.conferir(dict(CFG, garantia_dias=7), PAGINA.replace("39,90", "39,90 sete dias"), tmp), [])
+            self.assertTrue(seo.conferir(dict(CFG, garantia_dias=15), PAGINA, tmp))
 
     def test_recusa_preco_que_a_pagina_nao_mostra(self):
         with tempfile.TemporaryDirectory() as tmp:
