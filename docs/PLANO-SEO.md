@@ -201,10 +201,26 @@ Mudança de título leva dias a semanas para aparecer; página nova costuma leva
 semanas a meses; só ~1,7% das páginas novas chegam ao top 10 em um ano
 (Ahrefs 2025). Marca e "compra" vêm primeiro; curiosidade só com conteúdo.
 
+## Revisão por especialistas (19/10/2026, no ar)
+Relatórios de SEO técnico, conteúdo e dados estruturados. Aplicado e publicado:
+- `<meta charset>` no topo e fim do preload de fonte embutida (HTML 20–60 KB menor);
+- ícone e logo da escola (`config/raiz/marca`), robots `max-image-preview:large` nas 12;
+- `Product` com `sku`, `@id` da organização e garantia (`garantia_dias`, conferida no texto);
+- rodapé "Outros guias" em todas as páginas (links internos; corrige #dc-root em 100%);
+- alt de ~35 imagens; títulos de mpp (curso de pemba), mpg (Pomba Gira) e bpa (cachorro e gato);
+- erros de digitação: bco "com Ervas"→"com Orixás", bpa "Aniamais", mpg "Guia do guia";
+- home com texto, Edu, dados da empresa, `WebSite`/`Organization`/`Person` e og;
+- `.htaccess`: www→sem www (301), restos do WP em 410, ecm-26 e ecm-26-v1 com noindex.
+Não feito de propósito: BreadcrumbList e VideoObject (ganho ~0), preço riscado,
+`priceValidUntil`, Merchant Center (política proíbe PDF e cursos).
+
 ## Pendências
-- Search Console: entrar com a conta Google que já tem a propriedade e enviar o
-  sitemap (só o dono tem o login).
-- Painel no raiz1-lovable (builds 8–11) e conteúdo informativo (build 6): segundo
-  momento. Conferir lá se o pedido grava `utm_source`/`utm_medium` vindos da URL.
-- Busca de marca mostra "edu parmeggiani é confiável" e "reclame aqui": uma
-  página "Sobre" com a trajetória real do Edu ajuda o Google e quem pesquisa.
+- Search Console: sitemap enviado e processado (13 páginas) em 19/10/2026, conta
+  operacoes@raiz1.com.br.
+- Decisões do dono: número de alunos (12, 17, 35, 42 e 44 mil conforme a página);
+  módulos 3–6 do mpp com o mesmo título; página Sobre/autor com fatos reais; links
+  oficiais de Instagram/YouTube (entram no `sameAs`); guias informativos (build 6).
+- Opcional: Bing Webmaster Tools importando do Search Console (~5 min, login do dono);
+  alt das 3 imagens do fsa (exige mexer em `scripts/preparar-fsa.py`).
+- Painel no raiz1-lovable: `docs/seo/MONITORAMENTO-SEO-RAIZ1.md` (o pedido já grava
+  `url_utm_*`, então a venda orgânica já chega ao banco).
