@@ -10,9 +10,10 @@ seo.json:
   garantia_dias — 7 (opcional); precisa aparecer na página ("7 dias", "sete dias")
 
 O seo.json vence o que estiver escrito no HTML: título, descrição, canonical, og:*,
-twitter:*, robots, ícones e o JSON-LD de Product são trocados no build. Também entram
+twitter:*, robots, ícones e o JSON-LD de Product são trocados no build. Também entra
 o ORGANICO_JS, que rotula visitas de buscador para a venda chegar ao checkout como
-orgânica, e o rodapé "Outros guias" (links entre as páginas de config/raiz/paginas.json).
+orgânica. Página de venda não ganha link para fora: a ligação entre as páginas fica
+na home e na página Sobre (raiz.py).
 Método: docs/PLANO-SEO.md.
 """
 import html
@@ -35,12 +36,11 @@ VIEWPORT = re.compile(r'<meta\b[^>]*\bname\s*=\s*["\']viewport["\'][^>]*>\s*', r
 # Preload de fonte embutida (data:) não antecipa nada e repete a fonte no HTML.
 PRELOAD_DATA = re.compile(r'<link\b(?=[^>]*\brel\s*=\s*["\']preload["\'])(?=[^>]*\bhref\s*=\s*["\']data:)[^>]*>\s*', re.I)
 H1_VAZIO = re.compile(r'<h1\b[^>]*>\s*</h1>\s*', re.I)
-RODAPE = re.compile(r'<nav class="cm-outros".*?</nav>\s*', re.S)
 ICONES_NOVOS = ('<link rel="icon" href="/favicon.ico" sizes="48x48">\n'
                 '<link rel="icon" href="/icone-192.png" type="image/png" sizes="192x192">\n'
                 '<link rel="apple-touch-icon" href="/icone-192.png">\n')
 ORG_ID = SITE + '/#organization'
-PAGINAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'raiz', 'paginas.json')
+
 # Visita vinda de buscador e sem campanha ganha utm_source=<buscador>&utm_medium=organic
 # no endereço; os scripts de compra já repassam a URL ao checkout, então a venda
 # orgânica chega rotulada. Anúncio (utm/gclid/fbclid) nunca é tocado.
@@ -141,39 +141,6 @@ def bloco(cfg, slug):
     return '\n'.join(linhas) + '\n'
 
 
-def outras_paginas(slug, total=4):
-    """Páginas para o rodapé: as do mesmo grupo primeiro, completando com as demais."""
-    if not os.path.isfile(PAGINAS):
-        return []
-    with open(PAGINAS, encoding='utf-8') as f:
-        grupos = json.load(f)['grupos']
-    mesmo = next((g['paginas'] for g in grupos if any(p['slug'] == slug for p in g['paginas'])), None)
-    if mesmo is None:
-        return []
-    resto = [p for g in grupos if g['paginas'] is not mesmo for p in g['paginas']]
-    return [p for p in mesmo + resto if p['slug'] != slug][:total]
-
-
-def rodape(slug):
-    paginas = outras_paginas(slug)
-    if not paginas:
-        return ''
-    itens = ''.join(f'<li><a href="/{p["slug"]}/">{html.escape(p["nome"])}</a></li>' for p in paginas)
-    return ('<nav class="cm-outros" aria-label="Outros guias da Escola Contém Magia"><style>'
-            '.cm-outros{background:#2b211b;color:#f3e9dc;padding:32px 16px 40px;text-align:center;'
-            'font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}'
-            '.cm-outros p{margin:0 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}'
-            '.cm-outros ul{list-style:none;margin:0 auto 16px;padding:0;display:flex;flex-wrap:wrap;'
-            'justify-content:center;gap:8px 24px;max-width:760px}'
-            '.cm-outros a{color:#f3e9dc;text-decoration:underline;text-underline-offset:3px}'
-            '.cm-outros a:hover{color:#fff}'
-            # Exportações do Claude Design prendem #dc-root em 100% da tela e o conteúdo
-            # transborda; com altura automática o rodapé fica depois do conteúdo.
-            'body>#dc-root,body>#dc-root>.sc-host{height:auto}'
-            '</style><p>Outros guias da Escola Contém Magia</p>'
-            f'<ul>{itens}</ul><a href="/">Ver todos os guias e cursos</a></nav>\n')
-
-
 def aplicar_html(texto, cfg, slug):
     fim = texto.lower().find('</head>')
     if fim < 0:
@@ -196,10 +163,7 @@ def aplicar_html(texto, cfg, slug):
     cabeca = CHARSET.sub('', cabeca)
     cabeca = re.sub(r'<head\b[^>]*>\s*', lambda m: m.group().rstrip() + '\n<meta charset="utf-8">\n',
                     cabeca, count=1, flags=re.I)
-    resto = H1_VAZIO.sub('', RODAPE.sub('', resto))
-    corpo_fim = resto.lower().rfind('</body>')
-    if corpo_fim >= 0:
-        resto = resto[:corpo_fim] + rodape(slug) + resto[corpo_fim:]
+    resto = H1_VAZIO.sub('', resto)
     return cabeca + resto
 
 

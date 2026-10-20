@@ -32,7 +32,7 @@ class SeoTests(unittest.TestCase):
         self.assertNotIn("V3", uma)
         self.assertIn("var manter=1", uma)
         self.assertIn("<body>Por R$ 39,90", uma)
-        self.assertEqual(uma.count('class="cm-outros"'), 1)
+        self.assertIn("Por R$ 39,90</body>", uma)  # nenhum link novo no corpo
 
     def test_limpa_cabecalho_e_corpo(self):
         pagina = ('<html><head><link rel="preload" as="font" href="data:font/woff2;base64,AAAA" crossorigin>'
@@ -51,7 +51,6 @@ class SeoTests(unittest.TestCase):
         self.assertNotIn("<h1></h1>", uma)
         self.assertIn("<h1>Oi</h1>", uma)
         self.assertIn('"merchantReturnDays": 7', uma)
-        self.assertNotIn('href="/drb/"', uma)  # o rodapé não liga a página a ela mesma
 
     def test_recusa_garantia_que_a_pagina_nao_mostra(self):
         with tempfile.TemporaryDirectory() as tmp:
