@@ -206,7 +206,9 @@ Relatórios de SEO técnico, conteúdo e dados estruturados. Aplicado e publicad
 - `<meta charset>` no topo e fim do preload de fonte embutida (HTML 20–60 KB menor);
 - ícone e logo da escola (`config/raiz/marca`), robots `max-image-preview:large` nas 12;
 - `Product` com `sku`, `@id` da organização e garantia (`garantia_dias`, conferida no texto);
-- rodapé "Outros guias" em todas as páginas (links internos; corrige #dc-root em 100%);
+- ~~rodapé "Outros guias"~~: removido no mesmo dia a pedido do dono (página de venda só
+  leva ao checkout); esconder do visitante seria link oculto (spam). Links internos ficam
+  na home e em /sobre/;
 - alt de ~35 imagens; títulos de mpp (curso de pemba), mpg (Pomba Gira) e bpa (cachorro e gato);
 - erros de digitação: bco "com Ervas"→"com Orixás", bpa "Aniamais", mpg "Guia do guia";
 - home com texto, Edu, dados da empresa, `WebSite`/`Organization`/`Person` e og;
@@ -217,9 +219,11 @@ Não feito de propósito: BreadcrumbList e VideoObject (ganho ~0), preço riscad
 ## Pendências
 - Search Console: sitemap enviado e processado (13 páginas) em 19/10/2026, conta
   operacoes@raiz1.com.br.
-- Decisões do dono: número de alunos (12, 17, 35, 42 e 44 mil conforme a página);
-  módulos 3–6 do mpp com o mesmo título; página Sobre/autor com fatos reais; links
-  oficiais de Instagram/YouTube (entram no `sameAs`); guias informativos (build 6).
+- Decidido pelo dono em 19/10/2026 e no ar: 44 mil alunos em todas as páginas; mpp
+  fica como está; página /sobre/ (Edu, só com fatos já publicados); Instagram
+  @edu.parmeggiani e YouTube @edu.parmeggiani ("Contém Magia - Edu Parmeggiani") no
+  `sameAs`, na home e no /sobre/.
+- Guias informativos (build 6): sem decisão.
 - Opcional: Bing Webmaster Tools importando do Search Console (~5 min, login do dono);
   alt das 3 imagens do fsa (exige mexer em `scripts/preparar-fsa.py`).
 - Painel no raiz1-lovable: `docs/seo/MONITORAMENTO-SEO-RAIZ1.md` (o pedido já grava

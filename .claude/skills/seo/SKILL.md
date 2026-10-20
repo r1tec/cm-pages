@@ -38,8 +38,8 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
 5. **Build e conferência:** `python3 preparar.py <slug>`; confira no build um
    `<title>`, uma descrição, um canonical, um `Product`, e que o corpo da
    página não mudou.
-6. **Sitemap, home e rodapé:** inclua a página em `config/raiz/paginas.json`, com
-   `nome` e `resumo` (o rodapé "Outros guias" e a home leem dali; variações
+6. **Sitemap e home:** inclua a página em `config/raiz/paginas.json`, com
+   `nome` e `resumo` (a home e a página Sobre leem dali; variações
    de teste e eventos encerrados ficam fora) e rode `python3 raiz.py --publicar`
    quando publicar — ele também avisa Bing e outros buscadores (IndexNow). O
    rótulo de venda orgânica (`utm_medium=organic` para visita de buscador) entra
@@ -54,6 +54,9 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
 - Marcar avaliações/estrelas a partir de depoimentos em imagem ou de outros
   sites (risco de punição manual); FAQ marcado não aparece mais no Google.
 - Trocar slug por SEO (quebra campanhas).
+- Pôr link na página de venda que não seja o checkout (decisão do dono, 19/10/2026:
+  zero distração). Também não esconder links só para o Google: é spam (link oculto).
+  Ligação entre páginas fica na home e em /sobre/.
 - BreadcrumbList, VideoObject de depoimento, preço riscado ou `priceValidUntil`
   inventado (revisão de 19/10/2026: ganho nulo ou risco).
 - Republicar página cujo build diverge do que está no ar sem conferir o corpo
