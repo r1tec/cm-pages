@@ -4,5 +4,6 @@
   "produto": "Diário de Rezas e Benzimentos",
   "preco": "39.90",
   "imagem": "assets/og-drb.jpg",
-  "imagem_alt": "Benzedeira escrevendo rezas num caderno"
+  "imagem_alt": "Benzedeira escrevendo rezas num caderno",
+  "garantia_dias": 7
 }

@@ -1,23 +1,80 @@
 {
   "_leia": "Páginas que o Google deve conhecer: entram no sitemap.xml e na home da raiz. Variações de teste (ex.: ecm-26-v1) e eventos encerrados (ecm-26, 10–11/10/2026) ficam fora. Publicar: python3 raiz.py --publicar",
   "grupos": [
-    {"titulo": "Benzimento", "paginas": [
-      {"slug": "drb", "nome": "Diário de Rezas e Benzimentos"},
-      {"slug": "bce", "nome": "Benzimento com Ervas"},
-      {"slug": "bco", "nome": "Benzimento com Orixás"},
-      {"slug": "bpa", "nome": "Benzimento para Animais"},
-      {"slug": "bpv", "nome": "Guia de Benzimento dos Pretos Velhos"},
-      {"slug": "eba", "nome": "Grupo de Estudos de Benzimento"}
-    ]},
-    {"titulo": "Pemba e magia", "paginas": [
-      {"slug": "gdp", "nome": "Guia de Pemba"},
-      {"slug": "mpp", "nome": "Magia Prática com Pemba"},
-      {"slug": "mce", "nome": "Magia com Exu"},
-      {"slug": "mpg", "nome": "Magia com Pombogira"}
-    ]},
-    {"titulo": "Espiritualidade", "paginas": [
-      {"slug": "coe", "nome": "Manual de Como Ouvir Suas Entidades"},
-      {"slug": "fsa", "nome": "Formação Saberes Ancestrais"}
-    ]}
+    {
+      "titulo": "Benzimento",
+      "paginas": [
+        {
+          "slug": "drb",
+          "nome": "Diário de Rezas e Benzimentos",
+          "resumo": "49 rezas antigas de benzedeira, em PDF"
+        },
+        {
+          "slug": "bce",
+          "nome": "Benzimento com Ervas",
+          "resumo": "As ervas da benzedeira e como benzer com elas, em PDF"
+        },
+        {
+          "slug": "bco",
+          "nome": "Benzimento com Orixás",
+          "resumo": "48 benzimentos com Orixás, em PDF"
+        },
+        {
+          "slug": "bpa",
+          "nome": "Benzimento para Animais",
+          "resumo": "Benzimentos para proteger e acalmar cachorro, gato e outros animais"
+        },
+        {
+          "slug": "bpv",
+          "nome": "Guia de Benzimento dos Pretos Velhos",
+          "resumo": "34 benzimentos de Preto Velho, em PDF"
+        },
+        {
+          "slug": "eba",
+          "nome": "Grupo de Estudos de Benzimento",
+          "resumo": "Grupo de estudos ao vivo para aprender a benzer"
+        }
+      ]
+    },
+    {
+      "titulo": "Pemba e magia",
+      "paginas": [
+        {
+          "slug": "gdp",
+          "nome": "Guia de Pemba",
+          "resumo": "Pontos riscados de proteção e amor, em PDF"
+        },
+        {
+          "slug": "mpp",
+          "nome": "Magia Prática com Pemba",
+          "resumo": "Curso de pemba, módulo a módulo"
+        },
+        {
+          "slug": "mce",
+          "nome": "Magia com Exu",
+          "resumo": "Firmezas, padês e banhos com Exu, em PDF"
+        },
+        {
+          "slug": "mpg",
+          "nome": "Magia com Pombogira",
+          "resumo": "Firmezas, padês e rituais com Pomba Gira, em PDF"
+        }
+      ]
+    },
+    {
+      "titulo": "Espiritualidade",
+      "paginas": [
+        {
+          "slug": "coe",
+          "nome": "Manual de Como Ouvir Suas Entidades",
+          "resumo": "Manual para ouvir seus guias espirituais"
+        },
+        {
+          "slug": "fsa",
+          "nome": "Formação Saberes Ancestrais",
+          "resumo": "Formação para desenvolver sua espiritualidade"
+        }
+      ]
+    }
   ]
 }

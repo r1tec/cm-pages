@@ -4,5 +4,6 @@
   "produto": "Guia de Benzimento dos Pretos Velhos",
   "preco": "39.90",
   "imagem": "assets/og-bpv.jpg",
-  "imagem_alt": "Capa do Guia de Benzimento dos Pretos Velhos"
+  "imagem_alt": "Capa do Guia de Benzimento dos Pretos Velhos",
+  "garantia_dias": 7
 }

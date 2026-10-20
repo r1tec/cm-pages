@@ -4,5 +4,6 @@
   "produto": "Guia de Benzimento com Ervas",
   "preco": "39.90",
   "imagem": "assets/og-bce.jpg",
-  "imagem_alt": "Benzedeira benzendo com um ramo de ervas no quintal"
+  "imagem_alt": "Benzedeira benzendo com um ramo de ervas no quintal",
+  "garantia_dias": 7
 }

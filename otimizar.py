@@ -379,8 +379,9 @@ def _aplicar_desempenho_config(html, src_dir, out_dir):
         if len(old_urls) != 1:
             raise ValueError(f"Esperada uma declaração de fonte: {item['familia']} {item['peso']}")
         managed_font_urls.update(old_urls)
-        if item.get("preload"):
-            font_links[url] = f'<link rel="preload" as="font" type="font/woff2" crossorigin href="{url}">'
+        # Fonte embutida (data:) já chega com o HTML: preload só a repetiria.
+        if item.get("preload") and not item.get("inline"):
+            font_links[url] =f'<link rel="preload" as="font" type="font/woff2" crossorigin href="{url}">'
         if item.get("inline"):
             def remover_preload(match):
                 tag = match.group()
