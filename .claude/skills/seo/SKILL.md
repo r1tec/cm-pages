@@ -1,12 +1,11 @@
 ---
 name: seo
-description: Prepara o SEO de uma página do cm-pages — pesquisa das palavras que a persona busca, título e descrição com gancho de curiosidade, imagem de compartilhamento, dados de produto e entrada no sitemap. Use em toda página nova (chamada pela preparar-pagina) e quando o dono pedir SEO, Google, busca orgânica ou "aparecer no Google". Não muda texto visível da página.
+description: Prepara o SEO de uma página do motor de páginas (cm-pages, rp-pages) — pesquisa das palavras que a persona busca, título e descrição com gancho de curiosidade, imagem de compartilhamento, dados de produto e entrada no sitemap. Use em toda página nova (chamada pela preparar-pagina) e quando o dono pedir SEO, Google, busca orgânica ou "aparecer no Google". Não muda texto visível da página.
 ---
 
 # SEO da página
 
-Método, evidências e limites: `docs/PLANO-SEO.md` (leia "Como escolher as
-palavras" e "Builds"); fontes em `docs/seo/`. O SEO mora em `<slug>/seo.json`,
+Domínio, marca, método próprio e passos do site: seção do site (`.claude/CLAUDE.md`). O SEO mora em `<slug>/seo.json`,
 aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição,
 `og:` ou JSON-LD à mão no HTML — o build troca tudo pelo `seo.json`.
 
@@ -17,11 +16,10 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
    aparece escrito ("R$ 39,90"), autor citado. Só entra no SEO o que a página
    já afirma.
 2. **Palavras reais.** `python3 scripts/palavras_chave.py "<tema>" "<tema> pdf"
-   "como <verbo> <tema>" "<produto> edu parmeggiani" …` (10–30 sementes).
+   "como <verbo> <tema>" "<produto> <autor ou marca>" …` (10–30 sementes).
    Separe em três camadas — **compra** (já quer o produto: "guia de …",
    "… pdf", "curso de …"), **marca** (procura o nome do produto/autor) e
-   **curiosidade** (dor da persona: "reza contra mau olhado"). Use a grafia que
-   as pessoas buscam (ex.: "pomba gira" além de "Pombogira").
+   **curiosidade** (dor da persona). Use a grafia que as pessoas buscam.
 3. **`<slug>/seo.json`:**
    - `titulo`: 40–60 caracteres, palavra de compra no começo, nome do produto,
      sem código interno ("V3", "DRB");
@@ -38,27 +36,24 @@ aplicado pelo `seo.py` dentro do `preparar.py`: nunca edite título, descrição
 5. **Build e conferência:** `python3 preparar.py <slug>`; confira no build um
    `<title>`, uma descrição, um canonical, um `Product`, e que o corpo da
    página não mudou.
-6. **Sitemap e home:** inclua a página em `config/raiz/paginas.json`, com
-   `nome` e `resumo` (a home e a página Sobre leem dali; variações
-   de teste e eventos encerrados ficam fora) e rode `python3 raiz.py --publicar`
-   quando publicar — ele também avisa Bing e outros buscadores (IndexNow). O
+6. **Sitemap e home:** se a seção do site tiver gerador de home/sitemap, inclua
+   a página nele como lá está descrito; sem gerador, não mexa nos arquivos da raiz
+   do site sem pedido. O
    rótulo de venda orgânica (`utm_medium=organic` para visita de buscador) entra
    sozinho com o `seo.json`; o botão de compra precisa repassar a URL ao checkout,
    como as páginas atuais já fazem.
-7. **Publicar** segue a skill `publicar`. Depois, no Search Console (propriedade
-   de domínio `contemmagia.com.br`, conta operacoes@raiz1.com.br; sitemap já
-   enviado em 19/10/2026), peça indexação da URL nova.
+7. **Publicar** segue a skill `publicar`. Depois, se a seção do site indicar acesso ao
+   Search Console, peça indexação da URL nova.
 
 ## Não fazer
 
 - Marcar avaliações/estrelas a partir de depoimentos em imagem ou de outros
   sites (risco de punição manual); FAQ marcado não aparece mais no Google.
 - Trocar slug por SEO (quebra campanhas).
-- Pôr link na página de venda que não seja o checkout (decisão do dono, 19/10/2026:
-  zero distração). Também não esconder links só para o Google: é spam (link oculto).
-  Ligação entre páginas fica na home e em /sobre/.
+- Pôr link na página de venda que não seja o checkout (zero distração). Também
+  não esconder links só para o Google: é spam (link oculto). A ligação entre as
+  páginas, quando existe, fica na home do site (ver seção do site).
 - BreadcrumbList, VideoObject de depoimento, preço riscado ou `priceValidUntil`
-  inventado (revisão de 19/10/2026: ganho nulo ou risco).
+  inventado (ganho nulo ou risco).
 - Republicar página cujo build diverge do que está no ar sem conferir o corpo
-  contra a versão publicada (caso `coe` em 19/10/2026: a página no ar veio de
-  versão antiga do pipeline; o SEO foi aplicado sobre o HTML publicado).
+  contra a versão publicada.

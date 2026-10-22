@@ -1,13 +1,13 @@
 ---
 name: preparar-pagina
-description: Conduz nova exportação do Claude Design ou migração de página até um preview fiel, funcional e otimizado no cm-pages. Coordena otimizar e publicar conforme o pedido; não é o fluxo de manutenção de ajustes pequenos.
+description: Conduz nova exportação do Claude Design ou migração de página até um preview fiel, funcional e otimizado no motor de páginas (cm-pages, rp-pages). Coordena otimizar e publicar conforme o pedido; não é o fluxo de manutenção de ajustes pequenos.
 ---
 
 # Preparar página
 
 Transformar uma página recebida em uma entrega fiel, funcional e rápida.
 Leia `CLAUDE.md`. Preserve o original e confirme a slug/destino pelo pedido;
-checkout padrão é `pay.contemmagia.com.br/c/<slug>`, salvo indicação diferente.
+o checkout padrão está na seção do site (`.claude/CLAUDE.md`), salvo indicação diferente.
 Não exija nova exportação do dono para problema técnico resolvível aqui.
 Não acione esse fluxo para ícone, cor ou correção delimitada.
 
@@ -18,15 +18,14 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
    existir e faça inventário de conteúdo, links de compra, UTM, FAQ, formulários
    e interações. No bundler, o React é removido depois do pré-render: só
    sobrevive o JavaScript de `estatico.py` — animação (`data-anim`, `data-hero`),
-   contador/vagas (`data-cd`, `data-encerrado`, `data-fill`, `data-sempct`) e o
-   repasse de UTM no checkout. Interação fora dessas alças exige código novo no
-   `LIVE_JS`; o pipeline só avisa no stderr, depois do build. O bundler também
+   e o repasse de UTM no checkout (alças próprias do site, como contador ao vivo,
+   estão na seção do site). Interação fora dessas alças (contador, vagas,
+   dado ao vivo) exige script leve novo no `estatico.py`; o pipeline só avisa no stderr, depois do build. O bundler também
    exige Chrome: sem pré-render o build morre de propósito, para não publicar React.
-   Migração WordPress: leia `docs/engenheiro-kit.md` antes de escrever o HTML e
-   siga `docs/RECEITA-PAGINAS.md` como passo a passo; confira a página em
-   `docs/LISTA-SITES-WORDPRESS.md` (é lá que a migração é registrada no fim).
+   Migração de outro site (ex.: WordPress): siga o roteiro e o registro que a
+   seção do site indicar.
 2. **Configure antes do primeiro build.** Rastreamento é padrão do repo, não do
-   original: um GTM só e `<slug>/rastreamento.json` (§ Rastreamento do kit).
+   original: um GTM só (o da seção do site) e, se preciso, `<slug>/rastreamento.json`.
    Ajuste de carregamento entra por `<slug>/desempenho.json`, nunca editando o
    HTML à mão. Ambos derrubam o build quando inválidos — configure agora, não
    depois de conferir. O SEO (`<slug>/seo.json`, imagem de compartilhamento,
@@ -41,7 +40,8 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
    Corrija os defeitos e só então rode `preparar.py <slug> --conferir` uma vez,
    no build final — é o mesmo que vai ao ar. Código 2 é aviso de imagem pesada
    ou contraste (sugere `reduzir.json`/`cores.json`), não falha de preparação.
-   Rastreamento tocado: `python3 scripts/testar-rastreamento.py`.
+   Rastreamento tocado: confira no build o GTM e os eventos afetados, com o teste
+   que a seção do site indicar.
 5. **Desempenho só quando é o assunto.** Com pedido de desempenho ou gargalo
    concreto, chame `otimizar` e consulte apenas a seção técnica do gargalo em
    [referência técnica](../otimizar/REFERENCIA-TECNICA.md). Sem isso, entregue o
@@ -50,11 +50,6 @@ Não acione esse fluxo para ícone, cor ou correção delimitada.
 6. **Encerre no que foi pedido.** Pedido de preview termina no preview: entregue
    o caminho e o que ficou pendente. Se o pedido já inclui publicar, siga com
    `publicar` enviando o mesmo build validado, sem pedir aprovação de novo.
-7. **Migração de WordPress atualiza a lista.** Página do
-   `lp.eduparmeggiani.com` publicada em `contemmagia.com.br`: edite
-   `docs/LISTA-SITES-WORDPRESS.md` na mesma tarefa — linha para "Sim" com a URL,
-   total e data corrigidos — e inclua o arquivo no commit. Slug novo no
-   WordPress que ainda não esteja na tabela entra como "Não".
 
 ## Encerramento proporcional
 

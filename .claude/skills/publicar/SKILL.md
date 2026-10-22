@@ -1,6 +1,6 @@
 ---
 name: publicar
-description: Publica páginas preparadas do cm-pages, reutiliza builds, limpa cache e confirma a entrega. Use para publicar ou republicar uma versão escolhida. Não inicia otimização nem PageSpeed por padrão.
+description: Publica páginas preparadas do motor de páginas (cm-pages, rp-pages), reutiliza builds, limpa cache e confirma a entrega. Use para publicar ou republicar uma versão escolhida. Não inicia otimização nem PageSpeed por padrão.
 ---
 
 # Publicar
@@ -14,8 +14,8 @@ ser renovada a cada etapa. Respeite slugs, destino e o limite mais recente.
 
 1. Identifique a página e a versão solicitadas. Preserve mudanças locais alheias.
 2. Se o preview já foi preparado e validado, publique esse build:
-   `./publicar.sh --build /tmp/preview-mce mce`.
-   Sem preview escolhido: `./publicar.sh mce` reutiliza `.build/mce` se atual;
+   `./publicar.sh --build /tmp/preview-<slug> <slug>`.
+   Sem preview escolhido: `./publicar.sh <slug>` reutiliza `.build/<slug>` se atual;
    caso contrário, prepara uma vez. Não use o modo sem slugs para pedido pontual.
 3. Leia o resultado do envio/cache. Confirme HTTP e a versão pública entregue
    (comparação do HTML/asset modificado com o build). Se o funcionamento já foi
@@ -24,8 +24,8 @@ ser renovada a cada etapa. Respeite slugs, destino e o limite mais recente.
    eventual falha real. Um ajuste pequeno não exige relatório novo extenso.
 
 `publicar.sh` é a única entrada de envio. Não usar FTP paralelo, reativar workflow
-ou `.cpanel.yml`. O comando preserva os destinos/espelhamento configurados e limpa
-cache por prefixo, inclusive campanhas. `.env` contém credenciais; não exibir.
+ou cPanel. O comando envia ao destino do `.env` (e aos espelhos configurados no
+site) e limpa o cache da Cloudflare por prefixo, inclusive campanhas. `.env` contém credenciais; não exibir.
 
 O manifesto do build prova correspondência com a fonte e integridade dos arquivos,
 não aprovação visual. `--build` recusa um build alterado ou desatualizado, sem
@@ -55,15 +55,14 @@ concreta. Pedido explícito de apenas enviar a versão validada usa o caminho cu
 - Ajuste simples: resolva na própria sessão e publique quando autorizado.
 
 Não leia referências de otimização para uma publicação comum. Comandos de
-preparação/reuso estão em `README.md`; configuração atual dos destinos em
-`docs/PUBLICACAO-EDU.md`, somente se o destino/espelho estiver envolvido.
+preparação/reuso, hospedagem e destinos espelhados estão na seção do site
+(`.claude/CLAUDE.md`), só se o assunto estiver envolvido.
 
-## GitHub após publicação
+## Git após publicação
 
-Commit + push na `main` de `origin` (`https://github.com/r1tec/cm-pages.git`)
-seguem a seção Git do `CLAUDE.md`, sem pedir permissão (autorização do dono em
-11/09/2026): só os arquivos da tarefa, sem segredos nem mudanças alheias.
-Bloqueio automático da ferramenta não é falha: o dono roda por `!`.
+Commit na `main` segue a seção Git do `CLAUDE.md` e a do site: só os arquivos da
+tarefa, sem segredos nem mudanças alheias. Push conforme a seção do site (remoto
+e autorização ficam lá).
 
 Pedido de publicar vale até o fim da tarefa e entre sessões. Correção apontada
 pelo dono na página publicada republica no mesmo destino sem novo pedido.

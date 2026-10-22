@@ -25,19 +25,16 @@ Chat somente se solicitado. Publicação depende de autorização aplicável.
 
 ## 2. Rastreamento e adendos
 
-- Exceção autorizada em 12/09/2026: piloto DRB com Meta antecipada, opt-in em
-  `drb/rastreamento.json`. Seguir `docs/PLANO-DRB-PIXEL-ANTECIPADO.md` para
-  publicar/reverter. O GTM continua adiado; o adaptador evita a primeira repetição
-  das chamadas Meta do container v28. Revalidar se as tags mudarem; não copiar
-  o piloto para outras páginas sem escopo aplicável. Sua presença não prova
+- Meta antecipada é opt-in por página em `<slug>/rastreamento.json`, com o GTM e
+  os pixels do site (ver seção do site, inclusive pilotos autorizados). O GTM
+  continua adiado. Não ligar sem escopo aplicável; sua presença não prova
   recebimento no Gerenciador de Eventos.
-- `rastreamento.py` é a fonte única do GTM `GTM-P629X98`: carregar uma vez na
+- `rastreamento.py` é a fonte única do GTM (o ID está na seção do site): carregar uma vez na
   primeira interação (scroll, mousemove, touchstart, click, keydown) ou após 5s.
   Inicializar dataLayer cedo e preservar sua fila. Não somar loaders nem inserir
   pixels diretos se o container já os fornece. Não voltar ao imediato apenas
   porque essa era a implementação do WordPress.
-- Os pixels observados na configuração vigente foram `197461362094441` e
-  `884049927923756`; verificar a configuração atual sem alterar IDs por inferência.
+- Os pixels estão na seção do site; não alterar IDs por inferência.
 - Testar carregamento por tempo e por interação; uma instância e um `gtm.js`.
   A presença de fbq/pixel não comprova PageView recebido no Meta: distinguir
   inicialização, requisição enviada e confirmação no painel.
@@ -69,7 +66,7 @@ Chat somente se solicitado. Publicação depende de autorização aplicável.
   IntersectionObserver com antecedência e fallback sem JS. Verificar também
   a rolagem rápida. Não adiar a imagem principal nem ocultar o conteúdo da dobra.
 - Reservar width/height ou aspect-ratio de logos e imagens. Fontes não são a
-  única causa de CLS: o logo do ECM antigo empurrava a seção abaixo.
+  única causa de CLS: um logo sem proporção reservada empurra a seção abaixo.
 - Fontes: preservar família, métricas, pesos utilizados, acentos e pontuação.
   Preferir WOFF2, subconjunto compatível com o texto e recursos OpenType.
   Preload seletivo ou fonte crítica pequena embutida evita troca tardia. Não
@@ -141,7 +138,7 @@ Reportar esse limite; não chamar economia de bytes de ganho de tempo comprovado
 Quando a primeira coleta após purge divergir, conferir latência do documento
 antes de atribuir tudo ao código. Registrar as coletas, sem selecionar só a melhor.
 Antecipar texto pode revelar CLS de uma imagem que antes carregava antes dele.
-Na ECM atual, o logotipo com largura responsiva precisava reservar sua proporção.
+Logotipo com largura responsiva precisa reservar sua proporção.
 `reservar_dimensoes_imagens` em `desempenho.json` adiciona dimensões do arquivo e
 altura automática às imagens selecionadas; conferir as medidas finais do layout.
 
@@ -168,7 +165,7 @@ altura automática às imagens selecionadas; conferir as medidas finais do layou
   decodificação ainda deslocava conteúdo no Lighthouse. Conferir gzip real:
   dados repetidos maiores que a janela de compressão aumentam muito o HTML.
   Preservar métricas, eixos, composição padrão, acentos e Latin-ext; comparar
-  texto e caixas antes/depois. O gerador reproduzível é preparar-fontes-fsa.py.
+  texto e caixas antes/depois.
 - Ao trocar cálculos do editor por CSS, reproduzir medidas reais: `3fr 2fr`
   desconta o gap antes da proporção e pode diferir de uma coluna de `60%`.
 - Menu que passa a duas linhas exige rever o espaço dos destinos das âncoras.
@@ -185,8 +182,8 @@ altura automática às imagens selecionadas; conferir as medidas finais do layou
 - Cache Cloudflare: `limpar_cache.py` invalida prefixos com assets e queries.
   Limpar só `/slug/` deixou URLs com UTM/fbclid servindo código anterior.
   Conferir URL limpa e campanha previamente visitada; HTTP e HTML esperado.
-- Se houver destino espelhado habilitado no publisher, conferir o resultado do
-  espelho. Não mudar DNS, redirects ou campanhas sem necessidade e autorização.
+- Se houver destino espelhado (seção do site), conferir o resultado do espelho.
+  Não mudar DNS, redirects ou campanhas sem necessidade e autorização.
 - Testar produção: imagens/fontes, ausência de loading/erros JS, sem overflow,
   CTA e checkout, UTM, FAQ/menus/interações, tags nos dois modos. Sem enviar
   formulários reais, mensagens, conversões fictícias ou efetuar compras.
@@ -216,5 +213,4 @@ altura automática às imagens selecionadas; conferir as medidas finais do layou
   eventual bloqueio real com evidência; não afirmar nota constante garantida.
 - Atualizar regras/relatório da página e conhecimento reutilizável quando houver
   aprendizado novo; commit/push apenas da tarefa. Entregar URL, notas dos dois
-  dispositivos e limitações materiais. Referência histórica detalhada:
-  `docs/PERFORMANCE-MIGRACAO.md`.
+  dispositivos e limitações materiais.

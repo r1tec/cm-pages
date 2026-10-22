@@ -1,6 +1,6 @@
 ---
 name: otimizar
-description: Diagnostica e melhora desempenho de páginas cm-pages, incluindo PageSpeed, fontes, imagens e scripts. Use quando há pedido de desempenho ou regressão concreta. Não se aplica automaticamente a toda edição ou publicação.
+description: Diagnostica e melhora desempenho de páginas do motor (cm-pages, rp-pages), incluindo PageSpeed, fontes, imagens e scripts. Use quando há pedido de desempenho ou regressão concreta. Não se aplica automaticamente a toda edição ou publicação.
 ---
 
 # Otimizar
@@ -26,9 +26,9 @@ mais do que perseguir um único número.
 ## Fluxo
 
 1. Identifique o gargalo com rede/DOM/CPU e PageSpeed quando pertinente:
-   `python3 medir.py mce --both --tentativas 1 --output /tmp/psi-mce.json`.
+   `python3 medir.py <slug> --both --tentativas 1 --output /tmp/psi-<slug>.json`.
 2. Faça alterações técnicas com hipótese verificável, preservando a função.
-3. Prepare com `python3 preparar.py mce --saida /tmp/preview-mce` e verifique
+3. Prepare com `python3 preparar.py <slug> --saida /tmp/preview-<slug>` e verifique
    o impacto visual/funcional pertinente. `--conferir` adiciona auditoria de
    imagens/contraste quando útil; não é parte obrigatória de todo build.
 4. Com publicação já autorizada, use `publicar` para enviar o build validado e
@@ -59,9 +59,7 @@ evidência. Core Web Vitals histórico de 28 dias não é a nota Lighthouse atua
 - [REFERENCIA-TECNICA.md](REFERENCIA-TECNICA.md): consulte a seção pertinente a
   fonte/primeira pintura, imagens, CSS, renderização estática, rastreamento ou
   análise dos audits. Não carregar tudo para um ajuste pontual.
-- `docs/PERFORMANCE-MIGRACAO.md`: investigação relacionada a domínio/GTM.
-- `docs/CHAT-PAGINAS.md`: instalar chat ou mudar seu carregamento; mudança apenas
-  no desenho do ícone usa verificação do componente, sem PageSpeed automático.
+- Documentos de desempenho, GTM e chat do site: seção do site.
 - `afinar.sh`: auxiliar legado restrito a imagens, publica e mede em rodadas.
   Só usar com autorização para essas publicações; não substitui o diagnóstico.
 

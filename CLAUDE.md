@@ -1,21 +1,39 @@
-# cm-pages — canônico do projeto
+# Motor de páginas — regras comuns (cm-pages e rp-pages)
 
 Global do executor: Claude `~/.claude/CLAUDE.md`; Codex `~/.codex/AGENTS.override.md`.
 `AGENTS.md` = este arquivo. Skills na fonte `.claude/skills/`; `.agents/skills/`
 só aponta para elas, sem cópias concorrentes.
 
-Páginas de venda da Escola Contém Magia. Cada pasta com `index.html` é uma rota
-em `https://contemmagia.com.br/<slug>`. Há exportações autocontidas do Claude
-Design e páginas reescritas em HTML leve a partir do WordPress.
+**Dados e regras do site deste projeto: `.claude/CLAUDE.md`** (domínio, marca,
+checkout, rastreamento, hospedagem, o que se pode tocar na raiz, remoto Git e
+documentos próprios). O Claude carrega os dois sozinho; Codex e outros executores
+leiam `.claude/CLAUDE.md` inteiro antes de começar. Quando ele diverge deste
+arquivo num ponto do site, vale ele.
+
+## Arquivos comuns aos dois projetos
+
+Este `CLAUDE.md` e `.claude/skills/` são os mesmos no cm-pages (Contém Magia) e no
+rp-pages (Rogeria Pinheiro). A fonte única mora em
+`/Users/raphaelmartins/orca/projects/cm-pages`; no rp-pages os dois são links para lá.
+
+- Mudar regra comum ou skill, de qualquer um dos projetos, muda os dois. O commit
+  vai no repositório cm-pages (`git -C /Users/raphaelmartins/orca/projects/cm-pages`),
+  só com esses arquivos, e segue as regras de Git do cm-pages.
+- Fato ou regra de um site só vai no `.claude/CLAUDE.md` daquele projeto, nunca
+  aqui nem nas skills. Skill fala em "seção do site" e não cita domínio, marca,
+  checkout ou documento de um projeto só.
+- O código do motor (`preparar.py`, `estatico.py`, `publicar.sh` etc.) NÃO é
+  comum: cada projeto tem a sua cópia.
+- No rp-pages, se as skills sumirem ou este arquivo não abrir, o link quebrou
+  (cm-pages movido ou renomeado): recrie o link, não copie os arquivos.
 
 ## Fontes
 
-- Operação: `README.md`. Skills: `publicar` envia a versão escolhida; `otimizar`
-  cuida de desempenho; `preparar-pagina` conduz páginas novas. Manutenção pequena
+- Skills: `publicar` envia a versão escolhida; `otimizar` cuida de desempenho;
+  `preparar-pagina` conduz páginas novas; `seo` cuida do SEO. Manutenção pequena
   não aciona o fluxo completo.
 - Antes de editar páginas: `<slug>/REGRAS.md`, quando existir, e os padrões
   `_padroes/checklist-design.md` e `_padroes/prompt-claude-design.md`.
-- Recriar WordPress: `docs/RECEITA-PAGINAS.md` e `docs/engenheiro-kit.md`.
 - Retomar trabalho: plano ou handoff correspondente em `docs/`. Documentos
   antigos não autorizam novas ações. Preserve texto aprovado, checkout,
   parâmetros de campanha, rastreamento e trabalho local alheio.
@@ -49,16 +67,15 @@ interações necessárias dependem do JavaScript leve previsto nele.
 `medir.py` consulta PageSpeed; `afinar.sh` publica e mede em rodadas limitadas.
 
 Único caminho de publicação: `./publicar.sh <slug ...>` (slugs explícitas; sem
-slug publica todas). GitHub é espelho; workflow FTP e `.cpanel.yml` estão
-desativados de propósito. Não reativá-los.
+slug publica todas). Outros caminhos de envio (workflow, cPanel, FTP avulso) não
+se usam nem se reativam.
 
 - **Publicar ou afinar só com pedido** aplicável à tarefa ("publica", "sobe"). O
   pedido vale até o fim da tarefa e entre sessões: não repergunte. Editar ou
   diagnosticar sozinho não autoriza pôr no ar.
-- O destino de um pedido de publicar é o domínio inteiro, não só a pasta da página:
-  arquivos da raiz que a missão precisa (`robots.txt`, sitemap, home, 404, `.htaccess`)
-  entram sem nova consulta. Antes de trocar um deles, guarde o anterior para reverter.
-  A raiz não tem WordPress ativo, só restos dele: não trate como site no ar.
+- O que um pedido de publicar pode tocar além da pasta da página (arquivos da raiz
+  do domínio) está na seção do site. Antes de trocar um arquivo da raiz, guarde o
+  anterior para reverter.
 - Defeito apontado pelo dono numa página publicada na tarefa: corrige, valida e
   republica no mesmo destino ("Continuação após entrega" do global).
 - Valide conforme a mudança e reutilize as provas da mesma versão. Ícone/cor/ajuste
@@ -69,12 +86,9 @@ Credenciais ficam no `.env`, fora do Git: não exibir nem versionar.
 
 ## Git
 
-- Trabalho direto na `main` (o GitHub não publica nada). Trabalho concluído termina
-  com commit + push juntos, só dos arquivos da tarefa; mudança local alheia fica
+- Trabalho direto na `main`. Trabalho concluído termina com commit (e push, quando
+  a seção do site autoriza), só dos arquivos da tarefa; mudança local alheia fica
   fora do commit. Commits pequenos em português, um assunto por commit.
-- Sessão que nasceu numa worktree (trabalho em segundo plano): ao terminar, junte a
-  branch na `main` você mesmo (`git merge`, sem rebase) e faça push. Esta linha é a
-  autorização do dono para push na `main` neste repositório; ele não roda git.
 - Nunca `--force`, rebase de história publicada ou `--no-verify`.
 
 ## Falar comigo
