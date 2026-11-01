@@ -1,0 +1,110 @@
+{
+  "preload_fontes_seletivo": true,
+  "fontes": [
+    {
+      "familia": "DM Serif Display",
+      "peso": "400",
+      "origem": "assets/fonts/dmserif.woff2",
+      "arquivo": "assets/fonts/fcp-dmserif.woff2",
+      "inline": true,
+      "preload": false
+    },
+    {
+      "familia": "DM Serif Display",
+      "peso": "400",
+      "origem": "assets/fonts/dmserif-italic.woff2",
+      "arquivo": "assets/fonts/fcp-dmserif-italic.woff2",
+      "inline": true,
+      "preload": false
+    },
+    {
+      "familia": "Figtree",
+      "peso": "400 700",
+      "origem": "assets/fonts/figtree.woff2",
+      "arquivo": "assets/fonts/fcp-figtree.woff2",
+      "inline": true,
+      "preload": false
+    }
+  ],
+  "imagens_responsivas": [
+    {
+      "arquivo": "assets/img/hero.webp",
+      "qualidade": 50,
+      "larguras": [
+        1400,
+        2400
+      ],
+      "sizes": "max(112vw, 264vh)"
+    },
+    {
+      "arquivo": "assets/img/promessa.webp",
+      "qualidade": 76,
+      "larguras": [
+        420,
+        640,
+        893
+      ],
+      "sizes": "(max-width: 980px) 410px, 506px"
+    },
+    {
+      "arquivo": "assets/img/mexico.webp",
+      "qualidade": 76,
+      "larguras": [
+        480,
+        960,
+        1400,
+        2000
+      ],
+      "sizes": "(max-width: 760px) 480px, 110vw"
+    },
+    {
+      "arquivo": "assets/img/edu-mexico.webp",
+      "qualidade": 78,
+      "larguras": [
+        460,
+        868
+      ],
+      "sizes": "(max-width: 760px) 230px, (max-width: 980px) 290px, 345px"
+    },
+    {
+      "arquivo": "assets/img/materiais.webp",
+      "qualidade": 76,
+      "larguras": [
+        360,
+        720,
+        1116
+      ],
+      "sizes": "(max-width: 760px) 345px, 483px"
+    },
+    {
+      "arquivo": "assets/img/edu.webp",
+      "qualidade": 78,
+      "larguras": [
+        400,
+        800,
+        1200
+      ],
+      "sizes": "(max-width: 980px) 360px, 424px"
+    },
+    {
+      "arquivo": "assets/img/depoimento.webp",
+      "qualidade": 78,
+      "larguras": [
+        300,
+        520,
+        1200
+      ],
+      "sizes": "(max-width: 760px) 200px, 260px"
+    },
+    {
+      "arquivo": "assets/img/carta.webp",
+      "qualidade": 70,
+      "larguras": [
+        800,
+        1200,
+        1600
+      ],
+      "sizes": "(max-width: 760px) 1100px, 112vw"
+    }
+  ]
+}
