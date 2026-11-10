@@ -30,18 +30,24 @@ h1,h2,p{margin:0}
 .aviso strong{display:block;font-weight:700}
 .aviso span{display:block;font-weight:400}
 
-/* Formulário (mockup: ainda sem envio) */
+/* Cadastro: botão que abre o pop-up com o formulário BM26 do Raiz1 */
 .cadastro{max-width:650px;margin:0 auto;padding:20px 40px 0;scroll-margin-top:24px}
-.campo{position:relative;margin:0 0 5px;border:1px solid transparent;border-radius:4px}
-.campo input{display:block;width:100%;height:46px;margin:0;padding:10px 20px;border:1px solid #939393;border-radius:50px;background:#101010;color:#fff;font:300 16px/24px "Montserrat",Arial,sans-serif;outline:none;-webkit-appearance:none;appearance:none}
-.campo input::placeholder{color:#b5b5b5;opacity:1}
-.campo input:focus{border-color:#12ffeb}
-.campo-email input{padding-left:44px}
-.campo-email svg{position:absolute;left:21px;top:calc(50% - 8px);width:16px;height:16px;color:#b5b5b5;pointer-events:none}
-.enviar{margin:20px 0 5px;border:1px solid transparent}
+.enviar{margin:0 0 5px;border:1px solid transparent}
 .botao-form{display:block;width:100%;margin:0;padding:20px 10px;border:0;border-radius:50px;background:#12ffeb;color:#000;font:900 16px/28.8px "Montserrat",Arial,sans-serif;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
 
-/* Faixas "blackmagick2025" vazando do cartão */
+/* Pop-up: moldura no visual da página, o miolo (iframe do Raiz1) traz o próprio cartão branco */
+.bm26-popup{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(10,10,10,.82);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.bm26-popup[hidden]{display:none}
+.bm26-caixa{position:relative;width:100%;max-width:460px;max-height:calc(100vh - 32px);overflow:auto;padding:44px 20px 20px;border:1px solid rgba(18,255,235,.45);border-radius:28px;background:#242421 url(fundo.webp) repeat 0 0/768px auto;box-shadow:0 0 30px rgba(18,255,235,.25)}
+.bm26-fechar{position:absolute;top:10px;right:12px;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font:400 28px/36px Arial,sans-serif;cursor:pointer}
+.bm26-fechar:hover,.bm26-fechar:focus-visible{background:#12ffeb;color:#000;outline:none}
+.bm26-titulo{margin:0 0 16px;font-size:16px;line-height:1.3;text-transform:uppercase;text-align:center;color:#fff}
+.bm26-titulo strong{display:block;font-weight:700;color:#12ffeb}
+.bm26-titulo span{display:block;font-weight:400}
+.bm26-moldura{overflow:hidden;border-radius:16px;background:#fff}
+.bm26-moldura iframe{display:block;width:100%;height:420px;border:0}
+
+/* Faixas "blackmagick2026" vazando do cartão */
 .faixas{margin:0 -43px;padding:10px}
 .faixas img{margin:0 auto}
 

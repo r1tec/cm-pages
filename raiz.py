@@ -11,9 +11,11 @@ As páginas listadas vêm de config/raiz/paginas.json.
 import html
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -25,6 +27,9 @@ INICIO_BLOCO = '# BEGIN cm-pages raiz contemmagia.com.br'
 FIM_BLOCO = '# END cm-pages raiz contemmagia.com.br'
 ANTES_DE = '# BEGIN WordPress'
 BACKUP_REMOTO = '.htaccess.bk-cm-raiz'
+# O bloco "HttpHeaders" (resto do WordPress, inativo) limita os iframes das páginas pelo
+# frame-src do Content-Security-Policy. Domínios de iframe que as páginas usam entram aqui.
+IFRAMES_PERMITIDOS = ('https://form.raiz1.com.br',)  # formulário de campanha do Raiz1 (bm26)
 
 
 def paginas():
@@ -334,6 +339,21 @@ def com_bloco(atual):
     return atual[:i] + bloco + '\n' + atual[i:]
 
 
+def liberar_iframes(atual):
+    """Acrescenta IFRAMES_PERMITIDOS ao frame-src de cada Content-Security-Policy do .htaccess."""
+    def trocar(m):
+        politica = m.group(2)
+        fonte = re.search(r"frame-src([^;\"]*)", politica)
+        if not fonte:
+            return m.group(0)
+        faltam = [d for d in IFRAMES_PERMITIDOS if d not in fonte.group(1).split()]
+        if not faltam:
+            return m.group(0)
+        nova = politica[:fonte.end()] + ' ' + ' '.join(faltam) + politica[fonte.end():]
+        return m.group(1) + nova + m.group(3)
+    return re.sub(r'(Header set Content-Security-Policy ")([^"]*)(")', trocar, atual)
+
+
 def publicar(nomes):
     env = ler_env()
     base = env.get('FTP_BASE', '/public_html/')
@@ -341,12 +361,16 @@ def publicar(nomes):
     novo = os.path.join(SAIDA, 'htaccess-novo.txt')
     lftp(env, f'cd {base}\nget .htaccess -o "{remoto}"')
     atual = open(remoto, encoding='utf-8').read()
-    alterado = com_bloco(atual)
+    alterado = liberar_iframes(com_bloco(atual))
     open(novo, 'w', encoding='utf-8').write(alterado)
     envios = 'mkdir -p -f sobre\n' + '\n'.join(f'put "{os.path.join(SAIDA, n)}" -o {n}' for n in nomes)
     if alterado != atual:
-        # Backup só da primeira versão (antes do bloco), para nunca sobrescrever o original.
-        backup = '' if INICIO_BLOCO in atual else f'put "{remoto}" -o {BACKUP_REMOTO}\n'
+        # Backup só da primeira versão (antes do bloco), para nunca sobrescrever o original;
+        # depois dela, cada troca guarda a versão anterior com data, para reverter.
+        if INICIO_BLOCO in atual:
+            backup = f'put "{remoto}" -o {BACKUP_REMOTO}-{time.strftime("%Y%m%d-%H%M%S")}\n'
+        else:
+            backup = f'put "{remoto}" -o {BACKUP_REMOTO}\n'
         envios += f'\n{backup}put "{novo}" -o .htaccess'
     lftp(env, f'cd {base}\n{envios}')
     print('Enviado:', ', '.join(nomes), '| .htaccess', 'atualizado' if alterado != atual else 'sem mudança')

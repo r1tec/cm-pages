@@ -35,16 +35,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="bloco"><div class="col">
       <p class="aviso"><strong>Mas essa bruxaria só vai acontecer uma vez!</strong><span>Cadastre-se para aproveitar a oportunidade:</span></p>
 
-      <!-- Formulário em mockup: sem <form>, sem name e botão type="button" — nada é enviado.
-           Ligação do envio fica para depois (alça data-cadastro). -->
-      <div class="cadastro" id="cadastro" data-cadastro>
-        <div class="campo"><input type="text" placeholder="Nome" autocomplete="given-name" aria-label="Nome"></div>
-        <div class="campo"><input type="tel" placeholder="Telefone*" autocomplete="tel" aria-label="Telefone"></div>
-        <div class="campo campo-email">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2 7l8.165 5.715c.661.463.992.695 1.351.784a2 2 0 00.968 0c.36-.09.69-.32 1.351-.784L22 7M6.8 20h10.4c1.68 0 2.52 0 3.162-.327a3 3 0 001.311-1.311C22 17.72 22 16.88 22 15.2V8.8c0-1.68 0-2.52-.327-3.162a3 3 0 00-1.311-1.311C19.72 4 18.88 4 17.2 4H6.8c-1.68 0-2.52 0-3.162.327a3 3 0 00-1.311 1.311C2 6.28 2 7.12 2 8.8v6.4c0 1.68 0 2.52.327 3.162a3 3 0 001.311 1.311C4.28 20 5.12 20 6.8 20z"/></svg>
-          <input type="email" placeholder="Gmail*" autocomplete="email" aria-label="Gmail">
-        </div>
-        <div class="enviar"><button type="button" class="botao-form">ENTRAR NO GRUPO ESPECIAL</button></div>
+      <!-- O cadastro é o formulário da campanha BM26 do Raiz1, num pop-up (iframe). -->
+      <div class="cadastro" id="cadastro">
+        <div class="enviar"><button type="button" class="botao-form" data-bm26-abrir aria-haspopup="dialog" aria-controls="bm26-popup">ENTRAR NO GRUPO ESPECIAL</button></div>
       </div>
     </div></div>
 
@@ -80,7 +73,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="bloco titulo-sec titulo-fim"><div class="col">
       <h2 class="destaque">Tudo isso pra sempre!</h2>
       <p class="sub sub-final">E todas as atualizações que eles receberem.</p>
-      <div class="acao"><a class="botao-cta" href="#cadastro"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 252.118V48C0 21.49 21.49 0 48 0h204.118a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882L293.823 497.941c-18.745 18.745-49.137 18.745-67.882 0L14.059 286.059A48 48 0 0 1 0 252.118zM112 64c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48z"/></svg>Aproveite essa oportunidade</a></div>
+      <div class="acao"><a class="botao-cta" href="#cadastro" data-bm26-abrir aria-haspopup="dialog" aria-controls="bm26-popup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 252.118V48C0 21.49 21.49 0 48 0h204.118a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882L293.823 497.941c-18.745 18.745-49.137 18.745-67.882 0L14.059 286.059A48 48 0 0 1 0 252.118zM112 64c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48z"/></svg>Aproveite essa oportunidade</a></div>
     </div></div>
 
   </div></div>
@@ -90,5 +83,41 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div></div></div>
 
 </div>
+
+<!-- Pop-up do cadastro: formulário da campanha BM26 do Raiz1 (iframe de outro domínio; o miolo não leva CSS da página) -->
+<div class="bm26-popup" id="bm26-popup" role="dialog" aria-modal="true" aria-labelledby="bm26-titulo" hidden>
+  <div class="bm26-caixa">
+    <button type="button" class="bm26-fechar" data-bm26-fechar aria-label="Fechar">&times;</button>
+    <p class="bm26-titulo" id="bm26-titulo"><strong>Mas essa bruxaria só vai acontecer uma vez!</strong><span>Cadastre-se para aproveitar a oportunidade:</span></p>
+    <div class="bm26-moldura">
+      <iframe id="bm26-iframe" data-src="https://form.raiz1.com.br/f/d3e882fe-e71c-4b23-8353-171c50dfd90c/form_bm26k7q2x" title="Formulário de inscrição na Black Magick"></iframe>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var popup = document.getElementById("bm26-popup");
+  var iframe = document.getElementById("bm26-iframe");
+  var fechar = popup.querySelector("[data-bm26-fechar]");
+  var origem = null;
+  function abrir(e) {
+    if (e) e.preventDefault();
+    origem = document.activeElement;
+    if (!iframe.src) iframe.src = iframe.getAttribute("data-src");
+    popup.hidden = false;
+    document.documentElement.style.overflow = "hidden";
+    fechar.focus();
+  }
+  function fecharPopup() {
+    popup.hidden = true;
+    document.documentElement.style.overflow = "";
+    if (origem && origem.focus) origem.focus();
+  }
+  document.querySelectorAll("[data-bm26-abrir]").forEach(function (b) { b.addEventListener("click", abrir); });
+  fechar.addEventListener("click", fecharPopup);
+  popup.addEventListener("click", function (e) { if (e.target === popup) fecharPopup(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !popup.hidden) fecharPopup(); });
+})();
+</script>
 </body>
 </html>
