@@ -1,0 +1,51 @@
+{
+  "fontes": [
+    {
+      "familia": "CeraPro Black",
+      "peso": "400",
+      "arquivo": "assets/fonts/cerapro-black.woff2",
+      "inline": false,
+      "preload": true
+    },
+    {
+      "familia": "Montserrat",
+      "peso": "100 900",
+      "arquivo": "assets/fonts/montserrat.woff2",
+      "inline": false,
+      "preload": true
+    }
+  ],
+  "preload_fontes_seletivo": true,
+  "imagens_responsivas": [
+    {
+      "arquivo": "assets/faixas.webp",
+      "qualidade": 80,
+      "larguras": [
+        480,
+        840,
+        1200,
+        1920
+      ],
+      "sizes": "(max-width: 480px) 110vw, 1166px"
+    },
+    {
+      "arquivo": "assets/logo.webp",
+      "qualidade": 85,
+      "larguras": [
+        400,
+        600,
+        844
+      ],
+      "sizes": "(max-width: 480px) 90vw, 400px"
+    },
+    {
+      "arquivo": "assets/selo.webp",
+      "qualidade": 85,
+      "larguras": [
+        100,
+        200
+      ],
+      "sizes": "100px"
+    }
+  ]
+}
