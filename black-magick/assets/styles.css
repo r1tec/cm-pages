@@ -1,0 +1,97 @@
+/* Black Magick — captação da Black Friday. Medidas do original (GoHighLevel):
+   desktop acima de 480px; celular até 480px. */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#242421;color:#fff;font-family:"Montserrat",Arial,sans-serif;overflow-x:hidden}
+img{display:block;max-width:100%;height:auto}
+h1,h2,p{margin:0}
+
+/* Seção única: fundo grafite com o padrão "black magick infinito" em mosaico */
+.secao{position:relative;padding:20px 0;background:#242421 url(fundo.webp) repeat 0 0/1200px auto;overflow:hidden}
+.linha{max-width:1170px;margin:0 auto;padding:10px 5px}
+.col{padding:10px 5px}
+
+.logo{padding:10px}
+.logo img{width:400px;margin:0 auto}
+
+/* Cartão escuro arredondado */
+.cartao{max-width:1170px;margin:0 auto;padding:60px 20px;background:rgba(0,0,0,.27);border-radius:50px}
+.cartao>.col{padding:10px 5px}
+.bloco{padding:10px 5px}
+.bloco>.col{padding:10px 5px}
+
+.titulo{font-family:"CeraPro Black","Montserrat",Arial,sans-serif;font-weight:800;font-size:58px;line-height:1.1;letter-spacing:3px;text-align:center;color:#fff}
+.titulo strong{display:inline-block;font-weight:900;line-height:1;color:#000;padding:.2em .6em;border-radius:999px;background-image:linear-gradient(80deg,#12ffeb,#00ff6b);box-shadow:0 0 20px rgba(0,255,180,.4)}
+
+.chamada{margin-top:40px;padding:0 10%;font-size:24px;line-height:1.6;font-weight:400;text-align:center;color:#fff}
+.chamada strong,.brilho{font-weight:700;text-transform:uppercase;color:#12ffeb;text-shadow:0 0 6px rgba(18,255,235,.4),0 0 12px rgba(18,255,235,.2),0 0 24px rgba(18,255,235,.1)}
+
+.aviso{font-size:18px;line-height:1.3;text-transform:uppercase;text-align:center;color:#fff}
+.aviso strong{display:block;font-weight:700}
+.aviso span{display:block;font-weight:400}
+
+/* Formulário (mockup: ainda sem envio) */
+.cadastro{max-width:650px;margin:0 auto;padding:20px 40px 0;scroll-margin-top:24px}
+.campo{position:relative;margin:0 0 5px;border:1px solid transparent;border-radius:4px}
+.campo input{display:block;width:100%;height:46px;margin:0;padding:10px 20px;border:1px solid #939393;border-radius:50px;background:#101010;color:#fff;font:300 16px/24px "Montserrat",Arial,sans-serif;outline:none;-webkit-appearance:none;appearance:none}
+.campo input::placeholder{color:#b5b5b5;opacity:1}
+.campo input:focus{border-color:#12ffeb}
+.campo-email input{padding-left:44px}
+.campo-email svg{position:absolute;left:21px;top:calc(50% - 8px);width:16px;height:16px;color:#b5b5b5;pointer-events:none}
+.enviar{margin:20px 0 5px;border:1px solid transparent}
+.botao-form{display:block;width:100%;margin:0;padding:20px 10px;border:0;border-radius:50px;background:#12ffeb;color:#000;font:900 16px/28.8px "Montserrat",Arial,sans-serif;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+
+/* Faixas "blackmagick2025" vazando do cartão */
+.faixas{margin:0 -43px;padding:10px}
+.faixas img{margin:0 auto}
+
+.titulo-sec{margin-top:80px}
+.destaque{font-size:36px;line-height:1.3;font-weight:700;text-transform:uppercase;text-align:center;color:#12ffeb}
+.sub{font-size:26px;line-height:1.3;font-weight:300;text-transform:uppercase;text-align:center;color:#fff}
+.sub-final{font-weight:400}
+
+/* Lista de cursos com o zoom ao passar o mouse */
+.cursos{padding:0 5px 10px}
+.cursos ul{list-style:none;margin:0;padding:0 10%}
+.cursos li{margin:8px 0;padding:20px 0;font-size:18px;line-height:1.6;font-weight:400;text-transform:uppercase;text-align:center;color:#fff;cursor:default;text-shadow:0 0 6px rgba(255,255,255,.25);transition:transform .5s cubic-bezier(.33,1,.68,1),text-shadow .5s ease,color .5s ease}
+.cursos li:hover{transform:scale(1.25) translateY(-1px);color:#12ffeb;font-weight:800;text-shadow:0 0 16px rgba(18,255,235,.6),0 0 30px rgba(18,255,235,.3)}
+.cursos li:has(+ li:hover),.cursos li:hover + li{transform:scale(1.15);color:rgba(255,255,255,.8);text-shadow:0 0 10px rgba(255,255,255,.3)}
+
+.acao{display:flex;justify-content:center;margin-top:19px}
+.botao-cta{display:inline-flex;white-space:nowrap;align-items:center;justify-content:center;gap:5px;padding:15px 40px;border:0;border-radius:50px;background:#12ffeb;color:#000;font:800 20px/1.2 "Montserrat",Arial,sans-serif;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.botao-cta svg{width:20px;height:20px;flex:none;fill:#000}
+
+/* Pulsação com brilho ao passar o mouse (no original o último brilho definido é o azul) */
+@keyframes pulsacao{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes brilho-suave{0%{box-shadow:0 0 5px rgba(13,110,253,.4),0 0 10px rgba(13,110,253,.3)}50%{box-shadow:0 0 20px rgba(13,110,253,.8),0 0 30px rgba(13,110,253,.6)}100%{box-shadow:0 0 5px rgba(13,110,253,.4),0 0 10px rgba(13,110,253,.3)}}
+.botao-form:hover,.botao-cta:hover{animation:pulsacao 1.5s infinite,brilho-suave 1.5s infinite}
+
+.selo{margin-top:40px;padding:10px}
+.selo img{width:100px;margin:0 auto}
+
+@media (max-width:1024px){.secao{background-size:900px auto}}
+@media (max-width:480px){
+  .secao{background-size:768px auto}
+  .linha{padding:10px}
+  .linha>.col{padding:10px 0}
+  .cartao{padding:20px 10px 0}
+  .cartao>.col{padding:10px 0}
+  .bloco{padding:10px}
+  .bloco>.col{padding:10px 0}
+  .cursos{padding:0 0 10px}
+  .cadastro{padding-top:8px}
+  .titulo-fim{margin-top:40px}
+  .titulo{font-size:38px}
+  .chamada{font-size:18px}
+  .aviso{font-size:16px}
+  .destaque{font-size:24px}
+  .sub{font-size:18px}
+  .sub-final{font-size:28px}
+  .botao-cta{padding:15px 20px;font-size:16px}
+  .botao-cta svg{width:16px;height:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .cursos li,.botao-form,.botao-cta{transition:none}
+  .botao-form:hover,.botao-cta:hover{animation:none}
+}
