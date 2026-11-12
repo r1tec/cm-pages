@@ -137,5 +137,30 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !popup.hidden) fecharPopup(); });
 })();
 </script>
+<!-- Trecho padrão do embed do Raiz1 (copiado sem mudança): ouve o aviso de cadastro do formulário e marca Lead no pixel -->
+<script>
+(function(){
+  var U="https://form.raiz1.com.br/f/d3e882fe-e71c-4b23-8353-171c50dfd90c/form_bm26k7q2x",O=new URL(U).origin,P=new URL(U).pathname,vistos={};
+  function ck(n){var m=document.cookie.match("(?:^|; )"+n+"=([^;]*)");return m?decodeURIComponent(m[1]):null}
+  function meu(f){try{var a=new URL(f.src);return a.origin===O&&a.pathname===P}catch(x){return false}}
+  function quadros(){return Array.prototype.slice.call(document.querySelectorAll("iframe")).filter(meu)}
+  function seguro(f){try{f()}catch(x){if(window.console)console.warn("raiz1-form",x)}}
+  function ola(w){seguro(function(){w.postMessage({type:"raiz1:form:host",v:1,url:location.href,fbp:ck("_fbp"),fbc:ck("_fbc")},O)})}
+  window.addEventListener("message",function(e){
+    var d=e.data;if(e.origin!==O||!d||typeof d.type!=="string")return;
+    if(!quadros().some(function(f){return f.contentWindow===e.source}))return;
+    if(d.type==="raiz1:form:ready")ola(e.source);
+    if(d.type==="raiz1:form:submitted"){
+      var id=String(d.event_id||"");
+      if(id&&!vistos[id]){vistos[id]=1;
+        seguro(function(){if(typeof window.fbq==="function")window.fbq("track","Lead",{},{eventID:id})});
+        seguro(function(){(window.dataLayer=window.dataLayer||[]).push({event:"raiz1_form_submitted",event_id:id})});
+      }
+      setTimeout(function(){seguro(function(){e.source.postMessage({type:"raiz1:form:ack",event_id:id},O)})},250);
+    }
+  });
+  quadros().forEach(function(f){ola(f.contentWindow);f.addEventListener("load",function(){ola(f.contentWindow)})});
+})();
+</script>
 </body>
 </html>
