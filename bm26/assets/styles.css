@@ -52,6 +52,8 @@ h1,h2,p{margin:0}
 .faixas img{margin:0 auto}
 
 .titulo-sec{margin-top:80px}
+.titulo-mais{margin-top:4px}
+.titulo-roxo .sub,.titulo-roxo .destaque{color:#d800f8;text-shadow:0 0 6px rgba(216,0,248,.45),0 0 14px rgba(216,0,248,.25)}
 .destaque{font-size:36px;line-height:1.3;font-weight:700;text-transform:uppercase;text-align:center;color:#12ffeb}
 .sub{font-size:26px;line-height:1.3;font-weight:300;text-transform:uppercase;text-align:center;color:#fff}
 .sub-final{font-weight:400}
