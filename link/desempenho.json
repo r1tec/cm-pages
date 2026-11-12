@@ -1,0 +1,15 @@
+{
+  "preload_fontes_seletivo": true,
+  "fontes": [
+    {
+      "familia": "Montserrat",
+      "peso": "100 900",
+      "arquivo": "assets/fonts/montserrat.woff2",
+      "inline": false,
+      "preload": true
+    }
+  ],
+  "preload_imagens": [
+    "assets/perfil.webp"
+  ]
+}

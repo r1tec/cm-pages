@@ -85,6 +85,16 @@
           "resumo": "Todos os cursos online de Edu Parmeggiani e suas atualizações, pra sempre"
         }
       ]
+    },
+    {
+      "titulo": "Edu Parmeggiani",
+      "paginas": [
+        {
+          "slug": "link",
+          "nome": "Links do Edu Parmeggiani",
+          "resumo": "Redes sociais, suporte, guias, livro e blog num só lugar"
+        }
+      ]
     }
   ]
 }
