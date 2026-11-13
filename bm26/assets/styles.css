@@ -103,3 +103,21 @@ h1,h2,p{margin:0}
   .cursos li,.botao-form,.botao-cta{transition:none}
   .botao-form:hover,.botao-cta:hover{animation:none}
 }
+
+/* Tabela "Explicação da oferta" */
+.oferta{max-width:760px;margin:0 auto;padding:6px 22px;border:1px solid rgba(18,255,235,.45);border-radius:20px;background:rgba(0,0,0,.45);box-shadow:0 0 18px rgba(18,255,235,.12)}
+.oferta table{width:100%;border-collapse:collapse}
+.oferta td{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.35;font-weight:600;text-transform:uppercase;color:#fff;text-align:left;vertical-align:middle}
+.oferta td+td{padding-left:14px;text-align:right;white-space:nowrap;font-weight:800;color:#12ffeb;text-shadow:0 0 6px rgba(18,255,235,.4)}
+.oferta tr:last-child td{border-bottom:0}
+.oferta .totais tr:first-child td{padding-top:18px}
+.oferta .total td{font-size:14px;font-weight:800;border-bottom:1px solid rgba(18,255,235,.45);padding-bottom:14px}
+.oferta .anos td{font-size:12px;font-weight:700}
+.titulo-oferta .sub{text-wrap:balance}
+.titulo-oferta .sub+.sub{margin-top:6px}
+@media (max-width:767px){
+  .oferta{padding:4px 14px}
+  .oferta td{font-size:11px;padding:10px 0}
+  .oferta .total td{font-size:12px}
+  .oferta .anos td{font-size:11px}
+}
