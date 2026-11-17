@@ -121,3 +121,14 @@ h1,h2,p{margin:0}
   .oferta .total td{font-size:12px}
   .oferta .anos td{font-size:11px}
 }
+
+/* Tabela de bônus */
+.bonus{list-style:none;max-width:760px;margin:0 auto;padding:6px 22px;border:1px solid rgba(216,0,248,.55);border-radius:20px;background:rgba(0,0,0,.45);box-shadow:0 0 18px rgba(216,0,248,.15)}
+.bonus li{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12)}
+.bonus li:last-child{border-bottom:0}
+.bonus h3{margin:0 0 4px;font-size:13px;line-height:1.35;font-weight:800;text-transform:uppercase;color:#d800f8;text-shadow:0 0 6px rgba(216,0,248,.45)}
+.bonus p{margin:0;font-size:13px;line-height:1.5;font-weight:500;color:#fff;text-align:left}
+@media (max-width:767px){
+  .bonus{padding:4px 14px}
+  .bonus h3,.bonus p{font-size:12px}
+}
