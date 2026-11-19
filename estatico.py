@@ -72,7 +72,8 @@ document.addEventListener('DOMContentLoaded',function(){
 # React, então sem isto o contador congela). Só age se a página tiver as "alças"
 # data-cd/data-encerrado — em qualquer outra página o script sai na primeira linha.
 # Contador anda a cada segundo, vira de janela sozinho, fecha sozinho após a última
-# data, e as barras buscam o número de ingressos ao vivo (endpoint público, só números).
+# data. As barras de vagas não buscam mais dado ao vivo (19/11/2026: evento encerrado,
+# chave do banco retirada); com data-encerrado="1" o CSS da página oculta o bloco de compra.
 LIVE_JS = """<script>
 (function(){
   var root=document.querySelector('[data-encerrado]');
@@ -81,9 +82,8 @@ LIVE_JS = """<script>
   var ISO=['2026-09-10T23:59:59-03:00','2026-09-17T23:59:59-03:00','2026-09-24T23:59:59-03:00','2026-10-01T23:59:59-03:00','2026-10-09T23:00:00-03:00'];
   var DM=['10/09','17/09','24/09','01/10','09/10'];
   var PROX=['11/09','18/09','25/09','02/10',null];
-  var TETOS=[130,140,150,160,170], RAIZ_TOTAL=30;
   var marcos=ISO.map(function(d){return new Date(d).getTime();});
-  var ultimo=marcos[marcos.length-1], curIdx=0;
+  var ultimo=marcos[marcos.length-1];
   function pad(n){return (n<10?'0':'')+n;}
   function set(sel,txt){var l=document.querySelectorAll(sel);for(var i=0;i<l.length;i++)l[i].textContent=txt;}
   function tick(){
@@ -91,7 +91,6 @@ LIVE_JS = """<script>
     var encerrado=now>ultimo;
     var idx=-1;for(var i=0;i<marcos.length;i++){if(marcos[i]>now){idx=i;break;}}
     if(idx<0)idx=marcos.length-1;
-    curIdx=idx;
     var alvo=marcos[idx], ehUlt=idx===marcos.length-1;
     var diff=Math.max(0,alvo-now), H=3600000, D=86400000;
     set('[data-cd=\\"dias\\"]',pad(Math.floor(diff/D)));
@@ -103,22 +102,6 @@ LIVE_JS = """<script>
     root.setAttribute('data-encerrado', encerrado?'1':'0');
   }
   tick(); setInterval(tick,1000);
-  var A='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1cWVkam5zbHptZ2hib2tteG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2ODA5NDYsImV4cCI6MjA1NjI1Njk0Nn0.hroTq_clsVfn8x3z06FVWVoVTXeVSeahfiidadS7Be0';
-  fetch('https://iuqedjnslzmghbokmxov.supabase.co/functions/v1/get-ecm-ingressos-public',{headers:{apikey:A,Authorization:'Bearer '+A}})
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){
-      if(!d||typeof d.vendidos!=='number')return;
-      var teto=TETOS[curIdx];
-      var semPct=Math.min(100,Math.round(d.vendidos/teto*100));
-      var raizRest=Math.max(0,RAIZ_TOTAL-d.raizPagos);
-      var raizPct=Math.round((RAIZ_TOTAL-raizRest)/RAIZ_TOTAL*100);
-      var f;
-      f=document.querySelectorAll('[data-fill=\\"sem\\"]');for(var i=0;i<f.length;i++)f[i].style.width=semPct+'%';
-      f=document.querySelectorAll('[data-fill=\\"raiz\\"]');for(var j=0;j<f.length;j++)f[j].style.width=raizPct+'%';
-      set('[data-sempct]',semPct+'%');
-      set('[data-semfrase]','Seja rápido. '+semPct+'% das vagas já foram preenchidas.');
-      set('[data-raizlabel]','Restam '+raizRest);
-    }).catch(function(){});
 })();
 </script>
 """
