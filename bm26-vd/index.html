@@ -30,6 +30,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div class="bloco"><div class="col">
       <h1 class="titulo">TENHA OS MEUS CURSOS COM ACESSO <strong>VITALÍCIO</strong></h1>
       <p class="chamada">Você pode ter <strong>os meus Cursos Online</strong> pelo resto da vida por um preço <strong>extremamente</strong> mais barato do que se comprasse tudo separadamente!</p>
+      <div class="video" data-video="OuaiuPDg-PQ">
+        <button type="button" class="video-capa" aria-label="Assistir ao vídeo">
+          <img src="https://i.ytimg.com/vi/OuaiuPDg-PQ/hqdefault.jpg" width="480" height="360" alt="" loading="lazy">
+          <span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        </button>
+      </div>
       <div class="acao"><a class="botao-cta" href="https://pay.contemmagia.com.br/c/bm26"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 252.118V48C0 21.49 21.49 0 48 0h204.118a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882L293.823 497.941c-18.745 18.745-49.137 18.745-67.882 0L14.059 286.059A48 48 0 0 1 0 252.118zM112 64c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48z"/></svg>Quero a Black Magick agora</a></div>
     </div></div>
 
@@ -125,5 +131,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div></div></div>
 
 </div>
+<script>
+(function () {
+  var v = document.querySelector(".video[data-video]");
+  if (!v) return;
+  v.querySelector(".video-capa").addEventListener("click", function () {
+    var f = document.createElement("iframe");
+    f.src = "https://www.youtube-nocookie.com/embed/" + v.getAttribute("data-video") + "?autoplay=1&rel=0";
+    f.title = "Vídeo da Black Magick";
+    f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    f.allowFullscreen = true;
+    v.innerHTML = "";
+    v.appendChild(f);
+  });
+})();
+</script>
 </body>
 </html>
