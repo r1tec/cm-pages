@@ -1,0 +1,137 @@
+/* Black Magick — página de vendas da Black Friday (identidade da captação). Medidas do original (GoHighLevel):
+   desktop acima de 480px; celular até 480px. */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:#242421;color:#fff;font-family:"Montserrat",Arial,sans-serif;overflow-x:hidden}
+img{display:block;max-width:100%;height:auto}
+h1,h2,p{margin:0}
+
+/* Seção única: fundo grafite com o padrão "black magick infinito" em mosaico */
+.secao{position:relative;padding:20px 0;background:#242421 url(fundo.webp) repeat 0 0/1200px auto;overflow:hidden}
+.linha{max-width:1170px;margin:0 auto;padding:10px 5px}
+.col{padding:10px 5px}
+
+.logo{padding:10px}
+.logo img{width:400px;margin:0 auto}
+
+/* Cartão escuro arredondado */
+.cartao{max-width:1170px;margin:0 auto;padding:60px 20px;background:rgba(0,0,0,.27);border-radius:50px}
+.cartao>.col{padding:10px 5px}
+.bloco{padding:10px 5px}
+.bloco>.col{padding:10px 5px}
+
+.titulo{font-family:"CeraPro Black","Montserrat",Arial,sans-serif;font-weight:800;font-size:58px;line-height:1.1;letter-spacing:3px;text-align:center;color:#fff}
+.titulo strong{display:inline-block;font-weight:900;line-height:1;color:#000;padding:.2em .6em;border-radius:999px;background-image:linear-gradient(80deg,#12ffeb,#00ff6b);box-shadow:0 0 20px rgba(0,255,180,.4)}
+
+.chamada{margin-top:40px;padding:0 10%;font-size:24px;line-height:1.6;font-weight:400;text-align:center;color:#fff}
+.chamada strong,.brilho{font-weight:700;text-transform:uppercase;color:#12ffeb;text-shadow:0 0 6px rgba(18,255,235,.4),0 0 12px rgba(18,255,235,.2),0 0 24px rgba(18,255,235,.1)}
+
+.aviso{font-size:18px;line-height:1.3;text-transform:uppercase;text-align:center;color:#fff}
+.aviso strong{display:block;font-weight:700}
+.aviso span{display:block;font-weight:400}
+
+/* Faixas "blackmagick2026" vazando do cartão */
+.faixas{margin:0 -43px;padding:10px}
+.faixas img{margin:0 auto}
+
+.titulo-sec{margin-top:80px}
+.titulo-mais{margin-top:4px}
+.titulo-roxo .sub,.titulo-roxo .destaque{color:#d800f8;text-shadow:0 0 6px rgba(216,0,248,.45),0 0 14px rgba(216,0,248,.25)}
+.destaque{font-size:36px;line-height:1.3;font-weight:700;text-transform:uppercase;text-align:center;color:#12ffeb}
+.sub{font-size:26px;line-height:1.3;font-weight:300;text-transform:uppercase;text-align:center;color:#fff}
+.sub-final{font-weight:400}
+
+/* Lista de cursos com o zoom ao passar o mouse */
+.cursos{padding:0 5px 10px}
+.cursos ul{list-style:none;margin:0;padding:0 10%}
+.cursos li{margin:8px 0;padding:20px 0;font-size:18px;line-height:1.6;font-weight:400;text-transform:uppercase;text-align:center;color:#fff;cursor:default;text-shadow:0 0 6px rgba(255,255,255,.25);transition:transform .5s cubic-bezier(.33,1,.68,1),text-shadow .5s ease,color .5s ease}
+.cursos li:hover{transform:scale(1.25) translateY(-1px);color:#12ffeb;font-weight:800;text-shadow:0 0 16px rgba(18,255,235,.6),0 0 30px rgba(18,255,235,.3)}
+.cursos li:has(+ li:hover),.cursos li:hover + li{transform:scale(1.15);color:rgba(255,255,255,.8);text-shadow:0 0 10px rgba(255,255,255,.3)}
+
+.acao{display:flex;justify-content:center;margin-top:19px}
+.botao-cta{display:inline-flex;white-space:nowrap;align-items:center;justify-content:center;gap:5px;padding:15px 40px;border:0;border-radius:50px;background:#12ffeb;color:#000;font:800 20px/1.2 "Montserrat",Arial,sans-serif;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.botao-cta svg{width:20px;height:20px;flex:none;fill:#000}
+
+/* Pulsação com brilho ao passar o mouse (no original o último brilho definido é o azul) */
+@keyframes pulsacao{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes brilho-suave{0%{box-shadow:0 0 5px rgba(13,110,253,.4),0 0 10px rgba(13,110,253,.3)}50%{box-shadow:0 0 20px rgba(13,110,253,.8),0 0 30px rgba(13,110,253,.6)}100%{box-shadow:0 0 5px rgba(13,110,253,.4),0 0 10px rgba(13,110,253,.3)}}
+.botao-cta:hover{animation:pulsacao 1.5s infinite,brilho-suave 1.5s infinite}
+
+.selo{margin-top:40px;padding:10px}
+.selo img{width:100px;margin:0 auto}
+
+@media (max-width:1024px){.secao{background-size:900px auto}}
+@media (max-width:480px){
+  .secao{background-size:768px auto}
+  .linha{padding:10px}
+  .linha>.col{padding:10px 0}
+  .cartao{padding:20px 10px 0}
+  .cartao>.col{padding:10px 0}
+  .bloco{padding:10px}
+  .bloco>.col{padding:10px 0}
+  .cursos{padding:0 0 10px}
+  .titulo-fim{margin-top:40px}
+  .titulo{font-size:38px}
+  .chamada{font-size:18px}
+  .aviso{font-size:16px}
+  .destaque{font-size:24px}
+  .sub{font-size:18px}
+  .sub-final{font-size:28px}
+  .botao-cta{padding:15px 20px;font-size:16px;white-space:normal;text-align:center;max-width:100%}
+  .botao-cta svg{width:16px;height:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .botao-cta{transition:none}
+  .botao-cta:hover{animation:none}
+}
+
+/* Tabelas de valores (cursos e bônus) */
+.quadro{max-width:760px;margin:0 auto;padding:10px 24px 24px;border:1px solid rgba(18,255,235,.45);border-radius:28px;background:rgba(0,0,0,.35);box-shadow:0 0 24px rgba(18,255,235,.12)}
+.quadro-roxo{border-color:rgba(216,0,248,.55);box-shadow:0 0 24px rgba(216,0,248,.18)}
+.tabela,.anos{list-style:none;margin:0;padding:0}
+.tabela li,.anos li,.linha-total{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.tabela li{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:16px;line-height:1.4;text-transform:uppercase}
+.tabela .valor{flex:none;font-weight:700;color:#12ffeb;white-space:nowrap}
+.quadro-roxo .tabela .valor,.quadro-roxo .linha-total span:last-child{color:#d800f8;text-shadow:0 0 8px rgba(216,0,248,.45)}
+.linha-total{margin-top:14px;padding:14px 0;font-size:20px;font-weight:800;text-transform:uppercase;color:#fff}
+.linha-total span:last-child{color:#12ffeb;text-shadow:0 0 8px rgba(18,255,235,.4)}
+.anos{margin-top:6px;padding-top:6px;border-top:2px solid rgba(18,255,235,.45)}
+.anos li{padding:10px 0;font-size:16px;font-weight:600;text-transform:uppercase;color:#fff}
+.anos li span:last-child{color:#12ffeb;font-weight:800}
+.de-por{margin-top:18px;text-align:center;font-size:26px;font-weight:700;text-transform:uppercase;color:#fff}
+.de-por s{color:#ff6b8a;text-decoration-thickness:3px}
+.sub-resumo{margin-top:10px;font-size:20px;line-height:1.5;padding:0 6%}
+.preco-final{margin-top:20px;text-align:center;text-transform:uppercase}
+.preco-final span{display:block}
+.preco-final .por{font-size:20px;font-weight:300;color:#fff}
+.preco-final .parcela{margin:6px 0;font:900 52px/1.15 "CeraPro Black","Montserrat",Arial,sans-serif;color:#12ffeb;text-shadow:0 0 10px rgba(18,255,235,.5),0 0 24px rgba(18,255,235,.25)}
+.preco-final .avista{font-size:18px;font-weight:600;color:#fff}
+@media (max-width:480px){
+  .quadro{padding:6px 14px 18px;border-radius:22px}
+  .tabela li{font-size:13px;gap:10px}
+  .linha-total{font-size:16px}
+  .anos li{font-size:14px}
+  .de-por{font-size:20px}
+  .sub-resumo{font-size:16px;padding:0}
+  .preco-final .por{font-size:16px}
+  .preco-final .parcela{font-size:34px}
+  .preco-final .avista{font-size:15px}
+}
+
+/* Lista de bônus: nome + descrição */
+.bonus li{display:block;padding:18px 0;text-transform:none}
+.bonus li:last-child{border-bottom:0}
+.bonus .nome{display:block;font-size:17px;font-weight:800;line-height:1.3;text-transform:uppercase;color:#d800f8;text-shadow:0 0 8px rgba(216,0,248,.45)}
+.bonus .desc{display:block;margin-top:6px;font-size:15px;font-weight:400;line-height:1.55;color:#fff}
+@media (max-width:480px){.bonus .nome{font-size:15px}.bonus .desc{font-size:14px}}
+
+/* Vídeo do topo: capa clicável que carrega o player do YouTube só no clique */
+.video{position:relative;max-width:760px;aspect-ratio:16/9;margin:36px auto 0;border:1px solid rgba(18,255,235,.55);border-radius:24px;background:#000;overflow:hidden;box-shadow:0 0 28px rgba(18,255,235,.25)}
+.video-capa{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:#000;cursor:pointer}
+.video-capa img{width:100%;height:100%;object-fit:cover}
+.video-play{position:absolute;left:50%;top:50%;display:flex;align-items:center;justify-content:center;width:84px;height:84px;margin:-42px 0 0 -42px;border-radius:50%;background:#12ffeb;box-shadow:0 0 26px rgba(18,255,235,.7);transition:transform .2s}
+.video-play svg{width:42px;height:42px;margin-left:5px;fill:#000}
+.video-capa:hover .video-play,.video-capa:focus-visible .video-play{transform:scale(1.1)}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media (max-width:480px){.video{margin-top:26px;border-radius:16px}.video-play{width:62px;height:62px;margin:-31px 0 0 -31px}.video-play svg{width:32px;height:32px}}
