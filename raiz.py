@@ -29,7 +29,8 @@ ANTES_DE = '# BEGIN WordPress'
 BACKUP_REMOTO = '.htaccess.bk-cm-raiz'
 # O bloco "HttpHeaders" (resto do WordPress, inativo) limita os iframes das páginas pelo
 # frame-src do Content-Security-Policy. Domínios de iframe que as páginas usam entram aqui.
-IFRAMES_PERMITIDOS = ('https://form.raiz1.com.br',)  # formulário de campanha do Raiz1 (bm26)
+IFRAMES_PERMITIDOS = ('https://form.raiz1.com.br',  # formulário de campanha do Raiz1 (bm26)
+                      'https://www.youtube-nocookie.com')  # vídeo da bm26-vd
 
 
 def paginas():
