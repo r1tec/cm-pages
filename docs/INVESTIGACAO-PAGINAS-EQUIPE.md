@@ -5,7 +5,7 @@ Projetos lidos: cm-pages (Contém Magia) e rp-pages (Rogeria Pinheiro).
 
 ## Em 5 linhas
 
-1. Hoje todo texto, preço, link de compra e imagem de uma página mora dentro do arquivo da própria página; não existe painel, planilha nem tela do Raiz1 de onde a página leia conteúdo.
+1. Hoje todo texto, preço, link de compra e imagem de uma página mora dentro do arquivo da própria página; não existe painel, planilha nem tela do Raiz1 de onde a página leia conteúdo. O único painel que existe é o WordPress antigo, de onde as páginas estão saindo.
 2. Uma mudança só vai ao ar quando alguém roda o publicador no Mac com a senha da hospedagem; subir para o GitHub não publica nada, e não existe link de prévia para a equipe ver antes.
 3. Sem código, hoje dá para trocar só três coisas: o título e a descrição que aparecem no Google, o nome e o resumo da página na home, e uma imagem por outra com o mesmo nome.
 4. Em dois meses e meio foram 80 mudanças de página: 21 eram conteúdo puro (texto, preço, foto, link), 11 eram página nova e 48 eram técnica; ou seja, a equipe resolveria sozinha cerca de um quarto, quase tudo em páginas de campanha.
@@ -28,7 +28,7 @@ Projetos lidos: cm-pages (Contém Magia) e rp-pages (Rogeria Pinheiro).
 | Domínio, marca, endereço do checkout (só rp-pages) | `site.json` | rp-pages/config_site.py:1-15, rp-pages/site.json |
 | Ajustes técnicos por página | `desempenho.json`, `rastreamento.json`, `reduzir.json`, `cores.json` | otimizar.py:341, rastreamento.py:31, otimizar.py:46, otimizar.py:860 |
 
-**O preço está escrito em três lugares que ninguém sincroniza:** na página, no `seo.json` e no checkout do Raiz1 (tabela `checkout_offers`, coluna `price_cents`: raiz1-lovable/src/integrations/supabase/types.ts:3399). O motor só confere o `seo.json` contra a página (seo.py:83-90); página contra checkout é conferida no olho. Os commits "fsa: plano trimestral com o preço do checkout" (20/10) e "eba: parcela do Plano Anual igual ao checkout" (17/10) são correções desse descompasso.
+**O preço está escrito em três lugares que ninguém sincroniza:** na página, no `seo.json` e no checkout do Raiz1 (rota `/c/<slug>`, raiz1-lovable/src/App.tsx:284-291; a tabela de ofertas `checkout_offers` tem a coluna `price_cents`, raiz1-lovable/src/integrations/supabase/types.ts:3399; não confirmei qual tabela a rota lê). O motor só confere o `seo.json` contra a página (seo.py:83-90); página contra checkout é conferida no olho. Os commits "fsa: plano trimestral com o preço do checkout" (20/10) e "eba: parcela do Plano Anual igual ao checkout" (17/10) são correções desse descompasso.
 
 **Três tipos de página, com dificuldade diferente para editar:**
 
@@ -42,7 +42,7 @@ O que vai ao ar não é o arquivo editado: o preparo pré-monta a página, tira 
 
 ## 2. Como publica
 
-- **Quem dispara:** uma pessoa (ou o assistente dela) rodando `./publicar.sh <slug>` no Mac (publicar.sh:1-13). Na prática, o dono: dos 165 commits, 148 são dele e 16 do assistente.
+- **Quem dispara:** uma pessoa (ou o assistente dela) rodando `./publicar.sh <slug>` no Mac (publicar.sh:1-13). Na prática, o dono: os 165 commits saíram das máquinas dele (148 com o nome dele, 16 com o do assistente, 1 da conta do GitHub).
 - **Por onde:** FTP direto para a hospedagem, a partir da pasta local, e depois limpeza do cache da Cloudflare (publicar.sh:139-151). A senha fica num arquivo fora do Git (publicar.sh:34-41, .gitignore).
 - **GitHub não publica.** É só espelho (.claude/CLAUDE.md:50). A publicação automática por push e a do cPanel foram desligadas de propósito porque subiam a página crua por cima da otimizada (.github/workflows/deploy-ftp.yml:3-8, .cpanel.yml, README.md:85-87). Não há Lovable nem Cloudflare Pages no caminho.
 - **O que está no ar não é amarrado a um commit:** o publicador envia o que estiver na pasta local, commitado ou não. Já houve página no ar à frente do repositório (caso `coe`, .claude/CLAUDE.md:60-62).
@@ -56,14 +56,18 @@ O que vai ao ar não é o arquivo editado: o preparo pré-monta a página, tira 
 |---|---|---|
 | Título e descrição no Google, imagem de compartilhamento | Editar `<slug>/seo.json`; ele vence o que estiver no HTML (seo.py:12) | Não muda nada visível na página. O preparo recusa título fora de 30–65 caracteres, descrição fora de 70–165 e preço que não aparece na página (seo.py:77-90) |
 | Nome e resumo na home, /sobre e sitemap | Editar `config/raiz/paginas.json` (raiz.py:36-41) | Só a raiz do domínio; só cm-pages |
-| Trocar uma imagem | Subir outra com o mesmo nome em `<slug>/assets/` | Só páginas leves e migradas; mesma proporção, senão o layout mexe. Nas exportações do Claude Design a imagem está dentro do pacote |
+| Trocar uma imagem | Subir outra com o mesmo nome na pasta da página | Só páginas leves e migradas; mesma proporção, senão o layout mexe. Nas exportações do Claude Design a imagem está dentro do pacote. Não testado |
+| Formulário de inscrição da bm26 | Tela de campanhas do Raiz1; a página carrega o formulário ao vivo (bm26/index.html:142) | Muda na hora, sem publicar. Não confirmei quem da equipe tem essa permissão |
+| Preço cobrado de verdade | Checkout do Raiz1 | Muda na hora, mas a página continua mostrando o preço antigo até alguém editar e publicar |
 | Endereço do checkout do site inteiro (rp-pages) | `site.json` | Decisão do dono, não da equipe |
 
-Fora isso, nada: não há painel, e o Raiz1 não tem tabela nem tela de página. Das 295 tabelas do Raiz1, as mais próximas são `checkout_offers` (preço real da oferta), `products_catalog`, `funnel_campaign` (campanhas e o formulário embutido na bm26: bm26/index.html:142, raiz1-lovable/src/lib/constants.ts:280) e os documentos de projeto; nenhuma guarda texto ou imagem de página, e nenhuma página lê delas. Em todos os casos acima a mudança ainda depende de alguém publicar.
+**O painel que existe é o WordPress antigo** (`lp.eduparmeggiani.com`, com Elementor): ativado em 13/09/2026 com login e editor confirmados (docs/ATIVACAO-WORDPRESS-LP.md:3). Pela lista de 20/09/2026, 6 páginas ainda estão só lá (iat, t3x, wmpp-obrigado, 6-edb, 6-edb-obrigado, drb-vsl: docs/LISTA-SITES-WORDPRESS.md:18-24) e 8 já tinham vindo para cá. Quem tem login lá edita sem código, mas é o lugar de onde o projeto está saindo por causa de velocidade, e as páginas migradas não leem mais nada dele: o plugin `config/wp-cm-pages.php` só tira do sitemap de lá as que já são atendidas aqui. A página de links veio do GoHighLevel em 12/11 pelo mesmo motivo.
+
+Fora isso, nada: nestes dois projetos não há painel, e o Raiz1 não tem tabela nem tela de página. Das 295 tabelas do Raiz1, as mais próximas são `checkout_offers` (preço real da oferta), `products_catalog`, `funnel_campaign` (campanhas e o formulário embutido na bm26: bm26/index.html:142, raiz1-lovable/src/lib/constants.ts:280) e os documentos de projeto; nenhuma guarda texto ou imagem de página, e nenhuma página lê delas. Em todos os casos acima a mudança ainda depende de alguém publicar.
 
 ## 4. Quanto do trabalho cairia em "conteúdo"
 
-**Escala de hoje:** cm-pages tem 18 páginas (15 na home e no sitemap; ficam fora ecm-26, ecm-26-v1 e bm26-vd). rp-pages tem 1 página (52e).
+**Escala de hoje:** cm-pages tem 18 páginas (15 na home e no sitemap; ficam fora ecm-26, ecm-26-v1 e bm26-vd). rp-pages tem 1 página (52e). Fora dos dois projetos há ainda 6 páginas só no WordPress antigo (lista de 20/09/2026, não reconferida hoje).
 
 **Contagem dos 80 commits de página de 01/09 a 21/11/2026** (commit não é pedido: um pedido pode virar vários commits e vice-versa):
 
@@ -80,7 +84,7 @@ Fora isso, nada: não há painel, e o Raiz1 não tem tabela nem tela de página.
 Leitura por tarefa típica:
 
 - **Trocar texto:** seria conteúdo. Ressalva: 3 dos 10 casos mudaram a estrutura (lista virou tabela, seção nova), o que nenhum campo de texto cobre.
-- **Trocar imagem:** já é quase conteúdo nas 15 páginas que guardam imagem em arquivo; não é nas 3 exportações do Claude Design.
+- **Trocar imagem:** já é quase conteúdo nas páginas leves e migradas, que guardam imagem em arquivo; não é nas exportações do Claude Design (coe, fsa, ecm-26), onde a imagem está dentro do pacote.
 - **Trocar preço:** é conteúdo na página, mas a verdade está no checkout. Mexer só na página cria a divergência que já precisou ser corrigida duas vezes.
 - **Trocar link de compra:** é conteúdo, mas é o que decide se a cliente consegue pagar. Fica com o dono.
 - **Criar página a partir de modelo:** hoje é 0% conteúdo. Não existe modelo: cada página nasce de uma exportação do Claude Design ou de uma migração feita à mão (.claude/skills/preparar-pagina/SKILL.md:3 e :17, docs/RECEITA-PAGINAS.md:30-36). O que há em comum são regras de design (`_padroes/`), não uma página-base.
@@ -119,7 +123,9 @@ O dono já trabalha assim no PC Windows desde 08/10: pede a mudança em portugu�
 **Peça 3 (só se o volume crescer) — arquivo de conteúdo visível por página.**
 - Candidato existente A: `seo.json` (seo.py:144-187) — não serve porque só alcança o cabeçalho invisível; o padrão dele ("o arquivo vence o HTML", com conferência antes de publicar) é o que se estenderia.
 - Candidato existente B: `cores.json` (otimizar.py:858-872), que já é uma lista "troque isto por aquilo" aplicada no preparo — não serve porque só roda nas exportações do Claude Design e foi feito para cor; para texto, troca por coincidência é frágil (a mesma frase pode aparecer duas vezes).
-- Candidato existente C: tabela no Raiz1 (`checkout_offers`, `funnel_campaign`) — não serve porque nenhuma guarda texto de página e o site é estático: precisaria de tela nova, permissão nova e de o preparo passar a ler o banco, para 19 páginas.
+- Candidato existente C: o WordPress antigo com Elementor — não serve porque é o que se está abandonando por velocidade (as páginas daqui são as mesmas, refeitas leves), a licença do Elementor constava como cancelada (docs/ATIVACAO-WORDPRESS-LP.md:31) e editar lá não muda a página que está no ar aqui.
+- Candidato existente D: GoHighLevel ou Lovable — não servem porque a página de links acabou de sair do GoHighLevel e nenhuma página de venda destes projetos passa pelo Lovable; seria trocar de plataforma, não usar o que existe.
+- Candidato existente E: tabela no Raiz1 (`checkout_offers`, `funnel_campaign`) — não serve porque nenhuma guarda texto de página e o site é estático: precisaria de tela nova, permissão nova e de o preparo passar a ler o banco, para 19 páginas.
 - Escala de hoje: 21 mudanças de conteúdo em 11 semanas, 12 delas em duas páginas de campanha.
 - Versão mínima: campos só para o que muda sempre em campanha (data, preço exibido, lote, texto do botão) e só nas páginas leves. Não recomendado agora.
 
@@ -137,6 +143,7 @@ O dono já trabalha assim no PC Windows desde 08/10: pede a mudança em portugu�
 
 ## Limites desta investigação
 
+- A lista de páginas do WordPress é de 20/09/2026; não entrei no WordPress nem no GoHighLevel para ver o estado de hoje.
 - O Raiz1 foi lido pelo código local (raiz1-lovable, estado de 19/11/2026), não pelo banco em produção.
 - Não conferi quem tem acesso ao repositório no GitHub nem se há proteção da branch principal.
 - O tamanho da equipe e quais ferramentas ela já usa não estavam nos repositórios.
