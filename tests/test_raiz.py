@@ -38,9 +38,9 @@ class BlocosHtaccessTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             raiz.com_bloco(OUTRO)
 
-    def test_canario_fora_do_google(self):
+    def test_regra_de_noindex_vigente(self):
         bloco = open(raiz.BLOCO, encoding="utf-8").read()
-        self.assertIn("RewriteRule ^(?:ecm-26(?:-v1)?|r1pt-teste)(?:/|$) - [E=CM_NOINDEX:1]", bloco)
+        self.assertIn("RewriteRule ^ecm-26(?:-v1)?(?:/|$) - [E=CM_NOINDEX:1]", bloco)
 
 
 class PaginasRaizTests(unittest.TestCase):
