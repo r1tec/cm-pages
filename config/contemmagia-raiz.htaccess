@@ -11,9 +11,9 @@ RewriteRule ^(.*)$ https://contemmagia.com.br/$1 [R=301,L]
 # Restos do WordPress respondem "removido" (410), não erro 500 nem a home.
 RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
 RewriteRule ^(?:index\.php|readme\.html|license\.txt|wp-config-sample\.php|wp-(?:admin|includes|content)(?:/.*)?)$ - [G,L]
-# Evento encerrado e variação de teste: continuam no ar, fora do Google.
+# Evento encerrado, variação de teste e canário do teste de página: no ar, fora do Google.
 RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
-RewriteRule ^ecm-26(?:-v1)?(?:/|$) - [E=CM_NOINDEX:1]
+RewriteRule ^(?:ecm-26(?:-v1)?|r1pt-teste)(?:/|$) - [E=CM_NOINDEX:1]
 RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
 RewriteRule ^$ /inicio.html [L]
 RewriteCond %{HTTP_HOST} ^contemmagia\.com\.br(?::[0-9]+)?$ [NC]
