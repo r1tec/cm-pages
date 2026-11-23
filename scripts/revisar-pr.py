@@ -401,7 +401,7 @@ def relatorio(t, esc, arvore, conflitos, previas, logs):
     if previas:
         for slug, p in previas.items():
             L.append(f"- {slug}: {p / 'index.html'}")
-        L.append("- Montada com o motor da main + a pasta da página do resultado do merge. Nenhum script Python ou Node do PR roda; atenção: o preparar.py da main abre o HTML do PR no Chrome sem interface e sem sandbox (--no-sandbox no otimizar.py) para pré-renderizar, então o JavaScript da página roda neste Mac. Script externo novo listado acima pede atenção antes de abrir a prévia.")
+        L.append("- Montada com o motor da main + a pasta da página do resultado do merge. Nenhum script Python ou Node do PR roda; atenção: o preparar.py da main abre o HTML do PR no Chrome sem interface e sem sandbox (--no-sandbox no otimizar.py) para pré-renderizar, então o JavaScript da página roda neste Mac. Isso já aconteceu ao montar a prévia: confira os scripts e domínios externos novos listados acima.")
     else:
         L.append("- sem prévia (PR reprovado antes, ou falha no preparar.py)")
     for slug, (codigo, log) in logs.items():
