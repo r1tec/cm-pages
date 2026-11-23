@@ -14,6 +14,10 @@ twitter:*, robots, ícones e o JSON-LD de Product são trocados no build. També
 o ORGANICO_JS, que rotula visitas de buscador para a venda chegar ao checkout como
 orgânica. Página de venda não ganha link para fora: a ligação entre as páginas fica
 na home e na página Sobre (raiz.py).
+
+Página filha (drb/2): canonical, og:url e sku são os da original (/drb/); a imagem
+de compartilhamento continua na pasta da filha. Sem seo.json, a filha ganha só o
+canonical da original.
 Método: docs/PLANO-SEO.md.
 """
 import html
@@ -97,9 +101,9 @@ def conferir(cfg, html_pagina, pasta_build):
     return erros
 
 
-def bloco(cfg, slug):
+def bloco(cfg, slug, pagina=None):
     url = f'{SITE}/{slug}/'
-    imagem = url + cfg['imagem']
+    imagem = f'{SITE}/{pagina or slug}/' + cfg['imagem']
     a = lambda v: html.escape(v, quote=True)
     linhas = [
         f'<title>{html.escape(cfg["titulo"])}</title>',
@@ -141,7 +145,16 @@ def bloco(cfg, slug):
     return '\n'.join(linhas) + '\n'
 
 
-def aplicar_html(texto, cfg, slug):
+def canonical_html(texto, slug):
+    """Só o canonical para a página indicada (filha sem seo.json)."""
+    fim = texto.lower().find('</head>')
+    if fim < 0:
+        raise ValueError('HTML sem </head>')
+    cabeca = CANONICAL.sub('', texto[:fim])
+    return cabeca.rstrip() + f'\n<link rel="canonical" href="{SITE}/{slug}/">\n' + texto[fim:]
+
+
+def aplicar_html(texto, cfg, slug, pagina=None):
     fim = texto.lower().find('</head>')
     if fim < 0:
         raise ValueError('HTML sem </head>')
@@ -152,7 +165,7 @@ def aplicar_html(texto, cfg, slug):
     if len(viewports) > 1:
         cabeca = VIEWPORT.sub('', cabeca)
         cabeca = re.sub(r'(<head\b[^>]*>)', lambda m: m.group() + '\n' + viewports[0].strip(), cabeca, count=1, flags=re.I)
-    novo = bloco(cfg, slug)
+    novo = bloco(cfg, slug, pagina)
     if TITULO.search(cabeca):
         cabeca = TITULO.sub(lambda _: novo, cabeca, count=1)
     else:
@@ -167,13 +180,23 @@ def aplicar_html(texto, cfg, slug):
     return cabeca + resto
 
 
-def aplicar(pasta_fonte, pasta_build):
-    """Aplica o seo.json da página no index.html do build; sem seo.json não faz nada."""
+def aplicar(pasta_fonte, pasta_build, slug=None, pagina=None):
+    """Aplica o seo.json da página no index.html do build; sem seo.json não faz nada.
+
+    slug: página canônica (a original, para uma filha); pagina: pasta servida (drb/2).
+    """
     cfg = ler(pasta_fonte)
-    if cfg is None:
-        return False
-    slug = os.path.basename(os.path.normpath(pasta_fonte))
+    slug = slug or os.path.basename(os.path.normpath(pasta_fonte))
+    filha = bool(pagina) and pagina != slug
     caminho = os.path.join(pasta_build, 'index.html')
+    if cfg is None:
+        if not filha:
+            return False
+        with open(caminho, encoding='utf-8') as f:
+            texto = f.read()
+        with open(caminho, 'w', encoding='utf-8') as f:
+            f.write(canonical_html(texto, slug))
+        return True
     with open(caminho, encoding='utf-8') as f:
         texto = f.read()
     # Exportações empacotadas só levam ao build as imagens que a página usa.
@@ -184,7 +207,7 @@ def aplicar(pasta_fonte, pasta_build):
         shutil.copyfile(imagem_fonte, imagem_build)
     erros = conferir(cfg, texto, pasta_build)
     if erros:
-        raise ValueError(f'{slug}/seo.json: ' + '; '.join(erros))
+        raise ValueError(f'{pagina or slug}/seo.json: ' + '; '.join(erros))
     with open(caminho, 'w', encoding='utf-8') as f:
-        f.write(aplicar_html(texto, cfg, slug))
+        f.write(aplicar_html(texto, cfg, slug, pagina if filha else None))
     return True

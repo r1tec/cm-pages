@@ -6,8 +6,11 @@
 #   ./publicar.sh coe      → publica só a pasta coe/
 #   ./publicar.sh coe vsl  → publica só as pastas coe/ e vsl/
 #   ./publicar.sh --build /tmp/preview-mce mce → envia o build já preparado
+#   ./publicar.sh drb/2    → publica só a página filha drb/2/
 #
 # Cada pasta vira uma slug no ar:  coe/  →  https://contemmagia.com.br/coe
+# Página filha = subpasta numérica com index.html (drb/2/): é publicada à parte,
+# e republicar a original nunca a apaga do servidor.
 #
 # O SSH da conta está desligado, então a publicação é por FTP com lftp.
 # A senha fica no arquivo .env (que nunca vai para o Git).
@@ -23,7 +26,8 @@ Uso: ./publicar.sh [slug ...]
 Reutiliza builds atuais preparados por preparar.py. Sem build atual, prepara
 uma vez; não roda conferência visual nem PageSpeed automaticamente.
 --build envia exatamente o build indicado e recusa fonte/build desatualizado.
-Sem slugs, mantém o comportamento legado de publicar todas as páginas.
+Sem slugs, mantém o comportamento legado de publicar todas as páginas
+(as filhas, como drb/2, só com a slug explícita).
 Preparar preview: python3 preparar.py slug --saida /tmp/preview-slug
 Conferência visual opcional: python3 preparar.py slug --conferir
 HELP
@@ -159,6 +163,7 @@ fi
 
 # 4) Prepara/reutiliza e congela os arquivos antes de iniciar qualquer envio.
 # O snapshot impede que um build concorrente altere o que o FTP está lendo.
+eh_filha() { [[ "$1" =~ ^[a-z0-9][a-z0-9_-]*/[0-9]+$ ]]; }
 publish_tmp="$(mktemp -d "${TMPDIR:-/tmp}/cm-pages-envio.XXXXXX")"
 trap 'rm -rf "$publish_tmp"' EXIT
 for slug in "${SITES[@]}"; do
@@ -166,25 +171,31 @@ for slug in "${SITES[@]}"; do
   if [ -n "$build_pronto" ]; then
     build="$build_pronto"
   else
-    build=".build/$slug"
+    if eh_filha "$slug"; then build=".build/_filhas/$slug"; else build=".build/$slug"; fi
     python3 preparar.py "$slug" --reusar
   fi
-  python3 preparar.py "$slug" --saida "$build" --snapshot "$publish_tmp/$slug"
+  python3 preparar.py "$slug" --saida "$build" --snapshot "$publish_tmp/${slug//\//__}"
 done
 
 # 5) Envia apenas os snapshots conferidos e limpa o cache dos destinos vigentes.
 for slug in "${SITES[@]}"; do
   slug="${slug%/}"
-  build="$publish_tmp/$slug"
+  build="$publish_tmp/${slug//\//__}"
   destino="${FTP_BASE%/}/$slug/"
+  # Na original, as filhas (subpastas numéricas) ficam de fora do --delete.
+  if eh_filha "$slug"; then filtro=""; else filtro="--exclude '^[0-9]+/'"; fi
   echo "Publicando $slug/ em $FTP_HOST$destino ..."
   lftp -u "$FTP_USUARIO","$FTP_SENHA" "$FTP_HOST" <<FTP
 set ftp:ssl-allow true
 set ssl:verify-certificate no
-mirror --reverse --delete --verbose "$build/" "$destino"
+mirror --reverse --delete $filtro --verbose "$build/" "$destino"
 bye
 FTP
-  python3 espelhar_edu.py --aplicar "$slug"
+  if eh_filha "$slug"; then
+    echo "Filha $slug: o espelho do eduparmeggiani não se aplica (vale o bloco do .htaccess)."
+  else
+    python3 espelhar_edu.py --aplicar "$slug"
+  fi
   # Limpa o cache do Cloudflare dessa página, pra mudança aparecer NA HORA
   # (sem isso, a versão antiga fica guardada por até 10 min)
   if [ -n "${CF_API_TOKEN:-}" ] && [ -n "${CF_ZONE_ID:-}" ]; then

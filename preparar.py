@@ -20,18 +20,31 @@ import seo
 ROOT = Path(__file__).resolve().parent
 PIPELINE = ("preparar.py", "otimizar.py", "estatico.py", "rastreamento.py",
             "meta-pageview-antecipado.js", "seo.py")
+# Página filha: subpasta numérica com index.html dentro de uma página (drb/2 → /drb/2/).
+# É preparada e publicada como página própria; a original nunca a leva no build.
+SLUG = re.compile(r"[a-z0-9][a-z0-9_-]*(?:/[0-9]+)?")
+FILHA = re.compile(r"[0-9]+")
 
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def inventory(directory):
+def filhas(directory):
+    """Nomes das páginas filhas (subpasta numérica com index.html) de uma página."""
+    return sorted(p.name for p in directory.iterdir()
+                  if FILHA.fullmatch(p.name) and p.is_dir() and not p.is_symlink()
+                  and (p / "index.html").is_file())
+
+
+def inventory(directory, excluir=()):
     """Inclui adições/remoções; não segue links para fora da árvore escolhida."""
     if directory.is_symlink() or not directory.is_dir():
         raise ValueError(f"Pasta inválida: {directory}")
     result = {}
     for path in sorted(directory.rglob("*")):
+        if path.relative_to(directory).parts[0] in excluir:
+            continue
         if path.is_symlink():
             raise ValueError(f"Link simbólico não permitido no build/fonte: {path}")
         if path.is_file():
@@ -41,11 +54,28 @@ def inventory(directory):
     return result
 
 
+def original(slug):
+    """Slug da página original de uma filha (drb/2 → drb); None para página comum."""
+    return slug.split("/")[0] if "/" in slug else None
+
+
+def default_output(slug):
+    # Filha fora de .build/<original>: o build da original substitui aquela pasta inteira.
+    if original(slug):
+        return ROOT / ".build" / "_filhas" / slug
+    return ROOT / ".build" / slug
+
+
 def source_state(slug):
-    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]*", slug):
+    if not SLUG.fullmatch(slug):
         raise ValueError(f"Slug inválida: {slug}")
     source = ROOT / slug
-    files = inventory(source)
+    if original(slug):
+        if not (ROOT / original(slug) / "index.html").is_file():
+            raise ValueError(f"Filha sem página original: falta {original(slug)}/index.html")
+        files = inventory(source)
+    else:
+        files = inventory(source, excluir=filhas(source) if source.is_dir() and not source.is_symlink() else ())
     if "index.html" not in files:
         raise ValueError(f"Falta {slug}/index.html")
     tools = {}
@@ -119,7 +149,14 @@ def build(slug, output):
         candidate = Path(temp) / "site"
         subprocess.run([sys.executable, str(ROOT / "otimizar.py"), str(ROOT / slug),
                         str(candidate)], cwd=ROOT, env=env, check=True)
-        seo.aplicar(ROOT / slug, candidate)
+        if not original(slug):
+            # As filhas são páginas próprias: saem do build (e do envio) da original.
+            for nome in filhas(ROOT / slug):
+                if (candidate / nome).is_symlink() or (candidate / nome).is_file():
+                    (candidate / nome).unlink()
+                elif (candidate / nome).exists():
+                    shutil.rmtree(candidate / nome)
+        seo.aplicar(ROOT / slug, candidate, slug=original(slug) or slug, pagina=slug)
         files = inventory(candidate)
         if "index.html" not in files or not (candidate / "index.html").stat().st_size:
             raise ValueError("Preparação não produziu um index.html válido")
@@ -147,7 +184,8 @@ def build(slug, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("slug")
-    parser.add_argument("--saida", type=Path, help="Pasta do preview/build (padrão: .build/<slug>)")
+    parser.add_argument("--saida", type=Path,
+                        help="Pasta do preview/build (padrão: .build/<slug>; filha: .build/_filhas/<slug>)")
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--reusar", action="store_true", help="Só prepara se não existir build íntegro e atual")
     modes.add_argument("--verificar-build", action="store_true", help="Confere hashes; nunca reconstrói")
@@ -158,7 +196,7 @@ def main():
         parser.error("--conferir é usado na preparação, não na verificação/envio")
     try:
         source_state(args.slug)
-        output = check_output_path(args.saida or ROOT / ".build" / args.slug)
+        output = check_output_path(args.saida or default_output(args.slug))
         with output_lock(output):
             if args.verificar_build or args.snapshot:
                 manifest = validate(args.slug, output)

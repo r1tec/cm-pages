@@ -103,5 +103,43 @@ class SeoTests(unittest.TestCase):
         self.assertLess(saida.index("charset"), saida.index("<title>"))
 
 
+    def test_filha_aponta_para_a_original(self):
+        with tempfile.TemporaryDirectory() as temp:
+            fonte = pathlib.Path(temp, "drb", "2")
+            build = pathlib.Path(temp, "build")
+            (fonte / "assets").mkdir(parents=True)
+            (build / "assets").mkdir(parents=True)
+            (fonte / "seo.json").write_text(json.dumps(CFG), encoding="utf-8")
+            (build / "assets" / "og.jpg").write_bytes(b"x")
+            (build / "index.html").write_text(PAGINA, encoding="utf-8")
+            self.assertTrue(seo.aplicar(str(fonte), str(build), slug="drb", pagina="drb/2"))
+            saida = (build / "index.html").read_text(encoding="utf-8")
+        self.assertEqual(saida.count('rel="canonical"'), 1)
+        self.assertIn('<link rel="canonical" href="https://contemmagia.com.br/drb/">', saida)
+        self.assertIn('<meta property="og:url" content="https://contemmagia.com.br/drb/">', saida)
+        self.assertIn('content="https://contemmagia.com.br/drb/2/assets/og.jpg"', saida)
+        produto = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', saida).group(1))
+        self.assertEqual(produto["sku"], "drb")
+        self.assertEqual(produto["offers"]["url"], "https://contemmagia.com.br/drb/")
+        self.assertNotIn("/2/\"", saida.replace("/2/assets", ""))
+
+    def test_filha_sem_seo_json_ganha_so_o_canonical(self):
+        with tempfile.TemporaryDirectory() as temp:
+            fonte = pathlib.Path(temp, "drb", "2")
+            fonte.mkdir(parents=True)
+            build = pathlib.Path(temp, "build")
+            build.mkdir()
+            (build / "index.html").write_text(PAGINA.replace("/drb/", "/drb/2/"), encoding="utf-8")
+            self.assertTrue(seo.aplicar(str(fonte), str(build), slug="drb", pagina="drb/2"))
+            saida = (build / "index.html").read_text(encoding="utf-8")
+            self.assertEqual(saida.count('rel="canonical"'), 1)
+            self.assertIn('<link rel="canonical" href="https://contemmagia.com.br/drb/">\n</head>', saida)
+            self.assertIn("<title>DRB – V3</title>", saida)
+            # Página comum sem seo.json continua intocada.
+            (build / "index.html").write_text(PAGINA, encoding="utf-8")
+            self.assertFalse(seo.aplicar(str(fonte), str(build)))
+            self.assertEqual((build / "index.html").read_text(encoding="utf-8"), PAGINA)
+
+
 if __name__ == "__main__":
     unittest.main()

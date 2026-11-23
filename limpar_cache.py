@@ -8,7 +8,7 @@ import urllib.request
 
 def limpar_paginas(slugs):
     slugs = list(dict.fromkeys(slugs))
-    if not slugs or any(not re.fullmatch(r"[a-z0-9][a-z0-9-]*", s) for s in slugs):
+    if not slugs or any(not re.fullmatch(r"[a-z0-9][a-z0-9-]*(?:/[0-9]+)?", s) for s in slugs):
         raise ValueError("Informe slugs válidas; não é permitida limpeza da zona inteira")
     token, zone = os.environ.get("CF_API_TOKEN"), os.environ.get("CF_ZONE_ID")
     if not token or not zone:

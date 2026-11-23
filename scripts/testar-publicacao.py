@@ -45,6 +45,34 @@ class BuildContract(unittest.TestCase):
         with patch.object(preparar.subprocess, "run", side_effect=self.compiler):
             preparar.build("demo", self.output)
 
+    def test_child_is_own_page_and_left_out_of_parent(self):
+        child = self.source / "2"
+        child.mkdir()
+        (child / "index.html").write_text("<html><head></head>filha</html>")
+        (self.source / "3").mkdir()  # pasta numérica sem index.html continua sendo da original
+        (self.source / "3" / "x.css").write_text("a{}")
+        self.prepare()
+        self.assertFalse((self.output / "2").exists())
+        self.assertTrue((self.output / "3" / "x.css").is_file())
+        self.assertEqual(preparar.default_output("demo/2"), self.root / ".build" / "_filhas" / "demo" / "2")
+        with patch.object(preparar.subprocess, "run", side_effect=lambda a, **k: (
+                shutil.copytree(child, Path(a[-1])), subprocess.CompletedProcess(a, 0))[1]):
+            preparar.default_output("demo/2").parent.mkdir(parents=True)
+            preparar.build("demo/2", preparar.default_output("demo/2"))
+        self.assertEqual((preparar.default_output("demo/2") / "index.html").read_text(),
+                         '<html><head>\n<link rel="canonical" href="https://contemmagia.com.br/demo/">\n</head>filha</html>')
+        (child / "index.html").write_text("<html>filha nova</html>")
+        preparar.validate("demo", self.output)  # mudar a filha não desatualiza a original
+        with self.assertRaisesRegex(ValueError, "desatualizado"):
+            preparar.validate("demo/2", preparar.default_output("demo/2"))
+        for invalida in ("demo/2/3", "demo/x", "demo/../x", "/demo/2"):
+            with self.assertRaisesRegex(ValueError, "Slug inválida"):
+                preparar.source_state(invalida)
+        with self.assertRaisesRegex(ValueError, "sem página original"):
+            (self.root / "solta" / "2").mkdir(parents=True)
+            (self.root / "solta" / "2" / "index.html").write_text("x")
+            preparar.source_state("solta/2")
+
     def test_reuse_does_not_compile_or_verify(self):
         self.prepare()
         with patch.object(preparar.subprocess, "run", side_effect=AssertionError("Não deve executar")):
@@ -142,7 +170,7 @@ class PublisherContract(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name).resolve()
-        for name in ("publicar.sh", "preparar.py"):
+        for name in ("publicar.sh", "preparar.py", "seo.py"):
             shutil.copy2(REPO / name, self.root / name)
         for name in ("estatico.py", "rastreamento.py", "meta-pageview-antecipado.js"):
             (self.root / name).write_text("# fixture\n")
@@ -153,7 +181,8 @@ class PublisherContract(unittest.TestCase):
         for name in ("verificar.py", "medir.py"):
             (self.root / name).write_text("raise RuntimeError('Não deve rodar no envio')\n")
         for name in ("espelhar_edu.py", "limpar_cache.py"):
-            (self.root / name).write_text("from pathlib import Path\nPath(__file__+'.called').touch()\n")
+            (self.root / name).write_text("import sys\nfrom pathlib import Path\n"
+                                          "with open(__file__+'.called','a') as f:f.write(' '.join(sys.argv[1:])+'\\n')\n")
         (self.root / ".env").write_text("FTP_HOST=example.invalid\nFTP_USUARIO=test\nFTP_SENHA=test\nCF_API_TOKEN=test\nCF_ZONE_ID=test\n")
         (self.root / "demo").mkdir()
         (self.root / "demo" / "index.html").write_text("<html>preview</html>")
@@ -164,6 +193,7 @@ class PublisherContract(unittest.TestCase):
             "import pathlib,shlex,sys\n"
             "for line in sys.stdin:\n"
             " if line.startswith('mirror '):\n"
+            "  open('mirror-lines','a').write(line)\n"
             "  source=pathlib.Path(shlex.split(line)[-2])\n"
             "  pathlib.Path('uploaded.html').write_bytes((source/'index.html').read_bytes())\n"
             "  pathlib.Path('uploaded-files').write_text('\\n'.join(p.name for p in source.iterdir()))\n"
@@ -206,6 +236,27 @@ class PublisherContract(unittest.TestCase):
         result = self.run_cli("bash", "publicar.sh", "--build", ".build/demo", "demo")
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse((self.root / "upload-count").exists())
+
+    def test_child_page_is_sent_alone_and_parent_keeps_it(self):
+        (self.root / "demo" / "2").mkdir()
+        (self.root / "demo" / "2" / "index.html").write_text("<html><head></head>filha</html>")
+        for ordem in (("demo", "demo/2"), ("demo/2/", "demo")):
+            (self.root / "mirror-lines").unlink(missing_ok=True)
+            result = self.run_cli("bash", "publicar.sh", *ordem)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            linhas = (self.root / "mirror-lines").read_text().splitlines()
+            original = next(l for l in linhas if l.rstrip().endswith("/demo/\""))
+            filha = next(l for l in linhas if l.rstrip().endswith("/demo/2/\""))
+            self.assertIn("--exclude '^[0-9]+/'", original)
+            self.assertNotIn("--exclude", filha)
+        self.assertTrue((self.root / ".build" / "_filhas" / "demo" / "2" / "index.html").is_file())
+        self.assertFalse((self.root / ".build" / "demo" / "2").exists())
+        espelho = (self.root / "espelhar_edu.py.called").read_text().split("\n")
+        self.assertNotIn("--aplicar demo/2", espelho)
+        self.assertIn("demo/2", (self.root / "limpar_cache.py.called").read_text().split("\n"))
+        self.assertEqual((self.root / "compile-count").read_text(), "build\nbuild\n")
+        enviado = (self.root / ".build" / "_filhas" / "demo" / "2" / "index.html").read_text()
+        self.assertIn('<link rel="canonical" href="https://contemmagia.com.br/demo/">', enviado)
 
     def test_help_does_not_require_credentials(self):
         (self.root / ".env").unlink()
