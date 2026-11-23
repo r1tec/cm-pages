@@ -1,5 +1,12 @@
 # Site deste projeto: Contém Magia (cm-pages)
 
+Regras comuns do motor: `CLAUDE.md` na raiz (vale para cm-pages e rp-pages).
+Aqui ficam só os fatos e as regras deste site.
+
+Páginas de venda da Escola Contém Magia. Cada pasta com `index.html` é uma rota
+em `https://contemmagia.com.br/<slug>`. Há exportações autocontidas do Claude
+Design e páginas reescritas em HTML leve a partir do WordPress.
+
 ## Modo designer (confira antes de tudo)
 
 Rode `gh api user --jq .login`. Se o resultado não for `r1tec` (outro login,
@@ -15,13 +22,6 @@ do PR). Com o sim do Raphael ao SHA mostrado: `scripts/aprovar-pr.sh <número> <
 (aprova, incorpora e atualiza a main local; não publica). Publicar segue manual:
 `./publicar.sh <slug>` (página nova: também `python3 raiz.py --publicar`).
 `publicar.sh` recusa branch `design/*` e commit de outro autor fora de `origin/main`.
-
-Regras comuns do motor: `CLAUDE.md` na raiz (vale para cm-pages e rp-pages).
-Aqui ficam só os fatos e as regras deste site.
-
-Páginas de venda da Escola Contém Magia. Cada pasta com `index.html` é uma rota
-em `https://contemmagia.com.br/<slug>`. Há exportações autocontidas do Claude
-Design e páginas reescritas em HTML leve a partir do WordPress.
 
 ## Fontes deste site
 

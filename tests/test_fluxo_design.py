@@ -105,7 +105,7 @@ class TravaPublicarTests(unittest.TestCase):
         self.addCleanup(self.r.limpar)
 
     def publicar(self):
-        return self.r.run("bash", "publicar.sh", "pag")
+        return self.r.run(os.environ.get("BASH_TESTE", "bash"), "publicar.sh", "pag")
 
     def assertPublicou(self, res):
         self.assertEqual(res.returncode, 0, res.stderr)
@@ -200,10 +200,37 @@ class RevisarPrTests(unittest.TestCase):
         self.assertIn("link simbólico", res.stderr)
 
     def test_commit_com_identidade_do_dono_reprova(self):
-        self.branch("design/disfarce", autor=("Claude", "noreply@anthropic.com"), **{"pag__index.html": "<html>x</html>"})
+        self.branch("design/disfarce", autor=DONO, **{"pag__index.html": "<html>x</html>"})
         res = self.revisar("design/disfarce", "--so-escopo")
         self.assertEqual(res.returncode, 2)
         self.assertIn("identidade do dono", res.stderr)
+
+    def test_commit_como_claude_so_avisa(self):
+        self.branch("design/claude", autor=("Claude", "noreply@anthropic.com"), **{"pag__index.html": "<html>x</html>"})
+        self.assertEqual(self.revisar("design/claude", "--so-escopo").returncode, 0)
+
+    def pr_no_github(self, topo_gh=None):
+        self.branch("design/pag-pr", **{"pag__index.html": "<html>pr</html>"})
+        sha = self.r.git("rev-parse", "design/pag-pr")
+        self.r.git("push", "-q", "origin", "design/pag-pr:refs/pull/7/head")
+        info = {"number": 7, "title": "pag: pr", "url": "https://github.com/r1tec/cm-pages/pull/7",
+                "author": {"login": "designer"}, "headRefName": "design/pag-pr", "headRefOid": topo_gh or sha,
+                "isCrossRepository": False, "baseRefName": "main", "state": "OPEN"}
+        self.r.stub("gh", f"echo \"gh $*\" >> \"$STUB_LOG\"\ncat <<'J'\n{json.dumps(info)}\nJ\n")
+        return sha
+
+    def test_modo_pr_baixa_o_topo_do_github(self):
+        sha = self.pr_no_github()
+        res = self.r.run(sys.executable, "scripts/revisar-pr.py", "7", "--so-escopo", "--sha", sha)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertIn("SLUGS: pag", res.stdout)
+        self.assertIn("gh pr view 7 --repo r1tec/cm-pages", self.r.chamadas()[0])
+
+    def test_modo_pr_topo_diferente_reprova(self):
+        self.pr_no_github(topo_gh="c" * 40)
+        res = self.r.run(sys.executable, "scripts/revisar-pr.py", "7", "--so-escopo")
+        self.assertEqual(res.returncode, 2)
+        self.assertIn("topo do PR mudou", res.stderr)
 
     def test_pagina_nova_com_paginas_json(self):
         dados = json.loads(PAGINAS)

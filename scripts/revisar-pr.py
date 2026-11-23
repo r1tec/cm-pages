@@ -167,7 +167,9 @@ def conferir_escopo(t):
         problemas.append("PR sem commits novos em relação à main")
     for linha in proprios:
         h, email, nome = linha.split("|", 2)
-        if DONO_EMAILS_RE.match(email):
+        if email == "noreply@anthropic.com":
+            avisos.append(f"commit {h} assinado como {nome} <{email}>: peça ao designer para configurar o próprio nome e e-mail no git")
+        elif DONO_EMAILS_RE.match(email):
             problemas.append(f"commit {h} usa a identidade do dono ({nome} <{email}>): o designer precisa commitar com o próprio nome e e-mail")
 
     raw = git("diff", "--raw", "-z", "--no-renames", "--no-abbrev", base, sha).stdout.split("\0")
@@ -269,7 +271,7 @@ def extrair(arqs):
         texto = conteudo.decode("utf-8", "replace")
         precos.update(m.group(0).replace(" ", "") for m in PRECO_RE.finditer(texto))
         for m in URL_RE.finditer(texto):
-            url = m.group(0)
+            url = re.split(r"&quot;|&#3[49];|&lt;|&gt;", m.group(0))[0]
             host = url.split("//", 1)[1].split("/", 1)[0].lower()
             dominios.add(host)
             if COMPRA_RE.search(url):
@@ -399,7 +401,7 @@ def relatorio(t, esc, arvore, conflitos, previas, logs):
     if previas:
         for slug, p in previas.items():
             L.append(f"- {slug}: {p / 'index.html'}")
-        L.append("- Montada com o motor da main + a pasta da página do resultado do merge. Nenhum script Python ou Node do PR roda; o preparar.py da main abre o HTML no Chrome sem interface para pré-renderizar (é o que a página faria no navegador de quem visita).")
+        L.append("- Montada com o motor da main + a pasta da página do resultado do merge. Nenhum script Python ou Node do PR roda; atenção: o preparar.py da main abre o HTML do PR no Chrome sem interface e sem sandbox (--no-sandbox no otimizar.py) para pré-renderizar, então o JavaScript da página roda neste Mac. Script externo novo listado acima pede atenção antes de abrir a prévia.")
     else:
         L.append("- sem prévia (PR reprovado antes, ou falha no preparar.py)")
     for slug, (codigo, log) in logs.items():
