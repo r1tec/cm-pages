@@ -77,6 +77,48 @@ if [ "${1:-}" = "--gtm-performance" ]; then
   exit 0
 fi
 
+# Trava do fluxo de design (DESIGNER.md): trabalho de designer só vai ao ar
+# depois que o PR aprovado entra na main do GitHub. Recusa antes de qualquer
+# envio se a pasta está numa branch design/*, ou se há commit ainda fora de
+# origin/main que é de outro autor ou veio de uma branch design/*.
+# Identidades do dono (do histórico do repo): Macs do Raphael, conta r1tec e os
+# agentes dele (Claude). O resto do fluxo do dono (árvore suja, commit depois,
+# afinar.sh) segue igual.
+DONO_EMAILS_RE='^(raphaelmartins@.+|eduardo@eduparmeggiani\.com\.br|noreply@anthropic\.com|([0-9]+\+)?r1tec@users\.noreply\.github\.com)$'
+recusar_design() {
+  echo "" >&2
+  echo "PUBLICAÇÃO RECUSADA: $1" >&2
+  echo "Página de designer só vai ao ar depois do PR aprovado e incorporado na" >&2
+  echo "main do GitHub (scripts/revisar-pr.py → aprovação → scripts/aprovar-pr.sh)." >&2
+  echo "Volte para a main atualizada (git switch main && git pull --ff-only) e rode de novo." >&2
+  exit 1
+}
+trava_design() {
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
+  local branch commit email nome refs
+  branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+  case "$branch" in
+    design/*) recusar_design "esta pasta está na branch de design '$branch'." ;;
+  esac
+  GIT_TERMINAL_PROMPT=0 git fetch --quiet origin main 2>/dev/null \
+    || echo "Aviso: não consegui atualizar origin/main; confiro contra a cópia local." >&2
+  if ! git rev-parse --verify --quiet origin/main >/dev/null; then
+    recusar_design "não achei origin/main para conferir os commits."
+  fi
+  while IFS='|' read -r commit email nome; do
+    [ -n "$commit" ] || continue
+    if ! [[ "$email" =~ $DONO_EMAILS_RE ]]; then
+      recusar_design "o commit $commit de $nome <$email> ainda não está na main do GitHub."
+    fi
+    refs="$(git for-each-ref --contains "$commit" --format='%(refname:short)' \
+      refs/heads/design refs/remotes/origin/design 2>/dev/null | head -1)"
+    if [ -n "$refs" ]; then
+      recusar_design "o commit $commit veio da branch de design '$refs' e ainda não está na main do GitHub."
+    fi
+  done < <(git log --format='%h|%ae|%an' origin/main..HEAD)
+}
+trava_design
+
 # Build explícito: não reconstruir silenciosamente um preview escolhido.
 build_pronto=""
 if [ "${1:-}" = "--build" ]; then

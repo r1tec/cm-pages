@@ -1,5 +1,21 @@
 # Site deste projeto: Contém Magia (cm-pages)
 
+## Modo designer (confira antes de tudo)
+
+Rode `gh api user --jq .login`. Se o resultado não for `r1tec` (outro login,
+erro ou `gh` ausente), esta máquina é a do designer: siga `DESIGNER.md`, que
+vence o resto deste arquivo e as regras de main, push e publicação do
+`CLAUDE.md` da raiz. Nunca trabalhe na `main`, nunca publique, nunca crie `.env`.
+
+## PRs de design (máquina do dono)
+
+O designer abre PR de `design/<slug>-<assunto>`. Revisão:
+`python3 scripts/revisar-pr.py <número>` (prévia + relatório; nunca roda código
+do PR). Com o sim do Raphael ao SHA mostrado: `scripts/aprovar-pr.sh <número> <sha>`
+(aprova, incorpora e atualiza a main local; não publica). Publicar segue manual:
+`./publicar.sh <slug>` (página nova: também `python3 raiz.py --publicar`).
+`publicar.sh` recusa branch `design/*` e commit de outro autor fora de `origin/main`.
+
 Regras comuns do motor: `CLAUDE.md` na raiz (vale para cm-pages e rp-pages).
 Aqui ficam só os fatos e as regras deste site.
 
@@ -47,7 +63,8 @@ Design e páginas reescritas em HTML leve a partir do WordPress.
   arquivos da raiz que a missão precisa (`robots.txt`, sitemap, home, 404, `.htaccess`)
   entram sem nova consulta. A raiz não tem WordPress ativo, só restos dele: não
   trate como site no ar.
-- GitHub é espelho; workflow FTP e `.cpanel.yml` estão desativados de propósito.
+- GitHub é espelho; não há workflow de FTP no repositório (apagado em 23/11/2026)
+  e `.cpanel.yml` está desativado de propósito.
 - Home, página Sobre e sitemap: `raiz.py`, que lê `config/raiz/paginas.json`
   (`nome` e `resumo`; variações de teste e eventos encerrados ficam fora). Página
   nova entra no `paginas.json` e, ao publicar, rode `python3 raiz.py --publicar`
@@ -75,5 +92,7 @@ Slug novo no WordPress que ainda não esteja na tabela entra como "Não".
   da tarefa, sem segredos nem mudanças alheias. Bloqueio automático da ferramenta
   não é falha: o dono roda por `!`.
 - Sessão que nasceu numa worktree (trabalho em segundo plano): ao terminar, junte a
-  branch na `main` você mesmo (`git merge`, sem rebase) e faça push. Esta linha é a
-  autorização do dono para push na `main` neste repositório; ele não roda git.
+  branch na `main` você mesmo (`git merge`, sem rebase) e faça push. Esta linha é
+  a autorização do dono para push na `main` neste repositório; ele não roda git.
+  Exceção: branch `design/*` nunca se junta à mão; entra só pelo PR aprovado
+  (`scripts/aprovar-pr.sh`).
