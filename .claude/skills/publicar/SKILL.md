@@ -23,6 +23,11 @@ ser renovada a cada etapa. Respeite slugs, destino e o limite mais recente.
 4. Registre e envie somente o trabalho da tarefa ao GitHub; informe a URL e
    eventual falha real. Um ajuste pequeno não exige relatório novo extenso.
 
+PR de designer (site com esse fluxo na seção do site, onde estão os comandos):
+revisar o PR (prévia + relatório) → sim do dono ao SHA mostrado → aprovar e
+incorporar → `./publicar.sh <slug>`; página nova também atualiza a raiz conforme
+a seção do site. Nunca publicar branch `design/*` nem PR não incorporado.
+
 `publicar.sh` é a única entrada de envio. Não usar FTP paralelo, reativar workflow
 ou cPanel. O comando envia ao destino do `.env` (e aos espelhos configurados no
 site) e limpa o cache da Cloudflare por prefixo, inclusive campanhas. `.env` contém credenciais; não exibir.
