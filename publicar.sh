@@ -7,6 +7,7 @@
 #   ./publicar.sh coe vsl  → publica só as pastas coe/ e vsl/
 #   ./publicar.sh --build /tmp/preview-mce mce → envia o build já preparado
 #   ./publicar.sh drb/2    → publica só a página filha drb/2/
+#   ./publicar.sh --despublicar [--aplicar] drb/2 → tira do ar (cópia antes; sem --aplicar, prévia)
 #
 # Cada pasta vira uma slug no ar:  coe/  →  https://contemmagia.com.br/coe
 # Página filha = subpasta numérica com index.html (drb/2/): é publicada à parte,
@@ -22,6 +23,7 @@ if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
   cat <<'HELP'
 Uso: ./publicar.sh [slug ...]
      ./publicar.sh --build /caminho/do/build slug
+     ./publicar.sh --despublicar [--aplicar] slug ...
 
 Reutiliza builds atuais preparados por preparar.py. Sem build atual, prepara
 uma vez; não roda conferência visual nem PageSpeed automaticamente.
@@ -122,6 +124,12 @@ trava_design() {
   done < <(git log --format='%h|%ae|%an' origin/main..HEAD)
 }
 trava_design
+
+# Tira do ar: cópia local conferida, apaga a pasta remota, limpa o cache e o noindex.
+if [ "${1:-}" = "--despublicar" ]; then
+  shift
+  exec python3 despublicar.py "$@"
+fi
 
 # Build explícito: não reconstruir silenciosamente um preview escolhido.
 build_pronto=""
