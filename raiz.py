@@ -2,11 +2,14 @@
 
 Uso:
   python3 raiz.py              # gera em .build/raiz para conferir
-  python3 raiz.py --publicar   # gera, envia por FTP, instala o bloco do .htaccess e limpa o cache
+  python3 raiz.py --publicar   # gera, envia por FTP, instala os blocos do .htaccess e limpa o cache
 
 O WordPress da raiz está desativado. Sem estes arquivos, /robots.txt e a home
 caem nele e respondem erro 500, o que faz o Google parar de rastrear o domínio.
-As páginas listadas vêm de config/raiz/paginas.json.
+As páginas listadas vêm de config/raiz/paginas.json. Página filha (drb/2) nunca
+entra nele: fica fora da home, do sitemap e do IndexNow.
+Blocos do .htaccess instalados pelas marcas BEGIN/END: o da raiz de contemmagia.com.br
+e o da migração do eduparmeggiani.com (config/eduparmeggiani.htaccess).
 """
 import html
 import json
@@ -26,6 +29,9 @@ BLOCO = os.path.join(RAIZ, 'config', 'contemmagia-raiz.htaccess')
 INICIO_BLOCO = '# BEGIN cm-pages raiz contemmagia.com.br'
 FIM_BLOCO = '# END cm-pages raiz contemmagia.com.br'
 ANTES_DE = '# BEGIN WordPress'
+BLOCO_EDU = os.path.join(RAIZ, 'config', 'eduparmeggiani.htaccess')
+INICIO_EDU = '# BEGIN CM migration eduparmeggiani.com'
+FIM_EDU = '# END CM migration eduparmeggiani.com'
 BACKUP_REMOTO = '.htaccess.bk-cm-raiz'
 # O bloco "HttpHeaders" (resto do WordPress, inativo) limita os iframes das páginas pelo
 # frame-src do Content-Security-Policy. Domínios de iframe que as páginas usam entram aqui.
@@ -37,6 +43,8 @@ def paginas():
     dados = json.load(open(os.path.join(RAIZ, 'config', 'raiz', 'paginas.json'), encoding='utf-8'))
     for grupo in dados['grupos']:
         for p in grupo['paginas']:
+            if not re.fullmatch(r'[a-z0-9][a-z0-9_-]*', p['slug']):
+                raise SystemExit(f"paginas.json cita {p['slug']}: página filha ou slug inválida não entra na raiz")
             if not os.path.isfile(os.path.join(RAIZ, p['slug'], 'index.html')):
                 raise SystemExit(f"paginas.json cita {p['slug']}, mas {p['slug']}/index.html não existe")
     return dados['grupos']
@@ -328,16 +336,25 @@ def lftp(env, comandos):
         raise SystemExit('Falha no FTP: ' + (r.stderr or r.stdout).strip()[-500:])
 
 
-def com_bloco(atual):
-    bloco = open(BLOCO, encoding='utf-8').read().rstrip('\n') + '\n'
-    if INICIO_BLOCO in atual:
-        ini = atual.index(INICIO_BLOCO)
-        fim = atual.index(FIM_BLOCO, ini) + len(FIM_BLOCO)
+def trocar_bloco(atual, arquivo, inicio, fim_marca, antes_de):
+    """Troca o bloco entre as marcas; sem ele, insere antes da primeira marca de antes_de."""
+    bloco = open(arquivo, encoding='utf-8').read().rstrip('\n') + '\n'
+    if not bloco.startswith(inicio) or not bloco.rstrip('\n').endswith(fim_marca):
+        raise SystemExit(f'{os.path.basename(arquivo)} sem as marcas BEGIN/END; nada enviado.')
+    if inicio in atual:
+        ini = atual.index(inicio)
+        fim = atual.index(fim_marca, ini) + len(fim_marca)
         return atual[:ini] + bloco.rstrip('\n') + atual[fim:]
-    if ANTES_DE not in atual:
+    marca = next((m for m in antes_de if m in atual), None)
+    if marca is None:
         raise SystemExit('Não achei "# BEGIN WordPress" no .htaccess da raiz; nada enviado.')
-    i = atual.index(ANTES_DE)
+    i = atual.index(marca)
     return atual[:i] + bloco + '\n' + atual[i:]
+
+
+def com_bloco(atual):
+    atual = trocar_bloco(atual, BLOCO, INICIO_BLOCO, FIM_BLOCO, (ANTES_DE,))
+    return trocar_bloco(atual, BLOCO_EDU, INICIO_EDU, FIM_EDU, (INICIO_BLOCO, ANTES_DE))
 
 
 def liberar_iframes(atual):
