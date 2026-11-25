@@ -37,6 +37,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </button>
       </div>
       <div class="acao"><a class="botao-cta" href="https://pay.contemmagia.com.br/c/bm26"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 252.118V48C0 21.49 21.49 0 48 0h204.118a48 48 0 0 1 33.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137 0 67.882L293.823 497.941c-18.745 18.745-49.137 18.745-67.882 0L14.059 286.059A48 48 0 0 1 0 252.118zM112 64c-26.51 0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48z"/></svg>Quero a Black Magick agora</a></div>
+      <div class="contagem" data-fim="2026-12-04T22:00:00-03:00">
+        <p class="contagem-titulo">Essa oportunidade se encerra</p>
+        <div class="contagem-tempo" role="timer" aria-label="Tempo restante da oferta">
+          <div class="un"><span class="num" data-un="d">00</span><span class="rot">dias</span></div>
+          <div class="un"><span class="num" data-un="h">00</span><span class="rot">horas</span></div>
+          <div class="un"><span class="num" data-un="m">00</span><span class="rot">minutos</span></div>
+          <div class="un"><span class="num" data-un="s">00</span><span class="rot">segundos</span></div>
+        </div>
+      </div>
     </div></div>
 
     <div class="bloco"><div class="col"><div class="faixas">
@@ -144,6 +153,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     v.innerHTML = "";
     v.appendChild(f);
   });
+})();
+</script>
+<script>
+(function () {
+  var c = document.querySelector(".contagem[data-fim]");
+  if (!c) return;
+  var fim = new Date(c.getAttribute("data-fim")).getTime();
+  var el = {};
+  ["d", "h", "m", "s"].forEach(function (u) { el[u] = c.querySelector('[data-un="' + u + '"]'); });
+  function dois(n) { return (n < 10 ? "0" : "") + n; }
+  function tick() {
+    var t = Math.max(0, Math.floor((fim - Date.now()) / 1000));
+    el.d.textContent = dois(Math.floor(t / 86400));
+    el.h.textContent = dois(Math.floor(t % 86400 / 3600));
+    el.m.textContent = dois(Math.floor(t % 3600 / 60));
+    el.s.textContent = dois(t % 60);
+    if (t > 0) setTimeout(tick, 1000 - Date.now() % 1000);
+  }
+  tick();
 })();
 </script>
 </body>
