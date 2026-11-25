@@ -132,3 +132,21 @@ h1,h2,p{margin:0}
   .bonus{padding:4px 14px}
   .bonus h3,.bonus p{font-size:12px}
 }
+
+/* Selo "Última oportunidade": tag rosa neon, no formato do VITALÍCIO */
+.ultima{margin:0 0 22px;font-family:"CeraPro Black","Montserrat",Arial,sans-serif;font-size:40px;line-height:1.1;letter-spacing:3px;text-transform:uppercase;text-align:center}
+.ultima strong{display:inline-block;font-weight:900;line-height:1;color:#000;padding:.25em .7em;border-radius:999px;background-image:linear-gradient(80deg,#ff3fb4,#ff1f8e);box-shadow:0 0 12px rgba(255,63,180,.8),0 0 28px rgba(255,63,180,.5),0 0 50px rgba(255,63,180,.3)}
+@media (max-width:767px){
+  .ultima{font-size:24px;letter-spacing:1px;margin-bottom:16px}
+}
+
+/* Contagem regressiva sob o botão do cadastro */
+.contador{display:flex;justify-content:center;gap:12px;margin:22px 0 0}
+.contador .un{flex:1 1 0;max-width:110px;padding:12px 4px 10px;border:1px solid rgba(255,63,180,.55);border-radius:16px;background:rgba(0,0,0,.45);box-shadow:0 0 14px rgba(255,63,180,.18);text-align:center}
+.contador .num{display:block;font-family:"CeraPro Black","Montserrat",Arial,sans-serif;font-size:38px;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums;color:#ff3fb4;text-shadow:0 0 6px rgba(255,63,180,.8),0 0 16px rgba(255,63,180,.45)}
+.contador .rot{display:block;margin-top:4px;font-size:11px;line-height:1.2;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff}
+@media (max-width:767px){
+  .contador{gap:6px}
+  .contador .num{font-size:26px}
+  .contador .rot{font-size:9px;letter-spacing:.5px}
+}

@@ -28,6 +28,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <div class="cartao"><div class="col">
 
     <div class="bloco"><div class="col">
+      <p class="ultima"><strong>Última oportunidade</strong></p>
       <h1 class="titulo">TENHA OS MEUS CURSOS COM ACESSO <strong>VITALÍCIO</strong></h1>
       <p class="chamada">Você pode ter <strong>os meus Cursos Online</strong> pelo resto da vida por um preço <strong>extremamente</strong> mais barato do que se comprasse tudo separadamente!</p>
     </div></div>
@@ -38,6 +39,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <!-- O cadastro é o formulário da campanha BM26 do Raiz1, num pop-up (iframe). -->
       <div class="cadastro" id="cadastro">
         <div class="enviar"><button type="button" class="botao-form" data-bm26-abrir aria-haspopup="dialog" aria-controls="bm26-popup">ENTRAR NO GRUPO ESPECIAL</button></div>
+        <div class="contador" id="contador" data-fim="2026-12-01T19:30:00-03:00" role="timer" aria-label="Tempo restante">
+          <div class="un"><span class="num" data-u="d">00</span><span class="rot">dias</span></div>
+          <div class="un"><span class="num" data-u="h">00</span><span class="rot">horas</span></div>
+          <div class="un"><span class="num" data-u="m">00</span><span class="rot">minutos</span></div>
+          <div class="un"><span class="num" data-u="s">00</span><span class="rot">segundos</span></div>
+        </div>
       </div>
     </div></div>
 
@@ -169,6 +176,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })();
 </script>
 <!-- Trecho padrão do embed do Raiz1 (copiado sem mudança): ouve o aviso de cadastro do formulário e marca Lead no pixel -->
+<script>
+/* Contagem regressiva: zera em 01/12/2026 às 19h30 (horário de Brasília, UTC-3). */
+(function () {
+  var el = document.getElementById("contador");
+  if (!el) return;
+  var fim = new Date(el.getAttribute("data-fim")).getTime();
+  var n = {};
+  ["d", "h", "m", "s"].forEach(function (u) { n[u] = el.querySelector('[data-u="' + u + '"]'); });
+  function dois(v) { return v < 10 ? "0" + v : "" + v; }
+  function tic() {
+    var t = Math.max(0, Math.floor((fim - Date.now()) / 1000));
+    n.d.textContent = dois(Math.floor(t / 86400));
+    n.h.textContent = dois(Math.floor(t % 86400 / 3600));
+    n.m.textContent = dois(Math.floor(t % 3600 / 60));
+    n.s.textContent = dois(t % 60);
+    if (t > 0) setTimeout(tic, 1000 - Date.now() % 1000);
+  }
+  tic();
+})();
+</script>
 <script>
 (function(){
   var U="https://form.raiz1.com.br/f/d3e882fe-e71c-4b23-8353-171c50dfd90c/form_bm26k7q2x",O=new URL(U).origin,P=new URL(U).pathname,vistos={};
